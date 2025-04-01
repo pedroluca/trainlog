@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 type HeaderProps = {
   hideDate?: boolean
@@ -32,7 +33,7 @@ export function Header({ hideDate = false }: HeaderProps) {
     <header className='h-28 bg-gray-800 text-white flex flex-col items-center justify-center'>
       <main className={`${hideDate ? 'h-full' : 'h-[70%]'} w-full flex flex-col items-center justify-center border-b-1 border-gray-600`}>
         <img />
-        <h1 className='text-3xl font-bold'>TrainLog</h1>
+        <Link to='/' className='text-3xl font-bold'>TrainLog</Link>
       </main>
       <section className={`h-[30%] w-full flex items-center justify-center ${hideDate ? 'hidden' : ''}`}>
         <p>{currentTime}</p>

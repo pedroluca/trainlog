@@ -1,22 +1,32 @@
 import { useEffect, useState } from 'react'
 import { Button } from './button'
 import { Pencil } from 'lucide-react'
+import { doc, updateDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig'
 
 type TrainingCardProps = {
+  id: string // ID do exercício
+  workoutId: string // ID do treino
   title: string
   sets: number
   reps: number
   weight: number
   breakTime: number
+  onEdit: () => void // Função para atualizar a lista de exercícios
 }
 
 export function TrainingCard(props: TrainingCardProps) {
-  const { title, sets, reps, weight, breakTime } = props
+  const { id, workoutId, title, sets, reps, weight, breakTime, onEdit } = props
   const [isBreakTime, setIsBreakTime] = useState(false)
   const [timeLeft, setTimeLeft] = useState(0)
   const [setsDone, setSetsDone] = useState(0)
   const [isFinished, setIsFinished] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const [editedSets, setEditedSets] = useState(sets)
+  const [editedReps, setEditedReps] = useState(reps)
+  const [editedWeight, setEditedWeight] = useState(weight)
+  const [editedBreakTime, setEditedBreakTime] = useState(breakTime)
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -46,9 +56,27 @@ export function TrainingCard(props: TrainingCardProps) {
     setTimeLeft(breakTime * 60)
   }
 
+  const handleSaveChanges = async () => {
+    try {
+      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id) // Corrigida a referência
+      await updateDoc(exerciseRef, {
+        series: editedSets,
+        repeticoes: editedReps,
+        peso: editedWeight,
+        tempoIntervalo: editedBreakTime,
+      })
+      setIsModalOpen(false)
+      onEdit() // Atualiza a lista de exercícios
+      alert('Exercício atualizado com sucesso!')
+    } catch (err) {
+      console.error('Erro ao atualizar exercício:', err)
+      alert('Erro ao atualizar exercício.')
+    }
+  }
+
   return (
     <div
-      className={`shadow-md relative rounded-lg p-6 m-4 w-full max-w-sm transition-all ${
+      className={`shadow-md relative rounded-lg p-6 my-4 mx-2 transition-all ${
         isFinished ? 'bg-green-100 border-green-400' : 'bg-white'
       }`}
     >
@@ -59,7 +87,7 @@ export function TrainingCard(props: TrainingCardProps) {
         <Pencil />
       </button>
 
-      <h2 className='text-2xl font-bold mb-4 text-gray-800'>{title}</h2>
+      <h2 className='text-2xl font-bold mb-4 mr-6 text-gray-800'>{title}</h2>
       {!isBreakTime ? (
         <>
           <div className='mb-4'>
@@ -82,6 +110,9 @@ export function TrainingCard(props: TrainingCardProps) {
         </>
       ) : (
         <>
+          <p className='text-gray-700'>
+            <strong>Sets feitos:</strong> {setsDone}/{sets}  --  {sets}x{reps}
+          </p>
           <h2 className='text-xl font-bold mb-4 text-gray-500'>Intervalo de descanso:</h2>
           <p className='text-gray-700 text-3xl font-mono mb-4'>{formatTime(timeLeft)}</p>
           <Button
@@ -110,7 +141,8 @@ export function TrainingCard(props: TrainingCardProps) {
                 <label className='block text-gray-700 font-bold mb-2'>Sets:</label>
                 <input
                   type='number'
-                  defaultValue={sets}
+                  value={editedSets}
+                  onChange={(e) => setEditedSets(Number(e.target.value))}
                   className='w-full border rounded px-3 py-2'
                 />
               </div>
@@ -118,7 +150,8 @@ export function TrainingCard(props: TrainingCardProps) {
                 <label className='block text-gray-700 font-bold mb-2'>Reps:</label>
                 <input
                   type='number'
-                  defaultValue={reps}
+                  value={editedReps}
+                  onChange={(e) => setEditedReps(Number(e.target.value))}
                   className='w-full border rounded px-3 py-2'
                 />
               </div>
@@ -126,7 +159,8 @@ export function TrainingCard(props: TrainingCardProps) {
                 <label className='block text-gray-700 font-bold mb-2'>Peso (kg):</label>
                 <input
                   type='number'
-                  defaultValue={weight}
+                  value={editedWeight}
+                  onChange={(e) => setEditedWeight(Number(e.target.value))}
                   className='w-full border rounded px-3 py-2'
                 />
               </div>
@@ -134,7 +168,8 @@ export function TrainingCard(props: TrainingCardProps) {
                 <label className='block text-gray-700 font-bold mb-2'>Tempo de Descanso (min):</label>
                 <input
                   type='number'
-                  defaultValue={breakTime}
+                  value={editedBreakTime}
+                  onChange={(e) => setEditedBreakTime(Number(e.target.value))}
                   className='w-full border rounded px-3 py-2'
                 />
               </div>
@@ -149,7 +184,7 @@ export function TrainingCard(props: TrainingCardProps) {
                 </Button>
                 <Button
                   type='button'
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={handleSaveChanges}
                 >
                   Salvar
                 </Button>
