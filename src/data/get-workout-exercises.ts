@@ -1,5 +1,5 @@
 import { db } from '../firebaseConfig'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy } from 'firebase/firestore'
 
 export interface Exercicio {
   id: string
@@ -12,7 +12,8 @@ export interface Exercicio {
 
 export async function getWorkoutExercises(workoutId: string): Promise<Exercicio[]> {
   const exercisesRef = collection(db, 'treinos', workoutId, 'exercicios')
-  const querySnapshot = await getDocs(exercisesRef)
+  const exercisesQuery = query(exercisesRef, orderBy('titulo', 'asc')) // Ordena pelo campo 'titulo' em ordem ascendente
+  const querySnapshot = await getDocs(exercisesQuery)
   return querySnapshot.docs.map((doc) => {
     const data = doc.data()
     return {
