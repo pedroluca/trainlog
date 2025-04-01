@@ -23,6 +23,7 @@ export function TrainingCard(props: TrainingCardProps) {
   const [isFinished, setIsFinished] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  const [editedTitle, setEditedTitle] = useState(title) // Novo estado para o título
   const [editedSets, setEditedSets] = useState(sets)
   const [editedReps, setEditedReps] = useState(reps)
   const [editedWeight, setEditedWeight] = useState(weight)
@@ -60,6 +61,7 @@ export function TrainingCard(props: TrainingCardProps) {
     try {
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id) // Corrigida a referência
       await updateDoc(exerciseRef, {
+        titulo: editedTitle, // Atualiza o título
         series: editedSets,
         repeticoes: editedReps,
         peso: editedWeight,
@@ -137,6 +139,15 @@ export function TrainingCard(props: TrainingCardProps) {
           <div className='bg-white rounded-lg p-6 w-96'>
             <h2 className='text-xl font-bold mb-4'>Editar Exercício</h2>
             <form>
+              <div className='mb-4'>
+                <label className='block text-gray-700 font-bold mb-2'>Nome do Exercício:</label>
+                <input
+                  type='text'
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  className='w-full border rounded px-3 py-2'
+                />
+              </div>
               <div className='mb-4'>
                 <label className='block text-gray-700 font-bold mb-2'>Sets:</label>
                 <input
