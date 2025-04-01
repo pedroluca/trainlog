@@ -24,7 +24,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center">
       <div className="bg-white rounded-lg p-6 w-96">
         <h2 className="text-xl font-bold mb-4">Adicionar Treino</h2>
         <input
