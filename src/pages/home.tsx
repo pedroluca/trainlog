@@ -1,8 +1,16 @@
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 
 export function Home() {
   const usuarioID = localStorage.getItem('usuarioId')
   const isLogged = usuarioID ? true : false
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (usuarioID) {
+      navigate('/train')
+    }
+  })
   
   return (
     <main className={`${isLogged ? ' pb-24' : ''} flex flex-col items-center justify-center min-h-[calc(100vh-7rem)] bg-gray-100 p-6`}>
