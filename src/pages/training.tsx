@@ -7,6 +7,8 @@ import { Button } from '../components/button'
 import { AddWorkoutModal } from '../components/add-workout-modal'
 import { AddExerciseModal } from '../components/add-exercise-modal'
 import { useNavigate } from 'react-router-dom'
+import { collection, getDocs, updateDoc } from 'firebase/firestore'
+import { db } from '../firebaseConfig'
 
 const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
@@ -21,6 +23,7 @@ export function Training() {
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
   const usuarioID = localStorage.getItem('usuarioId')
   const navigate = useNavigate()
+  const [reset, setReset] = useState(false)
 
   if (!usuarioID) {
     navigate('/login')
@@ -64,6 +67,7 @@ export function Training() {
 
   useEffect(() => {
     fetchWorkouts()
+    setReset(false)
   }, [fetchWorkouts])
 
   useEffect(() => {
@@ -105,6 +109,29 @@ export function Training() {
           <h3 className="text-lg self-start font-semibold mb-2">Dia de: {selectedWorkout.musculo}</h3>
           <h3 className="text-lg self-start font-semibold mb-2">Exercícios:</h3>
           <Button
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mt-4"
+            onClick={async () => {
+              if (selectedWorkout) {
+                try {
+                  const exercisesRef = collection(db, 'treinos', selectedWorkout.id, 'exercicios')
+                  const querySnapshot = await getDocs(exercisesRef)
+                  const resetPromises = querySnapshot.docs.map((doc) =>
+                    updateDoc(doc.ref, { isFeito: false })
+                  )
+                  await Promise.all(resetPromises)
+                  setReset(true)
+                  fetchExercisesForDay() // Atualiza a lista de exercícios
+                  alert('Todos os exercícios foram resetados!')
+                } catch (err) {
+                  console.error('Erro ao resetar exercícios:', err)
+                  alert('Erro ao resetar exercícios.')
+                }
+              }
+            }}
+          >
+            Resetar Exercícios
+          </Button>
+          <Button
             className="bg-gray-200 border-1 border-gray-400 hover:bg-gray-400 mt-4"
             buttonTextColor="text-gray-500 hover:text-white"
             onClick={() => setIsExerciseModalOpen(true)}
@@ -123,6 +150,8 @@ export function Training() {
                   reps={exercise.repeticoes}
                   weight={exercise.peso}
                   breakTime={exercise.tempoIntervalo}
+                  isFeito={exercise.isFeito}
+                  reset={reset}
                   onEdit={() => fetchExercisesForDay()} // Atualiza a lista após edição
                 />
               ))}
