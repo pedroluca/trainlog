@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../firebaseConfig'
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs, deleteDoc } from 'firebase/firestore'
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { Treino } from '../data/get-user-workouts'
+import { Pencil, Trash2 } from 'lucide-react'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -14,16 +15,14 @@ export function Profile() {
   const [workouts, setWorkouts] = useState<Treino[]>([])
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
-  // Ordem dos dias da semana
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
-  // Verifica se o usuário está logado
   useEffect(() => {
     if (!usuarioID) {
-      navigate('/login') // Redireciona para a página de login se não estiver logado
+      navigate('/login')
     } else {
-      // Busca os dados do usuário no Firestore
       const fetchUserData = async () => {
         try {
           const userDocRef = doc(db, 'usuarios', usuarioID)
@@ -41,7 +40,6 @@ export function Profile() {
         }
       }
 
-      // Busca os treinos do usuário
       const fetchWorkouts = async () => {
         try {
           const workoutsRef = collection(db, 'treinos')
@@ -71,7 +69,40 @@ export function Profile() {
     setSelectedWorkout(workout)
     setIsEditModalOpen(true)
   }
+  
+  const handleDeleteWorkout = (workout: Treino) => {
+    setSelectedWorkout(workout)
+    setIsDeleteModalOpen(true)
+  }
 
+  const confirmDeleteWorkout = async () => {
+    if (!selectedWorkout) return
+    try {
+      const workoutRef = doc(db, 'treinos', selectedWorkout.id)
+      await deleteDoc(workoutRef)
+      setIsDeleteModalOpen(false)
+      setSelectedWorkout(null)
+      const fetchWorkouts = async () => {
+        try {
+          const workoutsRef = collection(db, 'treinos')
+          const querySnapshot = await getDocs(workoutsRef)
+          const userWorkouts: Treino[] = querySnapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() } as Treino))
+            .filter((workout) => workout.usuarioID === usuarioID)
+            .sort((a, b) => daysOrder.indexOf(a.dia) - daysOrder.indexOf(b.dia)) // Ordena os treinos pelo dia
+          setWorkouts(userWorkouts)
+        } catch (err) {
+          console.error('Erro ao buscar treinos:', err)
+        }
+      }
+      fetchWorkouts()
+      alert('Treino excluído com sucesso!')
+    } catch (err) {
+      console.error('Erro ao excluir treino:', err)
+      alert('Erro ao excluir treino.')
+    }
+  }
+  
   return (
     <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 pb-24">
       <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
@@ -116,7 +147,13 @@ export function Profile() {
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
                     onClick={() => handleEditWorkout(workout)}
                   >
-                    Editar
+                    <Pencil />
+                  </Button>
+                  <Button
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded mt-2 md:mt-0 md:ml-2"
+                    onClick={() => handleDeleteWorkout(workout)}
+                  >
+                    <Trash2 />
                   </Button>
                 </td>
               </tr>
@@ -131,7 +168,6 @@ export function Profile() {
           onClose={() => setIsEditModalOpen(false)}
           onSave={() => {
             setIsEditModalOpen(false)
-            // Atualiza a lista de treinos após salvar
             const fetchWorkouts = async () => {
               try {
                 const workoutsRef = collection(db, 'treinos')
@@ -148,6 +184,32 @@ export function Profile() {
             fetchWorkouts()
           }}
         />
+      )}
+
+      {isDeleteModalOpen && selectedWorkout && (
+        <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
+          <div className="bg-white rounded-lg p-6 w-80">
+            <h2 className="text-xl font-bold mb-4">Confirmar Exclusão</h2>
+            <p className="text-gray-700 mb-6">Tem certeza de que deseja excluir este treino?</p>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                buttonTextColor="text-gray-800"
+                className="bg-gray-300 hover:bg-gray-400 mr-2"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                className="bg-red-500 hover:bg-red-600"
+                onClick={confirmDeleteWorkout}
+              >
+                Excluir
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   )
