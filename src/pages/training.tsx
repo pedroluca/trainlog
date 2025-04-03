@@ -120,8 +120,7 @@ export function Training() {
                   )
                   await Promise.all(resetPromises)
                   setReset(true)
-                  fetchExercisesForDay() // Atualiza a lista de exercícios
-                  alert('Todos os exercícios foram resetados!')
+                  fetchExercisesForDay()
                 } catch (err) {
                   console.error('Erro ao resetar exercícios:', err)
                   alert('Erro ao resetar exercícios.')
