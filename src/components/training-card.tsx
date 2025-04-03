@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from './button'
-import { Pencil } from 'lucide-react'
-import { doc, updateDoc } from 'firebase/firestore'
+import { EllipsisVertical, Trash2 } from 'lucide-react'
+import { deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 
 type TrainingCardProps = {
@@ -12,22 +12,60 @@ type TrainingCardProps = {
   reps: number
   weight: number
   breakTime: number
+  isFeito: boolean // Novo campo para indicar se o exercício foi concluído
+  reset?: boolean
   onEdit: () => void // Função para atualizar a lista de exercícios
 }
 
 export function TrainingCard(props: TrainingCardProps) {
-  const { id, workoutId, title, sets, reps, weight, breakTime, onEdit } = props
+  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, reset, onEdit } = props
   const [isBreakTime, setIsBreakTime] = useState(false)
   const [timeLeft, setTimeLeft] = useState(0)
   const [setsDone, setSetsDone] = useState(0)
-  const [isFinished, setIsFinished] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false) // Estado para o modal de exclusão
 
-  const [editedTitle, setEditedTitle] = useState(title) // Novo estado para o título
+  const [editedTitle, setEditedTitle] = useState(title)
   const [editedSets, setEditedSets] = useState(sets)
   const [editedReps, setEditedReps] = useState(reps)
   const [editedWeight, setEditedWeight] = useState(weight)
   const [editedBreakTime, setEditedBreakTime] = useState(breakTime)
+
+  const isFinished = isFeito
+
+  useEffect(() => {
+    if (reset) {
+      setSetsDone(0)
+    }
+  }, [reset])
+
+  const handleStartSet = () => {
+    setIsBreakTime(true)
+    setTimeLeft(breakTime * 60)
+  }
+
+  const handleFinishSet = useCallback(async () => {
+    try {
+      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+      await updateDoc(exerciseRef, { isFeito: true })
+      onEdit()
+    } catch (err) {
+      console.error('Erro ao marcar exercício como concluído:', err)
+    }
+  }, [workoutId, id, onEdit])
+
+  const handleDeleteExercise = async () => {
+    try {
+      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+      await deleteDoc(exerciseRef) // Exclui o exercício do Firestore
+      setIsDeleteModalOpen(false)
+      onEdit() // Atualiza a lista de exercícios
+      alert('Exercício excluído com sucesso!')
+    } catch (err) {
+      console.error('Erro ao excluir exercício:', err)
+      alert('Erro ao excluir exercício.')
+    }
+  }
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -40,11 +78,10 @@ export function TrainingCard(props: TrainingCardProps) {
       setIsBreakTime(false)
       setSetsDone((prev) => prev + 1)
       if (setsDone + 1 === sets) {
-        setIsFinished(true)
-        return
+        handleFinishSet()
       }
     }
-  }, [timeLeft, isBreakTime, sets, setsDone])
+  }, [timeLeft, isBreakTime, sets, setsDone, handleFinishSet])
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -52,23 +89,18 @@ export function TrainingCard(props: TrainingCardProps) {
     return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
   }
 
-  const handleFinishSet = () => {
-    setIsBreakTime(true)
-    setTimeLeft(breakTime * 60)
-  }
-
   const handleSaveChanges = async () => {
     try {
-      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id) // Corrigida a referência
+      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
       await updateDoc(exerciseRef, {
-        titulo: editedTitle, // Atualiza o título
+        titulo: editedTitle,
         series: editedSets,
         repeticoes: editedReps,
         peso: editedWeight,
         tempoIntervalo: editedBreakTime,
       })
       setIsModalOpen(false)
-      onEdit() // Atualiza a lista de exercícios
+      onEdit()
       alert('Exercício atualizado com sucesso!')
     } catch (err) {
       console.error('Erro ao atualizar exercício:', err)
@@ -83,13 +115,13 @@ export function TrainingCard(props: TrainingCardProps) {
       }`}
     >
       <button
-        className='absolute top-4 right-4 cursor-pointer hover:bg-gray-300 text-gray-700 rounded-full p-2'
+        className='absolute top-4 right-4 cursor-pointer hover:bg-gray-100 text-gray-700 rounded-full p-2'
         onClick={() => setIsModalOpen(true)}
       >
-        <Pencil />
+        <EllipsisVertical />
       </button>
 
-      <h2 className='text-2xl font-bold mb-4 mr-6 text-gray-800'>{title}</h2>
+      <h2 className='text-2xl font-bold mb-4 mr-7 text-gray-800'>{title}</h2>
       {!isBreakTime ? (
         <>
           <div className='mb-4'>
@@ -103,10 +135,10 @@ export function TrainingCard(props: TrainingCardProps) {
               <strong>Descanso:</strong> {breakTime} min
             </p>
             <p className='text-gray-700'>
-              <strong>Sets feitos:</strong> {setsDone}/{sets}
+              <strong>Sets feitos:</strong> {isFinished ? sets : setsDone}/{sets}
             </p>
           </div>
-          <Button onClick={handleFinishSet} disabled={isFinished}>
+          <Button onClick={handleStartSet} disabled={isFinished}>
             {isFinished ? 'Feito' : 'Intervalo'}
           </Button>
         </>
@@ -124,8 +156,7 @@ export function TrainingCard(props: TrainingCardProps) {
               setTimeLeft(0)
               setSetsDone((prev) => prev + 1)
               if (setsDone + 1 === sets) {
-                setIsFinished(true)
-                return
+                handleFinishSet()
               }
             }}
           >
@@ -187,6 +218,13 @@ export function TrainingCard(props: TrainingCardProps) {
               <div className='flex justify-end'>
                 <Button
                   type='button'
+                  className='bg-red-500 hover:bg-red-600 mr-2'
+                  onClick={() => setIsDeleteModalOpen(true)} // Abre o modal de exclusão
+                >
+                  <Trash2 />
+                </Button>
+                <Button
+                  type='button'
                   buttonTextColor='text-gray-800'
                   className='bg-gray-300 hover:bg-gray-400 mr-2'
                   onClick={() => setIsModalOpen(false)}
@@ -201,6 +239,32 @@ export function TrainingCard(props: TrainingCardProps) {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isDeleteModalOpen && (
+        <div className='fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4'>
+          <div className='bg-white rounded-lg p-6 w-80'>
+            <h2 className='text-xl font-bold mb-4'>Confirmar Exclusão</h2>
+            <p className='text-gray-700 mb-6'>Tem certeza de que deseja excluir este exercício?</p>
+            <div className='flex justify-end'>
+              <Button
+                type='button'
+                buttonTextColor='text-gray-800'
+                className='bg-gray-300 hover:bg-gray-400 mr-2'
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type='button'
+                className='bg-red-500 hover:bg-red-600'
+                onClick={handleDeleteExercise}
+              >
+                Excluir
+              </Button>
+            </div>
           </div>
         </div>
       )}
