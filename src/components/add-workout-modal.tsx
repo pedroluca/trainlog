@@ -33,6 +33,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: Props) {
           onChange={(e) => setMusculo(e.target.value)}
           className="w-full border rounded px-3 py-2 mb-4"
           placeholder="Ex: Peito, Costas, Pernas"
+          required
         />
         <div className="flex justify-end">
           <button className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded mr-2" onClick={onClose}>

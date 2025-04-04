@@ -38,10 +38,11 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
             <input
               id="titulo"
               type="text"
-              value={titulo}
+              // value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               className="w-full border rounded px-3 py-2"
               placeholder="Ex: Supino, Agachamento"
+              required
             />
           </div>
           <div>
@@ -55,6 +56,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               onChange={(e) => setSeries(Number(e.target.value))}
               className="w-full border rounded px-3 py-2"
               placeholder="Ex: 3"
+              required
             />
           </div>
           <div>
@@ -68,6 +70,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               onChange={(e) => setRepeticoes(Number(e.target.value))}
               className="w-full border rounded px-3 py-2"
               placeholder="Ex: 12"
+              required
             />
           </div>
           <div>
@@ -81,6 +84,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               onChange={(e) => setPeso(Number(e.target.value))}
               className="w-full border rounded px-3 py-2"
               placeholder="Ex: 20"
+              required
             />
           </div>
           <div>
@@ -94,6 +98,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               onChange={(e) => setTempoIntervalo(Number(e.target.value))}
               className="w-full border rounded px-3 py-2"
               placeholder="Ex: 1.5"
+              required
             />
           </div>
           <div className="flex justify-end">
