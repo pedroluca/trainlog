@@ -51,7 +51,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
             <input
               id="series"
               type="number"
-              value={series}
+              // value={series}
               onChange={(e) => setSeries(Number(e.target.value))}
               className="w-full border rounded px-3 py-2"
               placeholder="Ex: 3"
@@ -64,7 +64,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
             <input
               id="repeticoes"
               type="number"
-              value={repeticoes}
+              // value={repeticoes}
               onChange={(e) => setRepeticoes(Number(e.target.value))}
               className="w-full border rounded px-3 py-2"
               placeholder="Ex: 12"
@@ -77,7 +77,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
             <input
               id="peso"
               type="number"
-              value={peso}
+              // value={peso}
               onChange={(e) => setPeso(Number(e.target.value))}
               className="w-full border rounded px-3 py-2"
               placeholder="Ex: 20"
@@ -90,7 +90,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
             <input
               id="tempoIntervalo"
               type="number"
-              value={tempoIntervalo}
+              // value={tempoIntervalo}
               onChange={(e) => setTempoIntervalo(Number(e.target.value))}
               className="w-full border rounded px-3 py-2"
               placeholder="Ex: 1.5"
