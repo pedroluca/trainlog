@@ -57,10 +57,9 @@ export function TrainingCard(props: TrainingCardProps) {
   const handleDeleteExercise = async () => {
     try {
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-      await deleteDoc(exerciseRef) // Exclui o exercício do Firestore
+      await deleteDoc(exerciseRef)
       setIsDeleteModalOpen(false)
-      onEdit() // Atualiza a lista de exercícios
-      alert('Exercício excluído com sucesso!')
+      onEdit()
     } catch (err) {
       console.error('Erro ao excluir exercício:', err)
       alert('Erro ao excluir exercício.')
@@ -101,7 +100,6 @@ export function TrainingCard(props: TrainingCardProps) {
       })
       setIsModalOpen(false)
       onEdit()
-      alert('Exercício atualizado com sucesso!')
     } catch (err) {
       console.error('Erro ao atualizar exercício:', err)
       alert('Erro ao atualizar exercício.')
