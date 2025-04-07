@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { collection, addDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
+import { Button } from './button'
 
 type Props = {
   workoutId: string
@@ -41,7 +42,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               // value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               className="w-full border rounded px-3 py-2"
-              placeholder="Ex: Supino, Agachamento"
+              placeholder="Ex: Supino Inclinado"
               required
             />
           </div>
@@ -97,25 +98,26 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               // value={tempoIntervalo}
               onChange={(e) => setTempoIntervalo(Number(e.target.value))}
               className="w-full border rounded px-3 py-2"
-              placeholder="Ex: 1.5"
+              placeholder="Ex: 1.5 = 01:30 min"
               required
             />
           </div>
           <div className="flex justify-end">
-            <button
+            <Button
               type="button"
-              className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded mr-2"
+              className="bg-gray-300 hover:bg-gray-400 mr-2"
+              buttonTextColor='text-gray-700'
               onClick={onClose}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
               onClick={handleAddExercise}
             >
               Salvar
-            </button>
+            </Button>
           </div>
         </form>
       </div>
