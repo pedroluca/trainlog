@@ -130,20 +130,20 @@ export function TrainingCard(props: TrainingCardProps) {
               <strong>PR:</strong> {weight} kg
             </p>
             <p className='text-gray-700'>
-              <strong>Descanso:</strong> {breakTime} min
+              <strong>Descanso:</strong> {formatTime(breakTime * 60)} min
             </p>
             <p className='text-gray-700'>
-              <strong>Sets feitos:</strong> {isFinished ? sets : setsDone}/{sets}
+              <strong>Você fez:</strong> {isFinished ? sets : setsDone} séries de {sets}
             </p>
           </div>
           <Button onClick={handleStartSet} disabled={isFinished}>
-            {isFinished ? 'Feito' : 'Intervalo'}
+            {isFinished ? 'Concluído' : ('Finalizar ' + (setsDone + 1) + 'ª série')}
           </Button>
         </>
       ) : (
         <>
           <p className='text-gray-700'>
-            <strong>Sets feitos:</strong> {setsDone}/{sets}  --  {sets}x{reps}
+            <strong>Séries feitas:</strong> {setsDone + 1} de {sets} com {reps} repetições cada
           </p>
           <h2 className='text-xl font-bold mb-4 text-gray-500'>Intervalo de descanso:</h2>
           <p className='text-gray-700 text-3xl font-mono mb-4'>{formatTime(timeLeft)}</p>
@@ -178,7 +178,7 @@ export function TrainingCard(props: TrainingCardProps) {
                 />
               </div>
               <div className='mb-4'>
-                <label className='block text-gray-700 font-bold mb-2'>Sets:</label>
+                <label className='block text-gray-700 font-bold mb-2'>Séries:</label>
                 <input
                   type='number'
                   value={editedSets}
@@ -187,7 +187,7 @@ export function TrainingCard(props: TrainingCardProps) {
                 />
               </div>
               <div className='mb-4'>
-                <label className='block text-gray-700 font-bold mb-2'>Reps:</label>
+                <label className='block text-gray-700 font-bold mb-2'>Repetições:</label>
                 <input
                   type='number'
                   value={editedReps}
