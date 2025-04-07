@@ -1,12 +1,16 @@
+import Logo from '../assets/full-logo.png'
+
 export function Footer() {
   return (
-    <footer className='h-28 bg-gray-800 text-white flex flex-col items-center justify-center'>
-      <main className='h-[70%] w-full flex flex-col items-center justify-center border-b-1 border-gray-600'>
-        <img src="/logo.png" alt="Logo" className="w-16 h-16" />
-        <h1 className='text-3xl font-bold'>TrainLog</h1>
+    <footer className="h-40 mb-16 bg-gray-500 text-white flex flex-col items-center justify-center">
+      <main className="h-[60%] w-full flex flex-col items-center justify-center border-b-1 border-gray-400">
+        <img src={Logo} alt="Logo" className="w-32 h-16" />
       </main>
-      <section className='h-[30%] w-full flex items-center justify-center'>
+      <section className="h-[40%] w-full flex flex-col items-center justify-center">
         <p>© 2023 TrainLog. All rights reserved.</p>
+        <p className="text-sm text-gray-400 mb-2">
+          Desenvolvido por <a href="https://pedroluca.tech" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Pedro Luca Prates</a>.
+        </p>
       </section>
     </footer>
   )

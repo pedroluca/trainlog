@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect } from "react"
+import { Link, useNavigate } from "react-router-dom"
 
 export function Home() {
   const usuarioID = localStorage.getItem('usuarioId')
@@ -11,10 +11,10 @@ export function Home() {
       navigate('/train')
     }
   })
-  
+
   return (
     <main className={`${isLogged ? ' pb-24' : ''} flex flex-col items-center justify-center min-h-[calc(100vh-7rem)] bg-gray-100 p-6`}>
-      <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-2xl text-center">
+      <div className="bg-white shadow-md rounded-lg p-8 pb-4 w-full max-w-2xl text-center">
         <h1 className="text-4xl font-bold text-blue-600 mb-4">TrainLog</h1>
         <p className="text-gray-700 text-lg mb-6">
           Bem-vindo ao TrainLog, o aplicativo simples e eficiente para acompanhar seus treinos e progresso!
@@ -43,6 +43,9 @@ export function Home() {
             Criar Conta
           </Link>
         </div>
+        <p className="text-gray-500 text-sm mt-6">
+          Desenvolvido com ❤️ por <a href="https://pedroluca.tech" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Pedro Luca Prates</a>.
+        </p>
       </div>
     </main>
   )

@@ -230,6 +230,10 @@ export function Profile() {
           onClose={() => setIsShareModalOpen(false)}
         />
       )}
+
+      <p className="text-sm text-gray-400 mt-8">
+        Desenvolvido com ❤️ por <a href="https://pedroluca.tech" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Pedro Luca Prates</a>.
+      </p>
     </main>
   )
 }
