@@ -5,7 +5,8 @@ import { doc, getDoc, collection, getDocs, deleteDoc } from 'firebase/firestore'
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { Treino } from '../data/get-user-workouts'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Share2, Trash2 } from 'lucide-react'
+import { ShareWorkoutModal } from '../components/share-workout-modal'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -16,6 +17,7 @@ export function Profile() {
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
 
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
@@ -65,6 +67,11 @@ export function Profile() {
     navigate('/login')
   }
 
+  const handleShareWorkout = (workout: Treino) => {
+    setSelectedWorkout(workout)
+    setIsShareModalOpen(true)
+  }
+
   const handleEditWorkout = (workout: Treino) => {
     setSelectedWorkout(workout)
     setIsEditModalOpen(true)
@@ -96,7 +103,6 @@ export function Profile() {
         }
       }
       fetchWorkouts()
-      alert('Treino excluído com sucesso!')
     } catch (err) {
       console.error('Erro ao excluir treino:', err)
       alert('Erro ao excluir treino.')
@@ -144,7 +150,13 @@ export function Profile() {
                 <td className="border-b py-2">{workout.musculo}</td>
                 <td className="border-b py-2">
                   <Button
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded"
+                    onClick={() => handleShareWorkout(workout)}
+                  >
+                    <Share2 />
+                  </Button>
+                  <Button
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded ml-2"
                     onClick={() => handleEditWorkout(workout)}
                   >
                     <Pencil />
@@ -210,6 +222,13 @@ export function Profile() {
             </div>
           </div>
         </div>
+      )}
+
+      {isShareModalOpen && selectedWorkout && (
+        <ShareWorkoutModal
+          workoutId={selectedWorkout.id}
+          onClose={() => setIsShareModalOpen(false)}
+        />
       )}
     </main>
   )
