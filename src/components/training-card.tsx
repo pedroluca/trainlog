@@ -100,9 +100,7 @@ export function TrainingCard(props: TrainingCardProps) {
   const handleSaveChanges = async () => {
     try {
       const [minutes, seconds] = editedBreakTime.split(':').map(Number)
-      console.log(minutes, seconds)
       const totalBreakTime = minutes * 60 + seconds
-      console.log(totalBreakTime)
   
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
       await updateDoc(exerciseRef, {
