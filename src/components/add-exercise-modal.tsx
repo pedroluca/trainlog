@@ -13,14 +13,29 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
   const [series, setSeries] = useState(0)
   const [repeticoes, setRepeticoes] = useState(0)
   const [peso, setPeso] = useState(0)
-  const [tempoIntervalo, setTempoIntervalo] = useState(0)
+  const [tempoIntervalo, setTempoIntervalo] = useState('')
+
+  const handleBreakTimeChange = (value: string) => {
+    const sanitizedValue = value.replace(/[^0-9:]/g, '').slice(0, 5)
+    const formattedValue = sanitizedValue.replace(/^(\d{2})(\d{1,2})?$/, (_, m, s) => (s ? `${m}:${s}` : m))
+
+    setTempoIntervalo(formattedValue)
+  }
 
   const handleAddExercise = async () => {
     try {
+      const [minutes, seconds] = tempoIntervalo.split(':').map(Number)
+      const totalBreakTime = minutes * 60 + seconds
+
       const exercisesRef = collection(db, 'treinos', workoutId, 'exercicios')
-      await addDoc(exercisesRef, { titulo, series, repeticoes, peso, tempoIntervalo })
+      await addDoc(exercisesRef, {
+        titulo,
+        series,
+        repeticoes,
+        peso,
+        tempoIntervalo: totalBreakTime, // Salva em segundos
+      })
       onClose()
-      alert('Exercício adicionado com sucesso!')
     } catch (err) {
       console.error('Erro ao adicionar exercício:', err)
       alert('Erro ao adicionar exercício.')
@@ -90,15 +105,15 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
           </div>
           <div>
             <label className="block text-gray-700 font-bold mb-2" htmlFor="tempoIntervalo">
-              Tempo de intervalo (min):
+              Tempo de intervalo (MM:SS):
             </label>
             <input
               id="tempoIntervalo"
-              type="number"
-              // value={tempoIntervalo}
-              onChange={(e) => setTempoIntervalo(Number(e.target.value))}
+              type="text"
+              value={tempoIntervalo}
+              onChange={(e) => handleBreakTimeChange(e.target.value)}
               className="w-full border rounded px-3 py-2"
-              placeholder="Ex: 1.5 = 01:30 min"
+              placeholder="Ex: 01:30"
               required
             />
           </div>
