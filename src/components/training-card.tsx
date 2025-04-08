@@ -23,13 +23,22 @@ export function TrainingCard(props: TrainingCardProps) {
   const [timeLeft, setTimeLeft] = useState(0)
   const [setsDone, setSetsDone] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false) // Estado para o modal de exclusão
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   const [editedTitle, setEditedTitle] = useState(title)
   const [editedSets, setEditedSets] = useState(sets)
   const [editedReps, setEditedReps] = useState(reps)
   const [editedWeight, setEditedWeight] = useState(weight)
-  const [editedBreakTime, setEditedBreakTime] = useState(breakTime)
+  const [editedBreakTime, setEditedBreakTime] = useState(
+    `${String(Math.floor(breakTime)).padStart(2, '0')}:${String(Math.round((breakTime % 1) * 60)).padStart(2, '0')}`
+  )
+
+  const handleBreakTimeChange = (value: string) => {
+    const sanitizedValue = value.replace(/[^0-9:]/g, '').slice(0, 5)
+    const formattedValue = sanitizedValue.replace(/^(\d{2})(\d{1,2})?$/, (_, m, s) => (s ? `${m}:${s}` : m))
+  
+    setEditedBreakTime(formattedValue)
+  }
 
   const isFinished = isFeito
 
@@ -41,7 +50,7 @@ export function TrainingCard(props: TrainingCardProps) {
 
   const handleStartSet = () => {
     setIsBreakTime(true)
-    setTimeLeft(breakTime * 60)
+    setTimeLeft(breakTime)
   }
 
   const handleFinishSet = useCallback(async () => {
@@ -90,13 +99,18 @@ export function TrainingCard(props: TrainingCardProps) {
 
   const handleSaveChanges = async () => {
     try {
+      const [minutes, seconds] = editedBreakTime.split(':').map(Number)
+      console.log(minutes, seconds)
+      const totalBreakTime = minutes * 60 + seconds
+      console.log(totalBreakTime)
+  
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
       await updateDoc(exerciseRef, {
         titulo: editedTitle,
         series: editedSets,
         repeticoes: editedReps,
         peso: editedWeight,
-        tempoIntervalo: editedBreakTime,
+        tempoIntervalo: totalBreakTime,
       })
       setIsModalOpen(false)
       onEdit()
@@ -130,7 +144,7 @@ export function TrainingCard(props: TrainingCardProps) {
               <strong>PR:</strong> {weight} kg
             </p>
             <p className='text-gray-700'>
-              <strong>Descanso:</strong> {formatTime(breakTime * 60)} min
+              <strong>Descanso:</strong> {formatTime(breakTime)} min
             </p>
             <p className='text-gray-700'>
               <strong>Você fez:</strong> {isFinished ? sets : setsDone} séries de {sets}
@@ -205,12 +219,13 @@ export function TrainingCard(props: TrainingCardProps) {
                 />
               </div>
               <div className='mb-4'>
-                <label className='block text-gray-700 font-bold mb-2'>Tempo de Descanso (min):</label>
+                <label className='block text-gray-700 font-bold mb-2'>Tempo de Descanso (MM:SS):</label>
                 <input
-                  type='number'
+                  type='text'
                   value={editedBreakTime}
-                  onChange={(e) => setEditedBreakTime(Number(e.target.value))}
+                  onChange={(e) => handleBreakTimeChange(e.target.value)}
                   className='w-full border rounded px-3 py-2'
+                  placeholder='00:00'
                 />
               </div>
               <div className='flex justify-end'>
