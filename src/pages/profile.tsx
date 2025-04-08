@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../firebaseConfig'
-import { doc, getDoc, collection, getDocs, deleteDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs, deleteDoc, query, where } from 'firebase/firestore'
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { Treino } from '../data/get-user-workouts'
@@ -18,9 +18,29 @@ export function Profile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [disabledDays, setDisabledDays] = useState<string[]>([])
 
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
+  useEffect(() => {
+    const fetchDisabledDays = async () => {
+      try {
+        const workoutsRef = collection(db, 'treinos')
+        const querySnapshot = await getDocs(
+          query(workoutsRef, where('usuarioID', '==', usuarioID))
+        )
+        const days = querySnapshot.docs
+          .map((doc) => doc.data().dia as string)
+          .filter((day, index, self) => self.indexOf(day) === index)
+        setDisabledDays(days)
+      } catch (err) {
+        console.error('Erro ao buscar dias com treinos cadastrados:', err)
+      }
+    }
+
+    fetchDisabledDays()
+  }, [usuarioID])
+  
   useEffect(() => {
     if (!usuarioID) {
       navigate('/login')
@@ -110,7 +130,7 @@ export function Profile() {
   }
   
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 pb-24">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 pb-8">
       <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6">Perfil</h1>
         <div className="space-y-4">
@@ -195,6 +215,7 @@ export function Profile() {
             }
             fetchWorkouts()
           }}
+          disabledDays={disabledDays} // Passa os dias desabilitados para o modal
         />
       )}
 
@@ -230,10 +251,6 @@ export function Profile() {
           onClose={() => setIsShareModalOpen(false)}
         />
       )}
-
-      <p className="text-sm text-gray-400 mt-8">
-        Desenvolvido com ❤️ por <a href="https://pedroluca.tech" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Pedro Luca Prates</a>.
-      </p>
     </main>
   )
 }
