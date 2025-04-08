@@ -75,6 +75,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
             value={muscleGroup}
             onChange={(e) => setMuscleGroup(e.target.value)}
             className="w-full border rounded px-3 py-2"
+            placeholder='Ex: Costas e Bíceps'
           />
         </div>
         <div className="flex w-full mb-4">
