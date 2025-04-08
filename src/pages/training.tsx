@@ -114,7 +114,7 @@ export function Training() {
   }
 
   return (
-    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 mb-16 lg:px-64">
+    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 lg:px-64">
       <div className="flex items-center justify-center w-full max-w-md mb-4">
         <button className="cursor-pointer" onClick={handlePreviousDay}>
           <ChevronLeft />
