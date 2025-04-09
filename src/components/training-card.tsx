@@ -12,9 +12,9 @@ type TrainingCardProps = {
   reps: number
   weight: number
   breakTime: number
-  isFeito: boolean // Novo campo para indicar se o exercício foi concluído
+  isFeito: boolean
   reset?: boolean
-  onEdit: () => void // Função para atualizar a lista de exercícios
+  onEdit: () => void
 }
 
 export function TrainingCard(props: TrainingCardProps) {
@@ -30,7 +30,7 @@ export function TrainingCard(props: TrainingCardProps) {
   const [editedReps, setEditedReps] = useState(reps)
   const [editedWeight, setEditedWeight] = useState(weight)
   const [editedBreakTime, setEditedBreakTime] = useState(
-    `${String(Math.floor(breakTime)).padStart(2, '0')}:${String(Math.round((breakTime % 1) * 60)).padStart(2, '0')}`
+    `${String(Math.floor(breakTime / 60)).padStart(2, '0')}:${String(Math.round(breakTime % 60)).padStart(2, '0')}`
   )
 
   const handleBreakTimeChange = (value: string) => {
