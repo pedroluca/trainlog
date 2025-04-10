@@ -19,6 +19,7 @@ export function Profile() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [disabledDays, setDisabledDays] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
 
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
@@ -73,6 +74,8 @@ export function Profile() {
           setWorkouts(userWorkouts)
         } catch (err) {
           console.error('Erro ao buscar treinos:', err)
+        } finally {
+          setLoading(false)
         }
       }
 
@@ -164,6 +167,9 @@ export function Profile() {
             </tr>
           </thead>
           <tbody>
+            {loading && (
+              <WorkoutRowSkeleton />
+            )}
             {workouts.map((workout) => (
               <tr key={workout.id}>
                 <td className="border-b py-2">{workout.dia}</td>
@@ -252,5 +258,23 @@ export function Profile() {
         />
       )}
     </main>
+  )
+}
+
+export const WorkoutRowSkeleton = () => {
+  return (
+    <tr className='animate-pulse'>
+      <td className='border-b py-2'>
+        <div className='h-4 w-20 bg-gray-300 rounded'></div>
+      </td>
+      <td className='border-b py-2'>
+        <div className='h-4 w-32 bg-gray-300 rounded'></div>
+      </td>
+      <td className='border-b py-2 flex flex-wrap gap-2'>
+        <div className='h-8 w-8 bg-gray-300 rounded'></div>
+        <div className='h-8 w-8 bg-gray-300 rounded'></div>
+        <div className='h-8 w-8 bg-gray-300 rounded'></div>
+      </td>
+    </tr>
   )
 }
