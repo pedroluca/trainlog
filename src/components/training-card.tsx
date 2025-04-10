@@ -282,3 +282,21 @@ export function TrainingCard(props: TrainingCardProps) {
     </div>
   )
 }
+
+export const TrainingCardSkeleton = () => {
+  return (
+    <div className='animate-pulse shadow-md relative rounded-lg p-6 my-4 mx-2 bg-gray-100 border border-gray-300'>
+      <div className='absolute top-4 right-4 h-6 w-6 bg-gray-300 rounded-full'></div>
+      <div className='h-6 w-40 bg-gray-300 rounded mb-4 mr-7'></div>
+
+      <div className='space-y-2 mb-4'>
+        <div className='h-4 w-48 bg-gray-300 rounded'></div>
+        <div className='h-4 w-32 bg-gray-300 rounded'></div>
+        <div className='h-4 w-40 bg-gray-300 rounded'></div>
+        <div className='h-4 w-52 bg-gray-300 rounded'></div>
+      </div>
+
+      <div className='h-10 w-40 bg-gray-300 rounded'></div>
+    </div>
+  )
+}

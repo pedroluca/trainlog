@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { TrainingCard } from '../components/training-card'
+import { TrainingCard, TrainingCardSkeleton } from '../components/training-card'
 import { ChevronLeft, ChevronRight, IterationCw, Plus } from 'lucide-react'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
 import { getWorkoutExercises, Exercicio } from '../data/get-workout-exercises'
@@ -9,7 +9,6 @@ import { AddExerciseModal } from '../components/add-exercise-modal'
 import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
-import { OrbitProgress } from '../components/loading-orbit'
 
 const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
@@ -105,14 +104,6 @@ export function Training() {
     setIsResetModalOpen(false)
   }
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full w-full">
-        <div className="animate-spin w-16 h-16 text-gray-500" />
-      </div>
-    )
-  }
-
   return (
     <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 lg:px-64">
       <div className="flex items-center justify-center w-full max-w-md mb-4">
@@ -127,7 +118,13 @@ export function Training() {
 
       {
         loading ? (
-          <OrbitProgress />
+          <>
+            <WorkoutHeaderSkeleton />
+            <div className='w-full grid grid-cols-1 sm:grid-cols-2'>
+              <TrainingCardSkeleton />
+              <TrainingCardSkeleton />
+            </div>
+          </>
         ) : (
           selectedWorkout ? (
             <>
@@ -238,5 +235,24 @@ export function Training() {
         </div>
       )}
     </main>
+  )
+}
+
+export const WorkoutHeaderSkeleton = () => {
+  return (
+    <div className='animate-pulse w-full'>
+      <h3 className='text-2xl w-full self-start border-b border-gray-400 font-semibold pb-2'>
+        <div className='h-6 w-40 bg-gray-300 rounded'></div>
+      </h3>
+      <h3 className='text-xl mt-4 w-full font-semibold flex justify-between items-center'>
+        <span>
+          <div className='h-5 w-24 bg-gray-300 rounded'></div>
+        </span>
+        <section className='flex gap-2'>
+          <div className='h-10 w-10 bg-gray-300 rounded'></div>
+          <div className='h-10 w-10 bg-gray-300 rounded'></div>
+        </section>
+      </h3>
+    </div>
   )
 }
