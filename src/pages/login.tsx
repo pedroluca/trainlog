@@ -32,7 +32,7 @@ export function Login() {
           navigate('/train')
         })
     } catch (err) {
-      setError('Falha ao fazer login. Verifique suas credenciais.')
+      setError('Falha ao fazer login: Verifique suas credenciais!')
       console.error('Erro ao fazer login:', err)
     } finally {
       setLoading(false)
