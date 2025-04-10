@@ -64,6 +64,8 @@ export function Training() {
     } else {
       setExercises([])
     }
+
+    setReset(false)
   }, [workouts, currentDayIndex])
 
   useEffect(() => {
@@ -154,8 +156,8 @@ export function Training() {
                   {exercises.map((exercise) => (
                     <TrainingCard
                       key={exercise.id}
-                      id={exercise.id} // Passa o ID do exercício
-                      workoutId={selectedWorkout.id} // Passa o ID do treino
+                      id={exercise.id}
+                      workoutId={selectedWorkout.id}
                       title={exercise.titulo}
                       sets={exercise.series}
                       reps={exercise.repeticoes}
