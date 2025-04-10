@@ -14,6 +14,15 @@ export function Cadastro() {
   const usuarioID = localStorage.getItem('usuarioId')
   const navigate = useNavigate()
 
+  const firebaseErrorMessages: { [key: string]: string } = {
+    'auth/email-already-in-use': 'O email informado já está em uso.',
+    'auth/invalid-email': 'O email informado não é válido.',
+    'auth/weak-password': 'A senha deve ter pelo menos 6 caracteres.',
+    'auth/operation-not-allowed': 'Operação não permitida. Entre em contato com o suporte.',
+    'auth/network-request-failed': 'Falha na conexão com a rede. Verifique sua internet.',
+    'auth/internal-error': 'Ocorreu um erro interno. Tente novamente mais tarde.',
+  }
+
   useEffect(() => {
     if (usuarioID) {
       navigate('/train')
@@ -26,30 +35,28 @@ export function Cadastro() {
     setError('')
 
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem.')
+      setError('Falha do criar conta: As senhas não coincidem!')
       setLoading(false)
       return
     }
 
     try {
-      // Cria o usuário no Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
 
-      // Atualiza o perfil do usuário com o nome
       await updateProfile(user, { displayName: name })
 
-      // Salva informações adicionais no Firestore
-      const userDocRef = doc(db, 'usuarios', user.uid) // Cria um documento com o UID do usuário
+      const userDocRef = doc(db, 'usuarios', user.uid)
       await setDoc(userDocRef, {
         nome: name,
         email: email,
-        criadoEm: new Date().toISOString(), // Data de criação
+        criadoEm: new Date().toISOString(),
       })
 
-      navigate('/login') // Redireciona para a página inicial após o cadastro
+      navigate('/login')
     } catch (err) {
-      setError('Falha ao criar conta. Verifique os dados fornecidos.')
+      const errorMessage = firebaseErrorMessages[(err as { code: string }).code] || 'Ocorreu um erro inesperado. Tente novamente.'
+      setError('Falha ao criar conta: ' + errorMessage)
       console.error('Erro ao criar conta:', err)
     } finally {
       setLoading(false)
