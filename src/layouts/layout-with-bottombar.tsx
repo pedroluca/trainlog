@@ -5,11 +5,11 @@ import { Footer } from '../components/footer'
 
 export function LayoutWithBottomBar() {
   return (
-    <>
+    <main>
       <Header />
-      <Outlet /> {/* Renderiza a página correspondente */}
+      <Outlet />
       <Footer />
       <BottomBar />
-    </>
+    </main>
   )
 }
