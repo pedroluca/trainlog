@@ -180,7 +180,8 @@ export function Profile() {
                 <td className="border-b py-2">{workout.musculo}</td>
                 <td className="border-b py-2">
                   <Button
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded"
+                    className="text-white px-4 py-1 rounded"
+                    bgColor='bg-[#F1C40F] hover:bg-[#D4AC0D]'
                     onClick={() => handleShareWorkout(workout)}
                   >
                     <Share2 />

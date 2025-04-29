@@ -7,9 +7,6 @@ export function BottomBar() {
   
   return (
     <nav className={`${isLogged ? 'fixed' : 'hidden'} h-16 bg-gray-800 text-white flex items-center justify-around bottom-0 left-0 right-0`}>
-      {/* <NavLink to='/' className='cursor-pointer p-4'>
-        <Home />
-      </NavLink> */}
       <NavLink to='/train' className='cursor-pointer p-4'>
         <Dumbbell />
       </NavLink>

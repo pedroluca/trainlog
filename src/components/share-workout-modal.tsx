@@ -31,7 +31,8 @@ export function ShareWorkoutModal({ workoutId, onClose }: ShareWorkoutModalProps
         <div className="flex justify-end">
           <Button
             type="button"
-            className="bg-blue-500 hover:bg-blue-600 text-white mr-2"
+            className="text-white mr-2"
+            bgColor='bg-[#F1C40F] hover:bg-[#D4AC0D]'
             onClick={handleCopyToClipboard}
           >
             Copiar ID

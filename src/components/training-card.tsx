@@ -121,34 +121,34 @@ export function TrainingCard(props: TrainingCardProps) {
   return (
     <div
       className={`shadow-md relative rounded-lg p-6 my-4 mx-2 transition-all ${
-        isFinished ? 'bg-green-100 border-green-400' : 'bg-white'
+        isFinished ? 'bg-[#27AE60] border-green-400' : 'bg-white'
       }`}
     >
       <button
-        className='absolute top-4 right-4 cursor-pointer hover:bg-gray-100 text-gray-700 rounded-full p-2'
+        className={`absolute top-4 right-4 cursor-pointer  ${isFinished ? 'text-[#f4f4f4] hover:bg-[#219150]' : 'text-gray-700 hover:bg-gray-100'} rounded-full p-2`}
         onClick={() => setIsModalOpen(true)}
       >
         <EllipsisVertical />
       </button>
 
-      <h2 className='text-2xl font-bold mb-4 mr-7 text-gray-800'>{title}</h2>
+      <h2 className={`text-2xl font-bold mb-4 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800'}`}>{title}</h2>
       {!isBreakTime ? (
         <>
           <div className='mb-4'>
-            <p className='text-gray-700'>
+            <p className={`${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
               <strong>Repetição:</strong> {sets} x {reps}
             </p>
-            <p className='text-gray-700'>
+            <p className={`${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
               <strong>PR:</strong> {weight} kg
             </p>
-            <p className='text-gray-700'>
+            <p className={`${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
               <strong>Descanso:</strong> {formatTime(breakTime)} min
             </p>
-            <p className='text-gray-700'>
+            <p className={`${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
               <strong>Você fez:</strong> {isFinished ? sets : setsDone} séries de {sets}
             </p>
           </div>
-          <Button onClick={handleStartSet} disabled={isFinished}>
+          <Button onClick={handleStartSet} disabled={isFinished} bgColor={'bg-[#27AE60] hover:bg-[#219150] disabled:bg-[#219150]'}>
             {isFinished ? 'Concluído' : ('Finalizar ' + (setsDone + 1) + 'ª série')}
           </Button>
         </>

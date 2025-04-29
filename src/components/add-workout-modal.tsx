@@ -95,12 +95,14 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
             value={sharedWorkoutId}
             onChange={(e) => setSharedWorkoutId(e.target.value)}
             className="w-full border rounded px-3 py-2"
+            placeholder='Ex: 1a2b3c4d5f6g'
           />
         </div>
         <div className="flex w-full">
           <Button
             type="button"
-            className="bg-green-500 hover:bg-green-600 text-white w-full"
+            className="text-white w-full"
+            bgColor='bg-[#F1C40F] hover:bg-[#D4AC0D]'
             onClick={handleAddSharedWorkout}
           >
             Adicionar treino compartilhado

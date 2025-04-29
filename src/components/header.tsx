@@ -30,8 +30,8 @@ export function Header({ hideDate = false }: HeaderProps) {
   }, [])
 
   return (
-    <header className='h-28 bg-gray-800 text-white flex flex-col items-center justify-center'>
-      <main className={`${hideDate ? 'h-full' : 'h-[70%]'} w-full flex flex-col items-center justify-center border-b-1 border-gray-600`}>
+    <header className='h-28 bg-[#C0392B] text-[#f4f4f4] flex flex-col items-center justify-center'>
+      <main className={`${hideDate ? 'h-full' : 'h-[70%]'} w-full flex flex-col items-center justify-center border-b-1 border-gray-400`}>
         <img />
         <Link to='/' className='text-3xl font-bold'>TrainLog</Link>
       </main>
