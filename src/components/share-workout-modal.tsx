@@ -9,8 +9,11 @@ type ShareWorkoutModalProps = {
 export function ShareWorkoutModal({ workoutId, onClose }: ShareWorkoutModalProps) {
   const [copied, setCopied] = useState(false)
 
+  const usuarioID = localStorage.getItem('usuarioId')
+  const shareCode = `${workoutId}-${usuarioID}`
+
   const handleCopyToClipboard = () => {
-    navigator.clipboard.writeText(workoutId)
+    navigator.clipboard.writeText(shareCode)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000) // 2 segundos
   }
@@ -21,7 +24,7 @@ export function ShareWorkoutModal({ workoutId, onClose }: ShareWorkoutModalProps
         <h2 className="text-xl font-bold mb-4">Compartilhar Treino</h2>
         <p className="text-gray-700 mb-4">Copie o código de compartilhamento do treino abaixo e mande para quem deseja compartilhar:</p>
         <div className="bg-gray-100 p-2 rounded text-gray-800 mb-4 relative">
-          {workoutId}
+          {shareCode}
           {copied && (
             <div className="absolute bottom-auto bg-green-100 text-green-800 text-sm px-3 py-1 rounded shadow">
               Copiado para a área de transferência!
@@ -35,7 +38,7 @@ export function ShareWorkoutModal({ workoutId, onClose }: ShareWorkoutModalProps
             bgColor='bg-[#F1C40F] hover:bg-[#D4AC0D]'
             onClick={handleCopyToClipboard}
           >
-            Copiar ID
+            Copiar código
           </Button>
           <Button
             type="button"

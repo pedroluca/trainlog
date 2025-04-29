@@ -33,30 +33,41 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
   const handleAddSharedWorkout = async () => {
     if (!usuarioID || !sharedWorkoutId) return
     try {
-      const workoutRef = doc(db, 'treinos', sharedWorkoutId)
-      const workoutDoc = await getDoc(workoutRef)
-
-      if (!workoutDoc.exists()) {
-        alert('Treino compartilhado não encontrado.')
+      // Divide o código de compartilhamento em [id do treino] e [id do usuário dono]
+      const [workoutId, ownerId] = sharedWorkoutId.split('-')
+  
+      if (!workoutId || !ownerId) {
+        alert('Código de compartilhamento inválido.')
         return
       }
-
+  
+      // Busca o treino compartilhado no banco de dados
+      const workoutRef = doc(db, 'treinos', workoutId)
+      const workoutDoc = await getDoc(workoutRef)
+  
+      if (!workoutDoc.exists() || workoutDoc.data()?.usuarioID !== ownerId) {
+        alert('Treino compartilhado não encontrado ou você não tem permissão para acessá-lo.')
+        return
+      }
+  
       const workoutData = workoutDoc.data()
       const newWorkoutRef = await addDoc(collection(db, 'treinos'), {
         usuarioID,
         dia: currentDay,
         musculo: workoutData.musculo,
       })
-
-      const exercisesRef = collection(db, 'treinos', sharedWorkoutId, 'exercicios')
+  
+      // Copia os exercícios do treino compartilhado
+      const exercisesRef = collection(db, 'treinos', workoutId, 'exercicios')
       const exercisesSnapshot = await getDocs(exercisesRef)
-
+  
       const copyPromises = exercisesSnapshot.docs.map((exerciseDoc) =>
         addDoc(collection(db, 'treinos', newWorkoutRef.id, 'exercicios'), exerciseDoc.data())
       )
-
+  
       await Promise.all(copyPromises)
-
+  
+      alert('Treino compartilhado adicionado com sucesso!')
       onClose()
     } catch (err) {
       console.error('Erro ao adicionar treino compartilhado:', err)
