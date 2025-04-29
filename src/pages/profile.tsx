@@ -4,7 +4,7 @@ import { auth, db } from '../firebaseConfig'
 import { doc, getDoc, collection, getDocs, deleteDoc, query, where } from 'firebase/firestore'
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
-import { Treino } from '../data/get-user-workouts'
+import { getUserWorkouts, Treino } from '../data/get-user-workouts'
 import { Pencil, Share2, Trash2 } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 
@@ -65,13 +65,17 @@ export function Profile() {
 
       const fetchWorkouts = async () => {
         try {
-          const workoutsRef = collection(db, 'treinos')
-          const querySnapshot = await getDocs(workoutsRef)
-          const userWorkouts: Treino[] = querySnapshot.docs
-            .map((doc) => ({ id: doc.id, ...doc.data() } as Treino))
-            .filter((workout) => workout.usuarioID === usuarioID)
-            .sort((a, b) => daysOrder.indexOf(a.dia) - daysOrder.indexOf(b.dia)) // Ordena os treinos pelo dia
-          setWorkouts(userWorkouts)
+          if (!usuarioID) {
+            console.error('Erro: usuarioID é nulo')
+            setLoading(false)
+            return
+          }
+      
+          const userWorkouts = await getUserWorkouts(usuarioID) // Usa a função que já filtra pelo usuário
+          const sortedWorkouts = userWorkouts.sort(
+            (a, b) => daysOrder.indexOf(a.dia) - daysOrder.indexOf(b.dia) // Ordena os treinos pelo dia
+          )
+          setWorkouts(sortedWorkouts)
         } catch (err) {
           console.error('Erro ao buscar treinos:', err)
         } finally {
