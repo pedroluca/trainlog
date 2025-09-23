@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from './button'
 import { EllipsisVertical, Trash2 } from 'lucide-react'
-import { deleteDoc, doc, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 
 type TrainingCardProps = {
@@ -57,11 +57,42 @@ export function TrainingCard(props: TrainingCardProps) {
     try {
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
       await updateDoc(exerciseRef, { isFeito: true })
+      
+      // Add exercise to log when completed
+      try {
+        const usuarioId = localStorage.getItem('usuarioId')
+        console.log('User ID from localStorage:', usuarioId)
+        console.log('Exercise data:', { title, sets, reps, weight })
+        
+        if (usuarioId) {
+          console.log('Creating log entry for user:', usuarioId)
+          
+          const logsRef = collection(db, 'logs')
+          const logDoc = await addDoc(logsRef, {
+            usuarioID: usuarioId,
+            titulo: title,
+            series: sets,
+            repeticoes: reps,
+            peso: weight,
+            data: new Date().toISOString(),
+          })
+          
+          console.log('Log entry created with ID:', logDoc.id)
+        } else {
+          console.error('No user ID found in localStorage')
+        }
+      } catch (logErr) {
+        console.error('Erro ao adicionar exercício ao log:', logErr)
+        if (logErr instanceof Error) {
+          console.error('Error details:', logErr.message)
+        }
+      }
+      
       onEdit()
     } catch (err) {
       console.error('Erro ao marcar exercício como concluído:', err)
     }
-  }, [workoutId, id, onEdit])
+  }, [workoutId, id, onEdit, title, sets, reps, weight])
 
   const handleDeleteExercise = async () => {
     try {
