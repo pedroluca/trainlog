@@ -6,6 +6,7 @@ import { Training } from './pages/training'
 import { Login } from './pages/login'
 import { Cadastro } from './pages/register'
 import { Profile } from './pages/profile'
+import { LogPage } from './pages/log'
 
 export function App() {
   return (
@@ -20,6 +21,7 @@ export function App() {
 
         {/* Rotas com a BottomBar */}
         <Route element={<LayoutWithBottomBar />}>
+          <Route path='/log' element={<LogPage />} />
           <Route path='/train' element={<Training />} />
           <Route path='/profile' element={<Profile />} />
         </Route>
