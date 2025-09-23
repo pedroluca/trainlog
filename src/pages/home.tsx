@@ -44,7 +44,8 @@ export function Home() {
           </Link>
         </div>
         <p className="text-gray-500 text-sm mt-6">
-          Desenvolvido com ❤️ por <a href="https://pedroluca.tech" target="_blank" rel="noopener noreferrer" className="text-[#1E90FF] hover:underline">Pedro Luca Prates</a>.
+          {/* Desenvolvido com 💪🏼 por <a href="https://pedroluca.dev" target="_blank" rel="noopener noreferrer" className="text-[#1E90FF] hover:underline">Pedro Luca Prates</a>. */}
+          Desenvolvido com 💪🏼 por <a href="https://pedroluca.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-[#1E90FF] hover:underline">Pedro Luca Prates</a>.
         </p>
       </div>
     </main>
