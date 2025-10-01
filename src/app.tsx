@@ -7,6 +7,8 @@ import { Login } from './pages/login'
 import { Cadastro } from './pages/register'
 import { Profile } from './pages/profile'
 import { LogPage } from './pages/log'
+import { AdminLogin } from './pages/admin-login'
+import { AdminDashboard } from './pages/admin-dashboard'
 
 export function App() {
   return (
@@ -25,6 +27,10 @@ export function App() {
           <Route path='/train' element={<Training />} />
           <Route path='/profile' element={<Profile />} />
         </Route>
+
+        {/* Admin Routes (no layout) */}
+        <Route path='/admin' element={<AdminLogin />} />
+        <Route path='/admin/dashboard' element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   )
