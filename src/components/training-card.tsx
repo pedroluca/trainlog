@@ -330,18 +330,18 @@ export function TrainingCard(props: TrainingCardProps) {
 
 export const TrainingCardSkeleton = () => {
   return (
-    <div className='animate-pulse shadow-md relative rounded-lg p-6 my-4 mx-2 bg-gray-100 border border-gray-300'>
+    <div className='animate-pulse shadow-md relative rounded-lg p-6 my-4 mx-2 bg-gray-100 border border-gray-300 min-h-[500px] flex flex-col'>
       <div className='absolute top-4 right-4 h-6 w-6 bg-gray-300 rounded-full'></div>
-      <div className='h-6 w-40 bg-gray-300 rounded mb-4 mr-7'></div>
+      <div className='h-8 w-48 bg-gray-300 rounded mb-6 mr-7'></div>
 
-      <div className='space-y-2 mb-4'>
-        <div className='h-4 w-48 bg-gray-300 rounded'></div>
-        <div className='h-4 w-32 bg-gray-300 rounded'></div>
-        <div className='h-4 w-40 bg-gray-300 rounded'></div>
-        <div className='h-4 w-52 bg-gray-300 rounded'></div>
+      <div className='space-y-3 mb-auto'>
+        <div className='h-5 w-56 bg-gray-300 rounded'></div>
+        <div className='h-5 w-40 bg-gray-300 rounded'></div>
+        <div className='h-5 w-48 bg-gray-300 rounded'></div>
+        <div className='h-5 w-60 bg-gray-300 rounded'></div>
       </div>
 
-      <div className='h-10 w-40 bg-gray-300 rounded'></div>
+      <div className='h-14 w-full bg-gray-300 rounded mt-4'></div>
     </div>
   )
 }
