@@ -7,6 +7,7 @@ import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
 import { Pencil, Share2, Trash2, Camera } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
+import { getVersionWithPrefix } from '../version'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -197,7 +198,7 @@ export function Profile() {
   }
   
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 pb-8">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 pb-24">
       {/* Profile Card */}
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md border border-gray-200">
         <div className="flex flex-col items-center mb-6">
@@ -392,6 +393,25 @@ export function Profile() {
           onClose={() => setIsShareModalOpen(false)}
         />
       )}
+
+      {/* Footer Info Section */}
+      <div className="mt-12 text-center space-y-2 pb-8">
+        <p className="text-xs text-gray-500">
+          © {new Date().getFullYear()} TrainLog. All rights reserved.
+        </p>
+        <p className="text-xs text-gray-600">
+          Desenvolvido por{' '}
+          <a 
+            href='https://pedroluca.tech' 
+            target='_blank' 
+            rel='noopener noreferrer' 
+            className='text-[#27AE60] hover:text-[#219150] font-medium transition-colors'
+          >
+            Pedro Luca Prates
+          </a>
+        </p>
+        <p className="text-xs text-gray-400">{getVersionWithPrefix()}</p>
+      </div>
     </main>
   )
 }

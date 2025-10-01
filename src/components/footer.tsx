@@ -5,7 +5,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className='h-40 mb-16 bg-[#1A252F] text-white flex flex-col items-center justify-center'>
+    <footer className='h-56 pb-16 bg-[#1A252F] text-white flex flex-col items-center justify-center'>
       <main className='h-[60%] w-full flex flex-col items-center justify-center'>
         <img src={Logo} alt='Logo' className='w-32 h-16' />
       </main>

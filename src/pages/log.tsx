@@ -146,7 +146,7 @@ export function LogPage() {
   }
 
   return (
-    <main className='flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 lg:px-64'>
+    <main className='flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 lg:px-64 pb-32'>
       <div className="w-full max-w-2xl">
         <div className="flex justify-between items-center mb-6">
           <h1 className='text-2xl font-bold text-gray-800'>Histórico de Exercícios</h1>

@@ -30,13 +30,17 @@ export function Header({ hideDate = false }: HeaderProps) {
   }, [])
 
   return (
-    <header className='h-28 bg-[#C0392B] text-[#f4f4f4] flex flex-col items-center justify-center'>
-      <main className={`${hideDate ? 'h-full' : 'h-[70%]'} w-full flex flex-col items-center justify-center border-b-1 border-gray-400`}>
-        <img />
-        <Link to='/' className='text-3xl font-bold'>TrainLog</Link>
+    <header className='bg-gradient-to-r from-[#27AE60] to-[#229954] text-white shadow-lg'>
+      <main className={`${hideDate ? 'py-6' : 'py-4'} px-4 flex flex-col items-center justify-center border-b border-white/10`}>
+        <Link 
+          to='/' 
+          className='text-3xl font-bold tracking-tight hover:scale-105 transition-transform duration-200'
+        >
+          TrainLog
+        </Link>
       </main>
-      <section className={`h-[30%] w-full flex items-center justify-center ${hideDate ? 'hidden' : ''}`}>
-        <p>{currentTime}</p>
+      <section className={`py-2 px-4 flex items-center justify-center ${hideDate ? 'hidden' : ''}`}>
+        <p className='text-sm text-white/90 font-medium'>{currentTime}</p>
       </section>
     </header>
   )
