@@ -10,8 +10,12 @@
  *   node scripts/bump-version.js major  -> 1.0.0 to 2.0.0
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const args = process.argv.slice(2);
 const versionType = args[0];
@@ -25,25 +29,16 @@ if (!versionType || !['major', 'minor', 'patch'].includes(versionType)) {
   process.exit(1);
 }
 
+const packageJsonPath = path.join(__dirname, '../package.json');
 const versionFilePath = path.join(__dirname, '../src/version.ts');
 
 try {
-  // Read the version file
-  let content = fs.readFileSync(versionFilePath, 'utf8');
+  // Read package.json
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  const currentVersion = packageJson.version;
   
-  // Extract current version
-  const majorMatch = content.match(/major:\s*(\d+)/);
-  const minorMatch = content.match(/minor:\s*(\d+)/);
-  const patchMatch = content.match(/patch:\s*(\d+)/);
-  
-  if (!majorMatch || !minorMatch || !patchMatch) {
-    throw new Error('Could not parse version numbers from version.ts');
-  }
-  
-  let major = parseInt(majorMatch[1]);
-  let minor = parseInt(minorMatch[1]);
-  let patch = parseInt(patchMatch[1]);
-  
+  // Parse version
+  let [major, minor, patch] = currentVersion.split('.').map(Number);
   const oldVersion = `${major}.${minor}.${patch}`;
   
   // Bump version based on type
@@ -64,16 +59,22 @@ try {
   
   const newVersion = `${major}.${minor}.${patch}`;
   
-  // Update version numbers in content
-  content = content.replace(/major:\s*\d+/, `major: ${major}`);
-  content = content.replace(/minor:\s*\d+/, `minor: ${minor}`);
-  content = content.replace(/patch:\s*\d+/, `patch: ${patch}`);
+  // Update package.json
+  packageJson.version = newVersion;
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
   
-  // Write back to file
-  fs.writeFileSync(versionFilePath, content, 'utf8');
+  // Update version.ts
+  let versionContent = fs.readFileSync(versionFilePath, 'utf8');
+  versionContent = versionContent.replace(/major:\s*\d+/, `major: ${major}`);
+  versionContent = versionContent.replace(/minor:\s*\d+/, `minor: ${minor}`);
+  versionContent = versionContent.replace(/patch:\s*\d+/, `patch: ${patch}`);
+  fs.writeFileSync(versionFilePath, versionContent, 'utf8');
   
   console.log('✅ Version bumped successfully!');
   console.log(`   ${oldVersion} -> ${newVersion} (${versionType})`);
+  console.log('\n📝 Files updated:');
+  console.log('   ✓ package.json');
+  console.log('   ✓ src/version.ts');
   console.log('\n📝 Next steps:');
   console.log('   1. Update VERSION_HISTORY in src/version.ts with your changes');
   console.log('   2. Commit your changes: git commit -am "chore: bump version to ' + newVersion + '"');
