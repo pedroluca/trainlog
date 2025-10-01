@@ -175,7 +175,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
   }
 
   return (
-    <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-60 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
       <div className="bg-white rounded-lg p-6 w-[100%] max-w-md relative">
         <h2 className="text-xl font-bold mb-4">Criar um novo Treino</h2>
         

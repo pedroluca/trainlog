@@ -43,7 +43,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-60">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 overflow-y-auto max-h-screen">
         <h2 className="text-xl font-bold mb-4">Adicionar Exercício</h2>
         <form className="space-y-4">
