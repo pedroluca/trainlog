@@ -7,6 +7,7 @@ import { Login } from './pages/login'
 import { Cadastro } from './pages/register'
 import { Profile } from './pages/profile'
 import { LogPage } from './pages/log'
+import { ResetPassword } from './pages/reset-password'
 import { AdminLogin } from './pages/admin-login'
 import { AdminDashboard } from './pages/admin-dashboard'
 
@@ -20,6 +21,9 @@ export function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/cadastro' element={<Cadastro />} />
         </Route>
+
+        {/* Reset Password (no layout) */}
+        <Route path='/reset-password' element={<ResetPassword />} />
 
         {/* Rotas com a BottomBar */}
         <Route element={<LayoutWithBottomBar />}>
