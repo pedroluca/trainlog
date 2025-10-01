@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // usuarios collection
+    match /usuarios/{userId} {
+      allow read: if request.auth.uid == userId || isAdmin();
+      allow write: if request.auth.uid == userId;
+    }
+    
+    // treinos collection
+    match /treinos/{treinoId} {
+      // Allow read if:
+      // 1. User owns the workout, OR
+      // 2. User is admin, OR
+      // 3. It's a system template (usuarioID == 'system')
+      allow read: if request.auth.uid == resource.data.usuarioID || 
+                     isAdmin() || 
+                     resource.data.usuarioID == 'system';
+      
+      // Allow write if user owns the workout or is admin
+      allow write: if request.auth.uid == resource.data.usuarioID || isAdmin();
+      
+      // Allow create if:
+      // 1. User is creating their own workout, OR
+      // 2. It's a system template being created (for seeding script)
+      allow create: if request.auth.uid == request.resource.data.usuarioID || 
+                       request.resource.data.usuarioID == 'system';
+      
+      // exercicios subcollection (nested inside treinos)
+      match /exercicios/{exercicioId} {
+        allow read: if request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID || 
+                       isAdmin() ||
+                       get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID == 'system';
+        
+        allow write: if request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID || 
+                        isAdmin();
+        
+        allow create: if request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID || 
+                         get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID == 'system';
+      }
+    }
+    
+    // logs collection
+    match /logs/{logId} {
+      allow read: if request.auth.uid == resource.data.usuarioID || isAdmin();
+      allow write: if request.auth.uid == resource.data.usuarioID;
+      allow create: if request.auth.uid == request.resource.data.usuarioID;
+    }
+  }
+}
