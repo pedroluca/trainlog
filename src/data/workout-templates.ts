@@ -12,42 +12,42 @@ export type WorkoutTemplate = {
 
 export const workoutTemplates: WorkoutTemplate[] = [
   {
-    id: 'TEMPLATE_PUSH_001-system', // Replace with actual workout ID after creating in Firestore
+    id: '8ljBR0ocfUkxhoWEY2kk-IIbUcDeq32Swfqfg5h9h8KL8iC63',
     nome: 'Push A - Peito Foco',
     descricao: 'Treino de empurrão focado em peito, ombros e tríceps',
     categoria: 'push_pull_legs',
     icon: '💪'
   },
   {
-    id: 'TEMPLATE_PULL_001-system',
+    id: 'AFWuEBYjgTVBIRdLAKMw-IIbUcDeq32Swfqfg5h9h8KL8iC63',
     nome: 'Pull A - Costas Completo',
     descricao: 'Treino de puxada focado em costas e bíceps',
     categoria: 'push_pull_legs',
     icon: '🔙'
   },
   {
-    id: 'TEMPLATE_LEGS_001-system',
+    id: 'C71ZYmqHqzlZ8ShHZZkD-IIbUcDeq32Swfqfg5h9h8KL8iC63',
     nome: 'Legs A - Completo',
     descricao: 'Treino de pernas completo com foco em quadríceps e posteriores',
     categoria: 'push_pull_legs',
     icon: '🦵'
   },
   {
-    id: 'TEMPLATE_UPPER_001-system',
+    id: 'pDJG7caKrhSCvFqABWpo-IIbUcDeq32Swfqfg5h9h8KL8iC63',
     nome: 'Upper Body A',
     descricao: 'Treino de superiores - peito, costas e ombros',
     categoria: 'upper_lower',
     icon: '🏋️'
   },
   {
-    id: 'TEMPLATE_LOWER_001-system',
+    id: 'NZd0ZOWmPx0rdgE0fVU0-IIbUcDeq32Swfqfg5h9h8KL8iC63',
     nome: 'Lower Body A',
     descricao: 'Treino de inferiores - pernas e glúteos completo',
     categoria: 'upper_lower',
     icon: '🏃'
   },
   {
-    id: 'TEMPLATE_FULL_001-system',
+    id: 'vImy9uIt9WEJjHY6d1Ek-IIbUcDeq32Swfqfg5h9h8KL8iC63',
     nome: 'Full Body Iniciante',
     descricao: 'Treino de corpo inteiro para iniciantes',
     categoria: 'full_body',

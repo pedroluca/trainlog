@@ -1,13 +1,30 @@
 /**
  * Script to seed workout templates into Firestore
- * Run with: pnpm seed-templates
+ * Run with: pnpm seed-templates YOUR_EMAIL YOUR_PASSWORD
+ * 
+ * IMPORTANT: You need to provide your email and password to authenticate
+ * Example: pnpm seed-templates user@email.com mypassword
  * 
  * This will create 6 template workouts with exercises that users can clone
  */
 
 import 'dotenv/config'
 import { initializeApp } from 'firebase/app'
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
 import { getFirestore, collection, addDoc } from 'firebase/firestore'
+
+// Get credentials from command line arguments
+const email = process.argv[2]
+const password = process.argv[3]
+
+if (!email || !password) {
+  console.error('❌ Error: Please provide your email and password as arguments')
+  console.error('Usage: pnpm seed-templates YOUR_EMAIL YOUR_PASSWORD')
+  console.error('\nExample: pnpm seed-templates user@email.com mypassword')
+  process.exit(1)
+}
+
+console.log(`👤 Authenticating as: ${email}\n`)
 
 // Your Firebase config - using process.env for Node.js scripts
 const firebaseConfig = {
@@ -20,15 +37,16 @@ const firebaseConfig = {
 }
 
 const app = initializeApp(firebaseConfig)
+const auth = getAuth(app)
 const db = getFirestore(app)
 
 // Template workouts with exercises
-const templates = [
+const getTemplates = (userId: string) => [
   {
     nome: 'Push A - Peito Foco',
     dia: 'Template',
     musculo: 'Peito, Ombros e Tríceps',
-    usuarioID: 'system',
+    usuarioID: userId, // Use the authenticated user ID
     exercicios: [
       { titulo: 'Supino Reto', series: 4, repeticoes: 8, peso: 60, tempoIntervalo: 120, isFeito: false },
       { titulo: 'Supino Inclinado', series: 4, repeticoes: 10, peso: 50, tempoIntervalo: 90, isFeito: false },
@@ -43,7 +61,7 @@ const templates = [
     nome: 'Pull A - Costas Completo',
     dia: 'Template',
     musculo: 'Costas e Bíceps',
-    usuarioID: 'system',
+    usuarioID: userId,
     exercicios: [
       { titulo: 'Barra Fixa', series: 4, repeticoes: 8, peso: 0, tempoIntervalo: 120, isFeito: false },
       { titulo: 'Remada Curvada', series: 4, repeticoes: 10, peso: 50, tempoIntervalo: 90, isFeito: false },
@@ -58,7 +76,7 @@ const templates = [
     nome: 'Legs A - Completo',
     dia: 'Template',
     musculo: 'Pernas e Glúteos',
-    usuarioID: 'system',
+    usuarioID: userId,
     exercicios: [
       { titulo: 'Agachamento Livre', series: 4, repeticoes: 8, peso: 80, tempoIntervalo: 180, isFeito: false },
       { titulo: 'Leg Press 45°', series: 4, repeticoes: 12, peso: 200, tempoIntervalo: 120, isFeito: false },
@@ -73,7 +91,7 @@ const templates = [
     nome: 'Upper Body A',
     dia: 'Template',
     musculo: 'Superiores Completo',
-    usuarioID: 'system',
+    usuarioID: userId,
     exercicios: [
       { titulo: 'Supino Reto', series: 4, repeticoes: 8, peso: 60, tempoIntervalo: 120, isFeito: false },
       { titulo: 'Remada Curvada', series: 4, repeticoes: 10, peso: 50, tempoIntervalo: 90, isFeito: false },
@@ -87,7 +105,7 @@ const templates = [
     nome: 'Lower Body A',
     dia: 'Template',
     musculo: 'Inferiores Completo',
-    usuarioID: 'system',
+    usuarioID: userId,
     exercicios: [
       { titulo: 'Agachamento Livre', series: 4, repeticoes: 10, peso: 80, tempoIntervalo: 180, isFeito: false },
       { titulo: 'Leg Press', series: 4, repeticoes: 12, peso: 200, tempoIntervalo: 120, isFeito: false },
@@ -101,7 +119,7 @@ const templates = [
     nome: 'Full Body Iniciante',
     dia: 'Template',
     musculo: 'Corpo Inteiro',
-    usuarioID: 'system',
+    usuarioID: userId,
     exercicios: [
       { titulo: 'Agachamento', series: 3, repeticoes: 12, peso: 40, tempoIntervalo: 90, isFeito: false },
       { titulo: 'Supino Reto', series: 3, repeticoes: 12, peso: 40, tempoIntervalo: 90, isFeito: false },
@@ -117,9 +135,17 @@ const templates = [
 async function seedTemplates() {
   console.log('🌱 Starting template seeding...\n')
 
-  const createdTemplates: { id: string; nome: string }[] = []
-
   try {
+    // Authenticate with Firebase
+    console.log('🔐 Signing in...')
+    const userCredential = await signInWithEmailAndPassword(auth, email, password)
+    const userId = userCredential.user.uid
+    console.log(`✅ Signed in successfully! User ID: ${userId}\n`)
+
+    // Get templates with the authenticated user ID
+    const templates = getTemplates(userId)
+
+    const createdTemplates: { id: string; nome: string }[] = []
     for (const template of templates) {
       console.log(`📋 Creating template: ${template.nome}`)
 
@@ -129,6 +155,7 @@ async function seedTemplates() {
         dia: template.dia,
         musculo: template.musculo,
         usuarioID: template.usuarioID,
+        isTemplate: true, // Mark as template
         criadoEm: new Date().toISOString(),
       })
 
@@ -144,7 +171,7 @@ async function seedTemplates() {
       console.log(`   ✅ Added ${template.exercicios.length} exercises`)
 
       createdTemplates.push({
-        id: `${treinoRef.id}-system`,
+        id: `${treinoRef.id}-${userId}`,
         nome: template.nome
       })
 

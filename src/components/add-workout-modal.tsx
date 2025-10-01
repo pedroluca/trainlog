@@ -89,7 +89,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
 
   if (showTemplates) {
     return (
-      <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
+      <div className="fixed inset-0 z-61 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
         <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
             <BookOpen size={28} />
