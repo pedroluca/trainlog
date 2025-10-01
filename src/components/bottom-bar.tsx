@@ -1,4 +1,4 @@
-import { Dumbbell, FileText, UserRound } from 'lucide-react'
+import { Dumbbell, FileText, UserRound, TrendingUp } from 'lucide-react'
 import { BottomBarItem } from './bottom-bar-item'
 
 export function BottomBar() {
@@ -23,6 +23,9 @@ export function BottomBar() {
           </BottomBarItem>
           <BottomBarItem to='/train'>
             <Dumbbell size={28} />
+          </BottomBarItem>
+          <BottomBarItem to='/progress'>
+            <TrendingUp size={28} />
           </BottomBarItem>
           <BottomBarItem to='/profile'>
             <UserRound size={28} />

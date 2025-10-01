@@ -7,6 +7,7 @@ import { Login } from './pages/login'
 import { Cadastro } from './pages/register'
 import { Profile } from './pages/profile'
 import { LogPage } from './pages/log'
+import { Progress } from './pages/progress'
 import { ResetPassword } from './pages/reset-password'
 import { AdminLogin } from './pages/admin-login'
 import { AdminDashboard } from './pages/admin-dashboard'
@@ -29,6 +30,7 @@ export function App() {
         <Route element={<LayoutWithBottomBar />}>
           <Route path='/log' element={<LogPage />} />
           <Route path='/train' element={<Training />} />
+          <Route path='/progress' element={<Progress />} />
           <Route path='/profile' element={<Profile />} />
         </Route>
 
