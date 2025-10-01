@@ -157,12 +157,12 @@ export function TrainingCard(props: TrainingCardProps) {
 
   return (
     <div
-      className={`shadow-md relative rounded-lg p-6 my-4 mx-2 transition-all min-h-[500px] flex flex-col ${
+      className={`shadow-md relative rounded-lg overflow-hidden p-6 my-4 mx-2 transition-all min-h-[500px] flex flex-col ${
         isFinished ? 'bg-[#27AE60] border-green-400' : 'bg-white'
       }`}
     >
       <button
-        className={`absolute top-4 right-4 cursor-pointer  ${isFinished ? 'text-[#f4f4f4] hover:bg-[#219150]' : 'text-gray-700 hover:bg-gray-100'} rounded-full p-2`}
+        className={`absolute top-4 right-4 cursor-pointer z-10 ${isFinished ? 'text-[#f4f4f4] hover:bg-[#219150]' : 'text-gray-700 hover:bg-gray-100'} rounded-full p-2`}
         onClick={() => setIsModalOpen(true)}
       >
         <EllipsisVertical />

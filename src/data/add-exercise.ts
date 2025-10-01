@@ -16,7 +16,7 @@ export async function addExercise(
       series, // Exemplo: 3
       repeticoes, // Exemplo: 10
       peso, // Exemplo: 40 (kg)
-      tempoIntervalo // Exemplo: 60 (segundos)
+      tempoIntervalo, // Exemplo: 60 (segundos)
     })
     console.log('Exercício adicionado com ID:', docRef.id)
   } catch (error) {
