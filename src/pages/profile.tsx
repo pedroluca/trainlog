@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../firebaseConfig'
-import { doc, getDoc, collection, getDocs, deleteDoc, query, where } from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc } from 'firebase/firestore'
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2 } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 
 export function Profile() {
@@ -13,6 +13,7 @@ export function Profile() {
   const usuarioID = localStorage.getItem('usuarioId')
   const [nome, setNome] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
+  const [photoURL, setPhotoURL] = useState<string | null>(null)
   const [workouts, setWorkouts] = useState<Treino[]>([])
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -20,6 +21,7 @@ export function Profile() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [disabledDays, setDisabledDays] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
@@ -55,6 +57,7 @@ export function Profile() {
             const userData = userDoc.data()
             setNome(userData.nome || 'Não disponível')
             setEmail(userData.email || 'Não disponível')
+            setPhotoURL(userData.photoURL || null)
           } else {
             console.error('Usuário não encontrado no Firestore')
           }
@@ -92,6 +95,63 @@ export function Profile() {
     auth.signOut()
     localStorage.clear()
     navigate('/login')
+  }
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !usuarioID) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione uma imagem válida')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB')
+      return
+    }
+
+    try {
+      setUploadingImage(true)
+
+      // Create FormData for Cloudinary upload
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
+      formData.append('folder', 'profile-images')
+      formData.append('public_id', usuarioID) // Use userId as filename (overwrites old image)
+
+      // Upload to Cloudinary
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`
+      const response = await fetch(cloudinaryUrl, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Falha no upload da imagem')
+      }
+
+      const data = await response.json()
+      const downloadURL = data.secure_url
+
+      // Update Firestore user document
+      await updateDoc(doc(db, 'usuarios', usuarioID), {
+        photoURL: downloadURL
+      })
+
+      // Update local state
+      setPhotoURL(downloadURL)
+      
+      alert('Foto de perfil atualizada com sucesso!')
+    } catch (err) {
+      console.error('Erro ao fazer upload da imagem:', err)
+      alert('Erro ao atualizar foto de perfil. Tente novamente.')
+    } finally {
+      setUploadingImage(false)
+    }
   }
 
   const handleShareWorkout = (workout: Treino) => {
@@ -138,71 +198,141 @@ export function Profile() {
   
   return (
     <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 pb-8">
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">Perfil</h1>
-        <div className="space-y-4">
-          <div>
-            <p className="text-gray-700">
-              <strong>Nome:</strong> {nome || 'Carregando...'}
+      {/* Profile Card */}
+      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md border border-gray-200">
+        <div className="flex flex-col items-center mb-6">
+          {/* Avatar Circle with Image Upload */}
+          <div className="relative mb-4">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
+              {photoURL ? (
+                <img 
+                  src={photoURL} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                nome ? nome.charAt(0).toUpperCase() : '?'
+              )}
+            </div>
+            
+            {/* Edit Icon Button */}
+            <label 
+              htmlFor="profile-image-upload"
+              className="absolute bottom-0 right-0 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-1.5 cursor-pointer shadow-lg transition-colors"
+              title="Alterar foto de perfil"
+            >
+              {uploadingImage ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Camera size={16} />
+              )}
+            </label>
+            <input
+              id="profile-image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              disabled={uploadingImage}
+            />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800">Perfil</h1>
+        </div>
+        
+        <div className="space-y-4 mb-6">
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <p className="text-sm text-gray-500 mb-1">Nome</p>
+            <p className="text-lg font-semibold text-gray-800">
+              {nome || 'Carregando...'}
             </p>
           </div>
-          <div>
-            <p className="text-gray-700">
-              <strong>Email:</strong> {email || 'Carregando...'}
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <p className="text-sm text-gray-500 mb-1">Email</p>
+            <p className="text-lg font-semibold text-gray-800">
+              {email || 'Carregando...'}
             </p>
           </div>
         </div>
+        
         <button
           onClick={handleLogout}
-          className="mt-6 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
         >
-          Logout
+          Sair da Conta
         </button>
       </div>
 
-      <div className="bg-white shadow-md rounded-lg py-6 px-4 w-full max-w-2xl mt-8">
-        <h2 className="text-xl font-bold mb-4">Seus Treinos</h2>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr>
-              <th className="border-b py-2">Dia</th>
-              <th className="border-b py-2">Músculo</th>
-              <th className="border-b py-2">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <WorkoutRowSkeleton />
-            )}
+      {/* Workouts Section */}
+      <div className="bg-white shadow-lg rounded-xl py-6 px-4 w-full max-w-2xl mt-8 border border-gray-200">
+        <div className="flex items-center justify-between mb-6 px-2">
+          <h2 className="text-2xl font-bold text-gray-800">Seus Treinos</h2>
+          <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+            {workouts.length} {workouts.length === 1 ? 'treino' : 'treinos'}
+          </span>
+        </div>
+        
+        {loading ? (
+          <div className="space-y-3">
+            <WorkoutCardSkeleton />
+            <WorkoutCardSkeleton />
+            <WorkoutCardSkeleton />
+          </div>
+        ) : workouts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg mb-4">Você ainda não tem treinos cadastrados</p>
+            <Button
+              onClick={() => navigate('/train')}
+              className="bg-[#27AE60] hover:bg-[#219150] text-white px-6 py-2"
+            >
+              Criar Primeiro Treino
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
             {workouts.map((workout) => (
-              <tr key={workout.id}>
-                <td className="border-b py-2">{workout.dia}</td>
-                <td className="border-b py-2">{workout.musculo}</td>
-                <td className="border-b py-2">
+              <div
+                key={workout.id}
+                className="bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg p-4 transition-colors"
+              >
+                {/* Info Section */}
+                <div className="mb-3">
+                  <h3 className="text-lg font-bold text-gray-800 mb-1">
+                    {workout.dia}
+                  </h3>
+                  <p className="text-base text-gray-600">
+                    {workout.musculo}
+                  </p>
+                </div>
+                
+                {/* Actions Section */}
+                <div className="flex gap-2 flex-wrap">
                   <Button
-                    className="text-white px-4 py-1 rounded"
+                    className="text-white px-4 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all"
                     bgColor='bg-[#F1C40F] hover:bg-[#D4AC0D]'
                     onClick={() => handleShareWorkout(workout)}
+                    title="Compartilhar treino"
                   >
-                    <Share2 />
+                    <Share2 size={20} />
                   </Button>
                   <Button
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded ml-2"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all"
                     onClick={() => handleEditWorkout(workout)}
+                    title="Editar treino"
                   >
-                    <Pencil />
+                    <Pencil size={20} />
                   </Button>
                   <Button
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded mt-2 md:mt-0 md:ml-2"
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all"
                     onClick={() => handleDeleteWorkout(workout)}
+                    title="Excluir treino"
                   >
-                    <Trash2 />
+                    <Trash2 size={20} />
                   </Button>
-                </td>
-              </tr>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        )}
       </div>
 
       {isEditModalOpen && selectedWorkout && (
@@ -266,20 +396,18 @@ export function Profile() {
   )
 }
 
-export const WorkoutRowSkeleton = () => {
+export const WorkoutCardSkeleton = () => {
   return (
-    <tr className='animate-pulse'>
-      <td className='border-b py-2'>
-        <div className='h-4 w-20 bg-gray-300 rounded'></div>
-      </td>
-      <td className='border-b py-2'>
-        <div className='h-4 w-32 bg-gray-300 rounded'></div>
-      </td>
-      <td className='border-b py-2 flex flex-wrap gap-2'>
-        <div className='h-8 w-8 bg-gray-300 rounded'></div>
-        <div className='h-8 w-8 bg-gray-300 rounded'></div>
-        <div className='h-8 w-8 bg-gray-300 rounded'></div>
-      </td>
-    </tr>
+    <div className='animate-pulse bg-gray-50 border border-gray-200 rounded-lg p-4'>
+      <div className='mb-3'>
+        <div className='h-6 w-32 bg-gray-300 rounded mb-2'></div>
+        <div className='h-5 w-40 bg-gray-300 rounded'></div>
+      </div>
+      <div className='flex gap-2'>
+        <div className='h-11 w-12 bg-gray-300 rounded-lg'></div>
+        <div className='h-11 w-12 bg-gray-300 rounded-lg'></div>
+        <div className='h-11 w-12 bg-gray-300 rounded-lg'></div>
+      </div>
+    </div>
   )
 }
