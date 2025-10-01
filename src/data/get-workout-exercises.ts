@@ -1,5 +1,5 @@
 import { db } from '../firebaseConfig'
-import { collection, getDocs, query, orderBy } from 'firebase/firestore'
+import { collection, getDocs } from 'firebase/firestore'
 
 export interface Exercicio {
   id: string
@@ -13,9 +13,10 @@ export interface Exercicio {
 
 export async function getWorkoutExercises(workoutId: string): Promise<Exercicio[]> {
   const exercisesRef = collection(db, 'treinos', workoutId, 'exercicios')
-  const exercisesQuery = query(exercisesRef, orderBy('titulo', 'asc')) // Ordena pelo campo 'titulo' em ordem ascendente
-  const querySnapshot = await getDocs(exercisesQuery)
-  return querySnapshot.docs.map((doc) => {
+  const querySnapshot = await getDocs(exercisesRef)
+  
+  // Sort in memory instead of using Firestore orderBy to avoid index requirement
+  const exercises = querySnapshot.docs.map((doc) => {
     const data = doc.data()
     return {
       id: doc.id,
@@ -27,4 +28,7 @@ export async function getWorkoutExercises(workoutId: string): Promise<Exercicio[
       isFeito: data.isFeito,
     } as Exercicio
   })
+  
+  // Sort by title alphabetically in memory
+  return exercises.sort((a, b) => a.titulo.localeCompare(b.titulo))
 }
