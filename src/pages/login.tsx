@@ -4,6 +4,7 @@ import { auth } from '../firebaseConfig' // Certifique-se de que o firebaseConfi
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../components/button'
 import { getVersionWithPrefix } from '../version'
+import { Eye, EyeOff } from 'lucide-react'
 
 export function Login() {
   const [email, setEmail] = useState('')
@@ -12,6 +13,7 @@ export function Login() {
   const [loading, setLoading] = useState(false)
   const [resetEmailSent, setResetEmailSent] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const usuarioID = localStorage.getItem('usuarioId')
   const navigate = useNavigate()
 
@@ -96,15 +98,24 @@ export function Login() {
             </div>
             <div>
               <label className="block text-gray-700 font-bold mb-2">Senha:</label>
-              <input
-                type="password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full border rounded px-3 py-2"
-                placeholder="Digite sua senha"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full border rounded px-3 py-2 pr-10"
+                  placeholder="Digite sua senha"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
             
             {/* Forgot Password Link */}

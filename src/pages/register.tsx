@@ -4,6 +4,7 @@ import { auth, db } from '../firebaseConfig'
 import { doc, setDoc } from 'firebase/firestore'
 import { Link, useNavigate } from 'react-router-dom'
 import { getVersionWithPrefix } from '../version'
+import { Eye, EyeOff } from 'lucide-react'
 
 export function Cadastro() {
   const [name, setName] = useState('')
@@ -12,6 +13,8 @@ export function Cadastro() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const usuarioID = localStorage.getItem('usuarioId')
   const navigate = useNavigate()
 
@@ -66,7 +69,7 @@ export function Cadastro() {
 
   return (
     <main className="flex flex-col items-center py-2 justify-center min-h-[calc(100vh-7rem)] bg-gray-100">
-      <div className="bg-white shadow-md rounded-lg p-6 pb-2 w-full max-w-md mx-4 overflow-y-auto">
+      <div className="bg-white shadow-md rounded-lg p-6 pb-2 w-[90%] max-w-md mx-4 overflow-y-auto">
         <h1 className="text-2xl font-bold text-center mb-6">Cadastro</h1>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -96,27 +99,45 @@ export function Cadastro() {
           </div>
           <div>
             <label className="block text-gray-700 font-bold mb-2">Senha:</label>
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full border rounded px-3 py-2"
-              placeholder="Digite sua senha"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full border rounded px-3 py-2 pr-10"
+                placeholder="Digite sua senha"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-gray-700 font-bold mb-2">Confirme sua senha:</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="w-full border rounded px-3 py-2"
-              placeholder="Confirme sua senha"
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="w-full border rounded px-3 py-2 pr-10"
+                placeholder="Confirme sua senha"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
           <button
             type="submit"
