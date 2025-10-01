@@ -176,7 +176,7 @@ export function Training() {
               {exercises.length > 0 ? (
                 <div className='w-full lg:w-1/2 flex flex-col items-center'>
                   {/* Navigation arrows */}
-                  <div className="flex items-center justify-between w-full my-4">
+                  <div className="flex items-center justify-between w-full mt-6">
                     <button
                       className={`cursor-pointer p-2 rounded-full transition-colors ${
                         currentExerciseIndex === 0
