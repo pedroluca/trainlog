@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { auth, db } from '../firebaseConfig'
 import { doc, setDoc } from 'firebase/firestore'
 import { Link, useNavigate } from 'react-router-dom'
+import { getVersionWithPrefix } from '../version'
 
 export function Cadastro() {
   const [name, setName] = useState('')
@@ -64,7 +65,7 @@ export function Cadastro() {
   }
 
   return (
-    <main className="flex py-2 justify-center min-h-[calc(100vh-7rem)] bg-gray-100">
+    <main className="flex flex-col items-center py-2 justify-center min-h-[calc(100vh-7rem)] bg-gray-100">
       <div className="bg-white shadow-md rounded-lg p-6 pb-2 w-full max-w-md mx-4 overflow-y-auto">
         <h1 className="text-2xl font-bold text-center mb-6">Cadastro</h1>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
@@ -133,6 +134,11 @@ export function Cadastro() {
             Entre aqui
           </Link>
         </p>      
+      </div>
+      
+      {/* Version Display */}
+      <div className="mt-4">
+        <p className="text-xs text-gray-500">{getVersionWithPrefix()}</p>
       </div>
     </main>
   )

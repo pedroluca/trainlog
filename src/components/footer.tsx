@@ -1,4 +1,5 @@
 import Logo from '../assets/full-logo.png'
+import { getVersionWithPrefix } from '../version'
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -10,9 +11,10 @@ export function Footer() {
       </main>
       <section className='h-[40%] w-full flex flex-col items-center justify-center'>
         <p>© {currentYear} TrainLog. All rights reserved.</p>
-        <p className='text-sm text-[#BDC3C7] mb-2'>
+        <p className='text-sm text-[#BDC3C7]'>
           Desenvolvido por <a href='https://pedroluca.tech' target='_blank' rel='noopener noreferrer' className='text-[#F1C40F] hover:underline'>Pedro Luca Prates</a>.
         </p>
+        <p className='text-xs text-gray-400 mb-2'>{getVersionWithPrefix()}</p>
       </section>
     </footer>
   )

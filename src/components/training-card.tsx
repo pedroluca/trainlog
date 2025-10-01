@@ -15,10 +15,11 @@ type TrainingCardProps = {
   isFeito: boolean
   reset?: boolean
   onEdit: () => void
+  onComplete?: () => void // Callback when exercise is completed
 }
 
 export function TrainingCard(props: TrainingCardProps) {
-  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, reset, onEdit } = props
+  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, reset, onEdit, onComplete } = props
   const [isBreakTime, setIsBreakTime] = useState(false)
   const [timeLeft, setTimeLeft] = useState(0)
   const [setsDone, setSetsDone] = useState(0)
@@ -89,10 +90,15 @@ export function TrainingCard(props: TrainingCardProps) {
       }
       
       onEdit()
+      
+      // Call onComplete callback to move to next exercise
+      if (onComplete) {
+        onComplete()
+      }
     } catch (err) {
       console.error('Erro ao marcar exercício como concluído:', err)
     }
-  }, [workoutId, id, onEdit, title, sets, reps, weight])
+  }, [workoutId, id, onEdit, onComplete, title, sets, reps, weight])
 
   const handleDeleteExercise = async () => {
     try {
@@ -151,7 +157,7 @@ export function TrainingCard(props: TrainingCardProps) {
 
   return (
     <div
-      className={`shadow-md relative rounded-lg p-6 my-4 mx-2 transition-all ${
+      className={`shadow-md relative rounded-lg p-6 my-4 mx-2 transition-all min-h-[500px] flex flex-col ${
         isFinished ? 'bg-[#27AE60] border-green-400' : 'bg-white'
       }`}
     >
@@ -162,36 +168,44 @@ export function TrainingCard(props: TrainingCardProps) {
         <EllipsisVertical />
       </button>
 
-      <h2 className={`text-2xl font-bold mb-4 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800'}`}>{title}</h2>
+      <h2 className={`text-3xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800'}`}>{title}</h2>
+      
       {!isBreakTime ? (
         <>
-          <div className='mb-4'>
-            <p className={`${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
+          <div className='mb-auto'>
+            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
               <strong>Repetição:</strong> {sets} x {reps}
             </p>
-            <p className={`${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
-              <strong>PR:</strong> {weight} kg
+            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
+              <strong>Carga:</strong> {weight} kg
             </p>
-            <p className={`${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
+            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
               <strong>Descanso:</strong> {formatTime(breakTime)} min
             </p>
-            <p className={`${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
+            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
               <strong>Você fez:</strong> {isFinished ? sets : setsDone} séries de {sets}
             </p>
           </div>
-          <Button onClick={handleStartSet} disabled={isFinished} bgColor={'bg-[#27AE60] hover:bg-[#219150] disabled:bg-[#219150]'}>
+          <Button 
+            onClick={handleStartSet} 
+            disabled={isFinished} 
+            bgColor={'bg-[#27AE60] hover:bg-[#219150] disabled:bg-[#219150]'}
+            className='w-full py-4 text-lg font-bold mt-4'
+          >
             {isFinished ? 'Concluído' : ('Finalizar ' + (setsDone + 1) + 'ª série')}
           </Button>
         </>
       ) : (
         <>
-          <p className='text-gray-700'>
-            <strong>Séries feitas:</strong> {setsDone + 1} de {sets} com {reps} repetições cada
-          </p>
-          <h2 className='text-xl font-bold mb-4 text-gray-500'>Intervalo de descanso:</h2>
-          <p className='text-gray-700 text-3xl font-mono mb-4'>{formatTime(timeLeft)}</p>
+          <div className='mb-auto flex flex-col items-center justify-center flex-1'>
+            <p className='text-xl mb-6 text-gray-700 text-center'>
+              <strong>Séries feitas:</strong> {setsDone + 1} de {sets} com {reps} repetições cada
+            </p>
+            <h2 className='text-2xl font-bold mb-4 text-gray-500'>Intervalo de descanso:</h2>
+            <p className='text-gray-700 text-6xl font-mono mb-8'>{formatTime(timeLeft)}</p>
+          </div>
           <Button
-            className='bg-red-400 hover:bg-red-500 px-4 py-2 rounded text-white font-bold'
+            className='w-full bg-red-400 hover:bg-red-500 py-4 text-lg rounded text-white font-bold mt-4'
             onClick={() => {
               setIsBreakTime(false)
               setTimeLeft(0)
@@ -201,7 +215,7 @@ export function TrainingCard(props: TrainingCardProps) {
               }
             }}
           >
-            Pular
+            Pular Descanso
           </Button>
         </>
       )}
