@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
-import { auth } from '../firebaseConfig' // Certifique-se de que o firebaseConfig está configurado corretamente
+import { auth, db } from '../firebaseConfig'
+import { doc, getDoc } from 'firebase/firestore'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../components/button'
 import { getVersionWithPrefix } from '../version'
@@ -29,13 +30,36 @@ export function Login() {
     setError('')
 
     try {
-      await signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user
-          const uid = user.uid
-          localStorage.setItem("usuarioId", uid)
-          navigate('/train')
-        })
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      const user = userCredential.user
+      const uid = user.uid
+
+      // Check if user is active in Firestore
+      const userDocRef = doc(db, 'usuarios', uid)
+      const userDoc = await getDoc(userDocRef)
+
+      if (!userDoc.exists()) {
+        // User document doesn't exist, sign out and show error
+        await auth.signOut()
+        setError('Conta não encontrada no sistema. Entre em contato com o administrador.')
+        return
+      }
+
+      const userData = userDoc.data()
+      
+      // Check if user is active (default to true for users without isActive field for backward compatibility)
+      const isActive = userData.isActive !== undefined ? userData.isActive : true
+      
+      if (!isActive) {
+        // User is inactive, sign out and show error
+        await auth.signOut()
+        setError('Sua conta está inativa. Entre em contato com o administrador para ativá-la.')
+        return
+      }
+
+      // User is active, proceed with login
+      localStorage.setItem("usuarioId", uid)
+      navigate('/train')
     } catch (err) {
       setError('Falha ao fazer login: Verifique suas credenciais!')
       console.error('Erro ao fazer login:', err)
