@@ -6,6 +6,7 @@ import { getWorkoutExercises, Exercicio } from '../data/get-workout-exercises'
 import { Button } from '../components/button'
 import { AddWorkoutModal } from '../components/add-workout-modal'
 import { AddExerciseModal } from '../components/add-exercise-modal'
+import { WorkoutCompleteModal } from '../components/workout-complete-modal'
 import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
@@ -22,6 +23,7 @@ export function Training() {
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false)
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
   const usuarioID = localStorage.getItem('usuarioId')
   const navigate = useNavigate()
@@ -86,10 +88,12 @@ export function Training() {
 
   const handlePreviousDay = () => {
     setCurrentDayIndex((prevIndex) => (prevIndex === 0 ? 6 : prevIndex - 1))
+    setIsCompleteModalOpen(false) // Reset completion modal when changing days
   }
 
   const handleNextDay = () => {
     setCurrentDayIndex((prevIndex) => (prevIndex === 6 ? 0 : prevIndex + 1))
+    setIsCompleteModalOpen(false) // Reset completion modal when changing days
   }
 
   const handleResetExercises = async () => {
@@ -102,6 +106,13 @@ export function Training() {
         )
         await Promise.all(resetPromises)
         setReset(true)
+        setIsCompleteModalOpen(false) // Close completion modal if open
+        
+        // Clear localStorage completion flag
+        const today = new Date().toISOString().split('T')[0]
+        const completionKey = `workout-completed-${selectedWorkout.id}-${today}`
+        localStorage.removeItem(completionKey)
+        
         fetchExercisesForDay()
       } catch (err) {
         console.error('Erro ao resetar exercícios:', err)
@@ -119,12 +130,44 @@ export function Training() {
     setCurrentExerciseIndex((prev) => Math.min(exercises.length - 1, prev + 1))
   }
 
-  const handleExerciseComplete = () => {
+  const checkAllExercisesComplete = useCallback(() => {
+    // Check if all exercises are marked as done
+    if (exercises.length > 0 && selectedWorkout) {
+      const allComplete = exercises.every(ex => ex.isFeito)
+      
+      // Create a unique key based on workout and today's date
+      const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+      const completionKey = `workout-completed-${selectedWorkout.id}-${today}`
+      const hasCompletedToday = localStorage.getItem(completionKey) === 'true'
+      
+      if (allComplete && !isCompleteModalOpen && !hasCompletedToday) {
+        // Small delay to let the last exercise animation finish
+        setTimeout(() => {
+          setIsCompleteModalOpen(true)
+          localStorage.setItem(completionKey, 'true') // Save to localStorage
+        }, 500)
+      }
+    }
+  }, [exercises, isCompleteModalOpen, selectedWorkout])
+
+  const handleExerciseComplete = useCallback(() => {
     // Move to next exercise if not at the last one
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex((prev) => prev + 1)
     }
-  }
+    
+    // Check if all exercises are now complete
+    // We need to refetch to get the updated isFeito status
+    fetchExercisesForDay(true).then(() => {
+      // After fetching, check if all are complete
+      // This will be handled by the useEffect below
+    })
+  }, [currentExerciseIndex, exercises.length, fetchExercisesForDay])
+
+  // Check for completion whenever exercises change
+  useEffect(() => {
+    checkAllExercisesComplete()
+  }, [exercises, checkAllExercisesComplete])
 
   const currentExercise = exercises[currentExerciseIndex]
 
@@ -309,6 +352,17 @@ export function Training() {
             </div>
           </div>
         </div>
+      )}
+
+      {isCompleteModalOpen && selectedWorkout && (
+        <WorkoutCompleteModal
+          isOpen={isCompleteModalOpen}
+          onClose={() => {
+            setIsCompleteModalOpen(false)
+            // Reset the flag when closed
+          }}
+          workoutName={selectedWorkout.musculo}
+        />
       )}
     </main>
   )
