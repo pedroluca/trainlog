@@ -14,13 +14,15 @@ import { AdminLogin } from './pages/admin-login'
 import { AdminDashboard } from './pages/admin-dashboard'
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
+import { ThemeProvider } from './contexts/theme-context'
 
 export function App() {
   return (
-    <BrowserRouter>
-      <PWAUpdateNotification />
-      <PWAInstallPrompt />
-      <Routes>
+    <ThemeProvider>
+      <BrowserRouter>
+        <PWAUpdateNotification />
+        <PWAInstallPrompt />
+        <Routes>
         {/* Rotas sem a BottomBar */}
         <Route element={<LayoutWithoutBottomBar />}>
           <Route path='/' element={<Home />} />
@@ -45,5 +47,6 @@ export function App() {
         <Route path='/admin/dashboard' element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
+    </ThemeProvider>
   )
 }

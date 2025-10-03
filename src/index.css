@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Dark Mode Setup */
+@theme {
+  --color-dark-bg: #1a1a1a;
+  --color-dark-surface: #2d2d2d;
+  --color-dark-surface-hover: #3d3d3d;
+  --color-dark-border: #404040;
+  --color-dark-text: #e5e5e5;
+  --color-dark-text-secondary: #a0a0a0;
+}
+
 /* PWA Animations */
 @keyframes slide-up {
   from {
