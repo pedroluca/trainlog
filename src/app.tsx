@@ -11,10 +11,14 @@ import { Progress } from './pages/progress'
 import { ResetPassword } from './pages/reset-password'
 import { AdminLogin } from './pages/admin-login'
 import { AdminDashboard } from './pages/admin-dashboard'
+import { PWAInstallPrompt } from './components/pwa-install-prompt'
+import { PWAUpdateNotification } from './components/pwa-update-notification'
 
 export function App() {
   return (
     <BrowserRouter>
+      <PWAUpdateNotification />
+      <PWAInstallPrompt />
       <Routes>
         {/* Rotas sem a BottomBar */}
         <Route element={<LayoutWithoutBottomBar />}>
