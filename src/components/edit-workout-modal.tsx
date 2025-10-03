@@ -29,16 +29,16 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
   const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
   return (
-    <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
-      <div className="bg-white rounded-lg p-6 w-96">
-        <h2 className="text-xl font-bold mb-4">Editar Treino</h2>
+    <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4">
+      <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-96">
+        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Editar Treino</h2>
         <form className="space-y-4">
           <div>
-            <label className="block text-gray-700 font-bold mb-2">Dia da Semana:</label>
+            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Dia da Semana:</label>
             <select
               value={day}
               onChange={(e) => setDay(e.target.value)}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
             >
               {daysOfWeek.map((dayOption) => (
                 <option
@@ -52,18 +52,18 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
             </select>
           </div>
           <div>
-            <label className="block text-gray-700 font-bold mb-2">Grupo Muscular:</label>
+            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Grupo Muscular:</label>
             <input
               type="text"
               value={muscleGroup}
               onChange={(e) => setMuscleGroup(e.target.value)}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
             />
           </div>
           <div className="flex justify-end">
             <Button
               type="button"
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 mr-2"
+              className="bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 mr-2"
               onClick={onClose}
             >
               Cancelar
