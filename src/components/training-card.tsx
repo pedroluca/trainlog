@@ -3,6 +3,7 @@ import { Button } from './button'
 import { EllipsisVertical, Trash2 } from 'lucide-react'
 import { addDoc, collection, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
+import beepSound from '../assets/beep.mp3'
 
 type TrainingCardProps = {
   id: string // ID do exercício
@@ -33,6 +34,19 @@ export function TrainingCard(props: TrainingCardProps) {
   const [editedBreakTime, setEditedBreakTime] = useState(
     `${String(Math.floor(breakTime / 60)).padStart(2, '0')}:${String(Math.round(breakTime % 60)).padStart(2, '0')}`
   )
+
+  // Function to play beep sound when timer ends
+  const playBeepSound = useCallback(() => {
+    try {
+      const audio = new Audio(beepSound)
+      audio.volume = 0.5 // Set volume to 50%
+      audio.play().catch((error) => {
+        console.error('Error playing beep sound:', error)
+      })
+    } catch (error) {
+      console.error('Error initializing beep sound:', error)
+    }
+  }, [])
 
   const handleBreakTimeChange = (value: string) => {
     const sanitizedValue = value.replace(/[^0-9:]/g, '').slice(0, 5)
@@ -120,13 +134,16 @@ export function TrainingCard(props: TrainingCardProps) {
 
       return () => clearInterval(timer)
     } else if (timeLeft === 0 && isBreakTime) {
+      // Play beep sound when timer ends
+      playBeepSound()
+      
       setIsBreakTime(false)
       setSetsDone((prev) => prev + 1)
       if (setsDone + 1 === sets) {
         handleFinishSet()
       }
     }
-  }, [timeLeft, isBreakTime, sets, setsDone, handleFinishSet])
+  }, [timeLeft, isBreakTime, sets, setsDone, handleFinishSet, playBeepSound])
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
