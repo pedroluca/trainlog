@@ -24,6 +24,7 @@ type ExerciseProgress = {
   history: Array<{
     data: string
     peso: number
+    sessionsCount?: number // Number of sessions on this day (optional for backward compatibility)
   }>
 }
 
@@ -104,20 +105,34 @@ export function Progress() {
       return
     }
 
-    const weights = exerciseLogs.map(log => log.peso)
+    // Group by date and get the maximum weight for each day
+    const logsByDate = exerciseLogs.reduce((acc, log) => {
+      const dateKey = log.data.split('T')[0] // Get YYYY-MM-DD
+      if (!acc[dateKey]) {
+        acc[dateKey] = []
+      }
+      acc[dateKey].push(log)
+      return acc
+    }, {} as Record<string, LogEntry[]>)
+
+    // Create aggregated history with max weight per day
+    const history = Object.entries(logsByDate)
+      .map(([, logsOnDate]) => ({
+        data: logsOnDate[0].data, // Use first log's full timestamp
+        peso: Math.max(...logsOnDate.map(l => l.peso)), // Max weight for that day
+        sessionsCount: logsOnDate.length // Track how many sessions on this day
+      }))
+      .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+
+    const weights = history.map(h => h.peso)
     const personalRecord = Math.max(...weights)
     const firstWeight = weights[0]
     const lastWeight = weights[weights.length - 1]
     const progress = firstWeight > 0 ? ((lastWeight - firstWeight) / firstWeight) * 100 : 0
 
-    const history = exerciseLogs.map(log => ({
-      data: log.data,
-      peso: log.peso
-    }))
-
     setExerciseData({
       exerciseName: selectedExercise,
-      totalLogs: exerciseLogs.length,
+      totalLogs: exerciseLogs.length, // Total sessions across all days
       personalRecord,
       lastWeight,
       progress,
