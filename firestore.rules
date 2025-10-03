@@ -12,7 +12,15 @@ service cloud.firestore {
     // usuarios collection
     match /usuarios/{userId} {
       allow read: if request.auth.uid == userId || isAdmin();
-      allow write: if request.auth.uid == userId;
+      allow write: if request.auth.uid == userId || isAdmin();
+    }
+    
+    // registrationRequests collection
+    match /registrationRequests/{requestId} {
+      allow read: if isAdmin();
+      allow create: if true; // Allow anyone to create registration requests
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
     
     // treinos collection
