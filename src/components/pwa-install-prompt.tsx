@@ -65,7 +65,7 @@ export function PWAInstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-50 animate-slide-up">
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-65 animate-slide-up">
       <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 w-10 h-10 bg-[#27AE60] rounded-lg flex items-center justify-center">
