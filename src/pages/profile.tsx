@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc } 
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 
@@ -260,6 +260,14 @@ export function Profile() {
           className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
         >
           Sair da Conta
+        </button>
+        
+        <button
+          onClick={() => navigate('/settings')}
+          className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md mt-3 flex items-center justify-center gap-2"
+        >
+          <Settings size={20} />
+          Configurações
         </button>
       </div>
 

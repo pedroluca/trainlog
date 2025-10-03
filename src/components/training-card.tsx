@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from './button'
 import { EllipsisVertical, Trash2 } from 'lucide-react'
-import { addDoc, collection, deleteDoc, doc, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import beepSound from '../assets/beep.mp3'
 
@@ -26,6 +26,7 @@ export function TrainingCard(props: TrainingCardProps) {
   const [setsDone, setSetsDone] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [audioEnabled, setAudioEnabled] = useState(false)
 
   const [editedTitle, setEditedTitle] = useState(title)
   const [editedSets, setEditedSets] = useState(sets)
@@ -35,8 +36,34 @@ export function TrainingCard(props: TrainingCardProps) {
     `${String(Math.floor(breakTime / 60)).padStart(2, '0')}:${String(Math.round(breakTime % 60)).padStart(2, '0')}`
   )
 
+  // Fetch audio setting on mount
+  useEffect(() => {
+    const fetchAudioSetting = async () => {
+      try {
+        const usuarioId = localStorage.getItem('usuarioId')
+        if (usuarioId) {
+          const userDocRef = doc(db, 'usuarios', usuarioId)
+          const userDoc = await getDoc(userDocRef)
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data()
+            // Audio is disabled by default
+            setAudioEnabled(userData.audioEnabled === true)
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao buscar configuração de áudio:', err)
+      }
+    }
+
+    fetchAudioSetting()
+  }, [])
+
   // Function to play beep sound when timer ends
   const playBeepSound = useCallback(() => {
+    // Only play if audio is enabled
+    if (!audioEnabled) return
+
     try {
       const audio = new Audio(beepSound)
       audio.volume = 0.5 // Set volume to 50%
@@ -46,7 +73,7 @@ export function TrainingCard(props: TrainingCardProps) {
     } catch (error) {
       console.error('Error initializing beep sound:', error)
     }
-  }, [])
+  }, [audioEnabled])
 
   const handleBreakTimeChange = (value: string) => {
     const sanitizedValue = value.replace(/[^0-9:]/g, '').slice(0, 5)

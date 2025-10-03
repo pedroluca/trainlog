@@ -6,6 +6,7 @@ import { Training } from './pages/training'
 import { Login } from './pages/login'
 import { Cadastro } from './pages/register'
 import { Profile } from './pages/profile'
+import { Settings } from './pages/settings'
 import { LogPage } from './pages/log'
 import { Progress } from './pages/progress'
 import { ResetPassword } from './pages/reset-password'
@@ -36,6 +37,7 @@ export function App() {
           <Route path='/train' element={<Training />} />
           <Route path='/progress' element={<Progress />} />
           <Route path='/profile' element={<Profile />} />
+          <Route path='/settings' element={<Settings />} />
         </Route>
 
         {/* Admin Routes (no layout) */}
