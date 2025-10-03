@@ -1,21 +1,25 @@
 {
-  "name": "TrainLog",
+  "name": "TrainLog - Seu Diário de Treinos",
   "short_name": "TrainLog",
+  "description": "Registre e acompanhe seus treinos de musculação",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
       "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
-  "theme_color": "#2c2c2c",
-  "background_color": "#2c2c2c",
-  "display": "standalone"
+  "theme_color": "#27AE60",
+  "background_color": "#1a1a1a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/"
 }
