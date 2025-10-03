@@ -132,10 +132,10 @@ export function Progress() {
 
   if (loading) {
     return (
-      <main className="flex items-center justify-center min-h-screen bg-gray-100">
+      <main className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-[#1a1a1a]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando progresso...</p>
+          <p className="text-gray-600 dark:text-gray-400">Carregando progresso...</p>
         </div>
       </main>
     )
@@ -143,11 +143,11 @@ export function Progress() {
 
   if (logs.length === 0) {
     return (
-      <main className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
+      <main className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-[#1a1a1a] p-6">
         <div className="text-center">
           <TrendingUp size={64} className="text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Sem Dados de Progresso</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Sem Dados de Progresso</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             Registre alguns treinos para ver seu progresso!
           </p>
           <button
@@ -162,14 +162,14 @@ export function Progress() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-24">
+    <main className="min-h-screen bg-gray-100 dark:bg-[#1a1a1a] pb-24">
       {/* Header */}
-      <header className="text-black p-6">
+      <header className="text-black dark:text-gray-100 p-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <TrendingUp size={28} />
           Progresso
         </h1>
-        <p className="text-black/80 text-sm mt-1">Acompanhe sua evolução</p>
+        <p className="text-black/80 dark:text-gray-400 text-sm mt-1">Acompanhe sua evolução</p>
       </header>
 
       <div className="p-6 space-y-6">
@@ -202,14 +202,14 @@ export function Progress() {
         </div>
 
         {/* Exercise Selector */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <label className="block text-gray-700 font-bold mb-3">
+        <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-6">
+          <label className="block text-gray-700 dark:text-gray-300 font-bold mb-3">
             Selecione o Exercício
           </label>
           <select
             value={selectedExercise}
             onChange={(e) => setSelectedExercise(e.target.value)}
-            className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#27AE60] focus:border-transparent transition-all"
+            className="w-full border-2 border-gray-300 dark:border-[#404040] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#27AE60] focus:border-transparent transition-all dark:bg-[#1a1a1a] dark:text-gray-100"
           >
             {exercisesList.map((exercise) => (
               <option key={exercise} value={exercise}>
@@ -224,23 +224,23 @@ export function Progress() {
           <>
             {/* Stats for Selected Exercise */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white rounded-xl shadow-md p-4 text-center">
-                <p className="text-gray-600 text-sm mb-1">Recorde Pessoal</p>
+              <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-4 text-center">
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Recorde Pessoal</p>
                 <p className="text-2xl font-bold text-[#27AE60]">{exerciseData.personalRecord}kg</p>
               </div>
-              <div className="bg-white rounded-xl shadow-md p-4 text-center">
-                <p className="text-gray-600 text-sm mb-1">Último Peso</p>
-                <p className="text-2xl font-bold text-gray-800">{exerciseData.lastWeight}kg</p>
+              <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-4 text-center">
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Último Peso</p>
+                <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{exerciseData.lastWeight}kg</p>
               </div>
-              <div className="bg-white rounded-xl shadow-md p-4 text-center">
-                <p className="text-gray-600 text-sm mb-1">Sessões</p>
-                <p className="text-2xl font-bold text-blue-600">{exerciseData.totalLogs}</p>
+              <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-4 text-center">
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Sessões</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{exerciseData.totalLogs}</p>
               </div>
             </div>
 
             {/* Professional Line Chart with Recharts */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Progressão de Peso</h3>
+            <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Progressão de Peso</h3>
               
               <div className="w-full h-80">
                 <ResponsiveContainer width="100%" height="100%">
@@ -258,10 +258,11 @@ export function Progress() {
                         <stop offset="95%" stopColor="#27AE60" stopOpacity={0.1}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" className="dark:stroke-gray-600" />
                     <XAxis 
                       dataKey="data" 
                       stroke="#666"
+                      className="dark:stroke-gray-400"
                       style={{ fontSize: '12px' }}
                       angle={-45}
                       textAnchor="end"
@@ -269,6 +270,7 @@ export function Progress() {
                     />
                     <YAxis 
                       stroke="#666"
+                      className="dark:stroke-gray-400"
                       style={{ fontSize: '12px' }}
                       label={{ value: 'Peso (kg)', angle: -90, position: 'insideLeft', style: { fill: '#666' } }}
                     />
@@ -296,7 +298,7 @@ export function Progress() {
               </div>
 
               {exerciseData.history.length > 1 && (
-                <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-600">
+                <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-[#27AE60]"></div>
                     <span>Progressão de Peso</span>
@@ -310,8 +312,8 @@ export function Progress() {
             </div>
 
             {/* Recent Sessions Table */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Sessões Recentes</h3>
+            <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Sessões Recentes</h3>
               
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {exerciseData.history.slice().reverse().slice(0, 10).map((entry, index) => {
@@ -321,14 +323,14 @@ export function Progress() {
                     <div 
                       key={index} 
                       className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-                        isPR ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50 hover:bg-gray-100'
+                        isPR ? 'bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700' : 'bg-gray-50 dark:bg-[#1a1a1a] hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         {isPR && <Award size={20} className="text-yellow-500" />}
                         <div>
-                          <p className="text-sm font-bold text-gray-800">{entry.peso}kg</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{entry.peso}kg</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500">
                             {new Date(entry.data).toLocaleDateString('pt-BR', { 
                               day: '2-digit', 
                               month: 'short',
@@ -348,22 +350,22 @@ export function Progress() {
               </div>
 
               {exerciseData.history.length > 10 && (
-                <p className="text-xs text-gray-500 text-center mt-4">
+                <p className="text-xs text-gray-500 dark:text-gray-500 text-center mt-4">
                   Mostrando últimas 10 de {exerciseData.history.length} sessões
                 </p>
               )}
             </div>
 
             {/* Progress Indicator */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Evolução Geral</h3>
+            <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Evolução Geral</h3>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-600">Peso Inicial</span>
-                    <span className="font-bold">{exerciseData.history[0]?.peso}kg</span>
+                    <span className="text-gray-600 dark:text-gray-400">Peso Inicial</span>
+                    <span className="font-bold dark:text-gray-100">{exerciseData.history[0]?.peso}kg</span>
                   </div>
-                  <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
                     <div
                       className={`h-full transition-all duration-1000 ${
                         exerciseData.progress >= 0
@@ -374,15 +376,15 @@ export function Progress() {
                     />
                   </div>
                   <div className="flex justify-between text-sm mt-2">
-                    <span className="text-gray-600">Peso Atual</span>
-                    <span className="font-bold">{exerciseData.lastWeight}kg</span>
+                    <span className="text-gray-600 dark:text-gray-400">Peso Atual</span>
+                    <span className="font-bold dark:text-gray-100">{exerciseData.lastWeight}kg</span>
                   </div>
                 </div>
                 <div className="text-center">
-                  <p className={`text-3xl font-bold ${exerciseData.progress >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className={`text-3xl font-bold ${exerciseData.progress >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                     {exerciseData.progress > 0 ? '+' : ''}{exerciseData.progress.toFixed(1)}%
                   </p>
-                  <p className="text-xs text-gray-600">de evolução</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">de evolução</p>
                 </div>
               </div>
             </div>
@@ -396,15 +398,15 @@ export function Progress() {
 // Stat Card Component
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) {
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+    <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md overflow-hidden">
       <div className={`bg-gradient-to-br ${color} p-3 flex justify-center`}>
         <div className="text-white">
           {icon}
         </div>
       </div>
       <div className="p-3 text-center">
-        <p className="text-gray-600 text-xs mb-1">{label}</p>
-        <p className="text-xl font-bold text-gray-800">{value}</p>
+        <p className="text-gray-600 dark:text-gray-400 text-xs mb-1">{label}</p>
+        <p className="text-xl font-bold text-gray-800 dark:text-gray-100">{value}</p>
       </div>
     </div>
   )

@@ -66,20 +66,20 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-60">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 overflow-y-auto max-h-screen">
-        <h2 className="text-xl font-bold mb-4">Adicionar Exercício</h2>
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center z-60">
+      <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-full max-w-md mx-4 overflow-y-auto max-h-screen">
+        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Adicionar Exercício</h2>
 
         <form className="space-y-4">
           <div>
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="exercise-select">
+            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="exercise-select">
               Escolher exercício:
             </label>
             <select
               id="exercise-select"
               value={selectedExerciseId}
               onChange={(e) => handleSelectExercise(e.target.value)}
-              className="w-full border rounded px-3 py-2 bg-white"
+              className="w-full border dark:border-[#404040] rounded px-3 py-2 bg-white dark:bg-[#1a1a1a] dark:text-gray-100"
             >
               <option value="">-- Selecione um exercício --</option>
               {exerciseLibrary.map((exercise) => (
@@ -92,15 +92,15 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
 
           <div className="relative mb-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-gray-300 dark:border-[#404040]"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">ou preencher manualmente</span>
+              <span className="bg-white dark:bg-[#2d2d2d] px-2 text-gray-500 dark:text-gray-400">ou preencher manualmente</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="titulo">
+            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="titulo">
               Nome do exercício:
             </label>
             <input
@@ -108,13 +108,13 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               type="text"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
               placeholder="Ex: Supino Inclinado"
               required
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="series">
+            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="series">
               Séries:
             </label>
             <input
@@ -122,13 +122,13 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               type="number"
               value={series || ''}
               onChange={(e) => setSeries(Number(e.target.value))}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
               placeholder="Ex: 3"
               required
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="repeticoes">
+            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="repeticoes">
               Repetições:
             </label>
             <input
@@ -136,13 +136,13 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               type="number"
               value={repeticoes || ''}
               onChange={(e) => setRepeticoes(Number(e.target.value))}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
               placeholder="Ex: 12"
               required
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="peso">
+            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="peso">
               Peso (kg):
             </label>
             <input
@@ -150,13 +150,13 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               type="number"
               value={peso || ''}
               onChange={(e) => setPeso(Number(e.target.value))}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
               placeholder="Ex: 20"
               required
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="tempoIntervalo">
+            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="tempoIntervalo">
               Tempo de intervalo (MM:SS):
             </label>
             <input
@@ -164,7 +164,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               type="text"
               value={tempoIntervalo}
               onChange={(e) => handleBreakTimeChange(e.target.value)}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
               placeholder="Ex: 01:30"
               required
             />
@@ -172,8 +172,8 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
           <div className="flex justify-end">
             <Button
               type="button"
-              className="bg-gray-300 hover:bg-gray-400 mr-2"
-              buttonTextColor='text-gray-700'
+              className="bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2"
+              buttonTextColor='text-gray-700 dark:text-gray-300'
               onClick={onClose}
             >
               Cancelar

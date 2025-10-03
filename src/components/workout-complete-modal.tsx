@@ -35,7 +35,7 @@ export function WorkoutCompleteModal({ isOpen, onClose, workoutName }: WorkoutCo
   return (
     <div className="fixed inset-0 z-67 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 animate-fade-in">
       <div 
-        className={`bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all duration-300 ${
+        className={`bg-gradient-to-br from-[#27AE60] to-[#219150] dark:from-[#1f8b4a] dark:to-[#186a39] rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all duration-300 ${
           show ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
         }`}
       >
@@ -50,14 +50,14 @@ export function WorkoutCompleteModal({ isOpen, onClose, workoutName }: WorkoutCo
         {/* Trophy icon with animation */}
         <div className="flex justify-center mb-6">
           <div className="relative">
-            <Trophy size={80} className="text-yellow-300 animate-bounce" />
+            <Trophy size={80} className="text-yellow-300 dark:text-yellow-200 animate-bounce" />
             <Sparkles 
               size={24} 
-              className="absolute -top-2 -right-2 text-yellow-200 animate-pulse" 
+              className="absolute -top-2 -right-2 text-yellow-200 dark:text-yellow-100 animate-pulse" 
             />
             <Sparkles 
               size={20} 
-              className="absolute -bottom-1 -left-1 text-yellow-200 animate-pulse" 
+              className="absolute -bottom-1 -left-1 text-yellow-200 dark:text-yellow-100 animate-pulse" 
               style={{ animationDelay: '0.5s' }}
             />
           </div>
@@ -72,7 +72,7 @@ export function WorkoutCompleteModal({ isOpen, onClose, workoutName }: WorkoutCo
           Você completou todos os exercícios de
         </p>
 
-        <div className="bg-white/20 rounded-lg p-3 mb-6">
+        <div className="bg-white/20 dark:bg-white/15 rounded-lg p-3 mb-6">
           <p className="text-white font-bold text-center text-xl">
             {workoutName}
           </p>
@@ -85,7 +85,7 @@ export function WorkoutCompleteModal({ isOpen, onClose, workoutName }: WorkoutCo
         {/* Button */}
         <Button
           onClick={onClose}
-          className="w-full bg-white hover:bg-gray-100 font-bold py-4 text-lg shadow-lg"
+          className="w-full bg-white dark:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-300 font-bold py-4 text-lg shadow-lg"
           buttonTextColor="text-[#27AE60] hover:text-[#219150]"
         >
           Obrigado! 💪

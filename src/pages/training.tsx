@@ -172,13 +172,13 @@ export function Training() {
   const currentExercise = exercises[currentExerciseIndex]
 
   return (
-    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 lg:px-64 pb-32">
+    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64 pb-32">
       <div className="flex items-center justify-center w-full max-w-md mb-4">
-        <button className="cursor-pointer" onClick={handlePreviousDay}>
+        <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handlePreviousDay}>
           <ChevronLeft />
         </button>
-        <h2 className="text-xl w-[60%] text-center font-bold capitalize">{daysOfWeek[currentDayIndex]}</h2>
-        <button className="cursor-pointer" onClick={handleNextDay}>
+        <h2 className="text-xl w-[60%] text-center font-bold capitalize text-gray-800 dark:text-gray-100">{daysOfWeek[currentDayIndex]}</h2>
+        <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handleNextDay}>
           <ChevronRight />
         </button>
       </div>
@@ -195,9 +195,9 @@ export function Training() {
         ) : (
           selectedWorkout ? (
             <>
-              <h3 className="text-2xl w-full self-start border-b border-gray-400 font-semibold pb-2">Dia de: {selectedWorkout.musculo}</h3>
+              <h3 className="text-2xl w-full self-start border-b border-gray-400 font-semibold pb-2 dark:text-gray-300">Dia de: {selectedWorkout.musculo}</h3>
               <h3 className="text-xl mt-4 w-full font-semibold flex justify-between items-center">
-                <span>Exercícios</span>
+                <span className='dark:text-gray-300'>Exercícios</span>
     
                 <section className="flex gap-2">
                   <Button
@@ -223,8 +223,8 @@ export function Training() {
                     <button
                       className={`cursor-pointer p-2 rounded-full transition-colors ${
                         currentExerciseIndex === 0
-                          ? 'text-gray-300 cursor-not-allowed'
-                          : 'text-gray-700 hover:bg-gray-200'
+                          ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                       }`}
                       onClick={handlePreviousExercise}
                       disabled={currentExerciseIndex === 0}
@@ -232,15 +232,15 @@ export function Training() {
                       <ChevronLeft size={32} />
                     </button>
                     
-                    <span className="text-gray-600 font-medium">
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">
                       {currentExerciseIndex + 1} de {exercises.length}
                     </span>
                     
                     <button
                       className={`cursor-pointer p-2 rounded-full transition-colors ${
                         currentExerciseIndex === exercises.length - 1
-                          ? 'text-gray-300 cursor-not-allowed'
-                          : 'text-gray-700 hover:bg-gray-200'
+                          ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                       }`}
                       onClick={handleNextExercise}
                       disabled={currentExerciseIndex === exercises.length - 1}
@@ -278,8 +278,8 @@ export function Training() {
                           index === currentExerciseIndex
                             ? 'bg-[#27AE60] w-8'
                             : exercises[index].isFeito
-                            ? 'bg-green-300'
-                            : 'bg-gray-300'
+                            ? 'bg-green-300 dark:bg-green-600'
+                            : 'bg-gray-300 dark:bg-gray-600'
                         }`}
                         onClick={() => setCurrentExerciseIndex(index)}
                       />
@@ -288,16 +288,16 @@ export function Training() {
                 </div>
               ) : (
                 <>
-                  <p className="text-gray-700 mt-4 text-center">Desculpe, você ainda não tem exercícios registrados para este treino!</p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-4 text-center">Desculpe, você ainda não tem exercícios registrados para este treino!</p>
                 </>
               )}
             </>
           ) : (
             <>
-              <p className="text-gray-700">Desculpe, você não tem treinos registrados para este dia!</p>
+              <p className="text-gray-700 dark:text-gray-300">Desculpe, você não tem treinos registrados para este dia!</p>
               <Button
-                className="bg-gray-200 border-1 border-gray-400 hover:bg-gray-400 mt-4"
-                buttonTextColor="text-gray-500 hover:text-white"
+                className="bg-gray-200 dark:bg-gray-700 border-1 border-gray-400 dark:border-gray-600 hover:bg-gray-400 dark:hover:bg-gray-600 mt-4"
+                buttonTextColor="text-gray-500 dark:text-gray-300 hover:text-white"
                 onClick={() => setIsWorkoutModalOpen(true)}
               >
                 Adicionar treino
@@ -329,15 +329,15 @@ export function Training() {
       )}
 
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
-          <div className="bg-white rounded-lg p-6 w-80">
-            <h2 className="text-xl font-bold mb-4">Reiniciar Exercícios?</h2>
-            <p className="text-gray-700 mb-6">Tem certeza de que deseja reiniciar todos os exercícios de hoje?</p>
+        <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4">
+          <div className="bg-white dark:bg-[#2d2d2d] rounded-lg p-6 w-80 border border-gray-200 dark:border-[#404040]">
+            <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Reiniciar Exercícios?</h2>
+            <p className="text-gray-700 dark:text-gray-300 mb-6">Tem certeza de que deseja reiniciar todos os exercícios de hoje?</p>
             <div className="flex justify-end">
               <Button
                 type="button"
-                buttonTextColor="text-gray-800"
-                className="bg-gray-300 hover:bg-gray-400 mr-2"
+                buttonTextColor="text-gray-800 dark:text-gray-100"
+                className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 mr-2"
                 onClick={() => setIsResetModalOpen(false)} // Fecha o modal
               >
                 Cancelar

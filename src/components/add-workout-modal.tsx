@@ -89,13 +89,13 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
 
   if (showTemplates) {
     return (
-      <div className="fixed inset-0 z-61 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
-        <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
-          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+      <div className="fixed inset-0 z-61 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4">
+        <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2 dark:text-gray-100">
             <BookOpen size={28} />
             Modelos de Treino
           </h2>
-          <p className="text-gray-600 text-sm mb-6">Escolha um modelo pronto para começar</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">Escolha um modelo pronto para começar</p>
 
           {/* Category Filter */}
           <div className="flex gap-2 mb-6 flex-wrap">
@@ -104,7 +104,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedCategory === 'all'
                   ? 'bg-[#27AE60] text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Todos
@@ -116,7 +116,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === cat.value
                     ? 'bg-[#27AE60] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 {cat.emoji} {cat.label}
@@ -129,14 +129,14 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
             {filteredTemplates.map((template) => (
               <div
                 key={template.id}
-                className="border-2 border-gray-200 rounded-lg p-4 hover:border-[#27AE60] transition-all cursor-pointer hover:shadow-md"
+                className="border-2 border-gray-200 dark:border-[#404040] dark:bg-[#1a1a1a] rounded-lg p-4 hover:border-[#27AE60] transition-all cursor-pointer hover:shadow-md"
                 onClick={() => handleSelectTemplate(template)}
               >
                 <div className="flex items-start gap-3">
                   <div className="text-3xl">{template.icon}</div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-gray-800 mb-1">{template.nome}</h3>
-                    <p className="text-sm text-gray-600">{template.descricao}</p>
+                    <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">{template.nome}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{template.descricao}</p>
                   </div>
                 </div>
               </div>
@@ -144,7 +144,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
           </div>
 
           {filteredTemplates.length === 0 && (
-            <p className="text-center text-gray-500 py-8">
+            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
               Nenhum modelo encontrado nesta categoria.
             </p>
           )}
@@ -153,8 +153,8 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
           <div className="flex gap-2 mt-6">
             <Button
               type="button"
-              className="w-full bg-gray-300 hover:bg-gray-400"
-              buttonTextColor="text-gray-800"
+              className="w-full bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500"
+              buttonTextColor="text-gray-800 dark:text-gray-300"
               onClick={() => setShowTemplates(false)}
             >
               ← Voltar
@@ -164,7 +164,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
           <Button
             type="button"
             className="bg-transparent hover:bg-transparent absolute top-2 right-2 rounded-full p-1"
-            buttonTextColor='text-gray-700'
+            buttonTextColor='text-gray-700 dark:text-gray-300'
             onClick={onClose}
           >
             <X />
@@ -175,9 +175,9 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
   }
 
   return (
-    <div className="fixed inset-0 z-60 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
-      <div className="bg-white rounded-lg p-6 w-[100%] max-w-md relative">
-        <h2 className="text-xl font-bold mb-4">Criar um novo Treino</h2>
+    <div className="fixed inset-0 z-60 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4">
+      <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-[100%] max-w-md relative">
+        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Criar um novo Treino</h2>
         
         {/* Browse Templates Button */}
         <Button
@@ -192,20 +192,20 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-300 dark:border-[#404040]"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">ou</span>
+            <span className="bg-white dark:bg-[#2d2d2d] px-2 text-gray-500 dark:text-gray-400">ou</span>
           </div>
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Grupo Muscular:</label>
+          <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Grupo Muscular:</label>
           <input
             type="text"
             value={muscleGroup}
             onChange={(e) => setMuscleGroup(e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
             placeholder='Ex: Costas e Bíceps'
           />
         </div>
@@ -221,21 +221,21 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
         
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-300 dark:border-[#404040]"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">ou</span>
+            <span className="bg-white dark:bg-[#2d2d2d] px-2 text-gray-500 dark:text-gray-400">ou</span>
           </div>
         </div>
 
-        <h3 className="text-lg font-bold mb-4">Adicionar treino compartilhado:</h3>
+        <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Adicionar treino compartilhado:</h3>
         <div className="mb-4">
-          <label className="block text-gray-700 font-bold mb-2">Código de compartilhamento:</label>
+          <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Código de compartilhamento:</label>
           <input
             type="text"
             value={sharedWorkoutId}
             onChange={(e) => setSharedWorkoutId(e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
             placeholder='Ex: 1a2b3c4d5f6g'
           />
         </div>
@@ -253,7 +253,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
         <Button
           type="button"
           className="bg-transparent hover:bg-transparent absolute top-2 right-2 rounded-full p-1"
-          buttonTextColor='text-gray-700'
+          buttonTextColor='text-gray-700 dark:text-gray-300'
           onClick={onClose}
         >
           <X />

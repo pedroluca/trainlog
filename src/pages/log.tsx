@@ -106,20 +106,20 @@ export function LogPage() {
 
   const renderLogGroup = (dateKey: string, logs: LogEntry[]) => (
     <div key={dateKey} className="mb-6">
-      <h3 className="text-lg font-semibold mb-3 text-gray-800 border-b border-gray-300 pb-2">
+      <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-100 border-b border-gray-300 dark:border-[#404040] pb-2">
         {formatDate(dateKey)} - {logs.length} exercício{logs.length > 1 ? 's' : ''}
       </h3>
       <div className="space-y-2">
         {logs.map((log) => (
-          <div key={log.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+          <div key={log.id} className="bg-white dark:bg-[#2d2d2d] rounded-lg p-4 shadow-sm border border-gray-200 dark:border-[#404040]">
             <div className="flex justify-between items-start">
               <div className="flex-1">
-                <h4 className="font-semibold text-gray-800">{log.titulo}</h4>
-                <p className="text-gray-600 text-sm">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-100">{log.titulo}</h4>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   {log.series} séries × {log.repeticoes} repetições × {log.peso}kg
                 </p>
               </div>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-gray-500">
                 {formatTime(log.data)}
               </span>
             </div>
@@ -134,23 +134,23 @@ export function LogPage() {
 
   if (loading && !showPaginated) {
     return (
-      <main className='flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 lg:px-64'>
+      <main className='flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64'>
         <div className="animate-pulse space-y-4 w-full max-w-2xl">
-          <div className="h-8 bg-gray-300 rounded w-48"></div>
-          <div className="h-20 bg-gray-300 rounded"></div>
-          <div className="h-20 bg-gray-300 rounded"></div>
-          <div className="h-20 bg-gray-300 rounded"></div>
+          <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-48"></div>
+          <div className="h-20 bg-gray-300 dark:bg-gray-600 rounded"></div>
+          <div className="h-20 bg-gray-300 dark:bg-gray-600 rounded"></div>
+          <div className="h-20 bg-gray-300 dark:bg-gray-600 rounded"></div>
         </div>
       </main>
     )
   }
 
   return (
-    <main className='flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 lg:px-64 pb-32'>
+    <main className='flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64 pb-32'>
       <div className="w-full max-w-2xl">
         <div className="flex justify-between items-center mb-6">
-          <h1 className='text-2xl font-bold text-gray-800'>Histórico de Exercícios</h1>
-          <div className="text-sm text-gray-600">
+          <h1 className='text-2xl font-bold text-gray-800 dark:text-gray-100'>Histórico de Exercícios</h1>
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             Total: {totalCount} exercícios
           </div>
         </div>
@@ -158,10 +158,10 @@ export function LogPage() {
         {!showPaginated ? (
           <>
             <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">Últimos 7 dias</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Últimos 7 dias</h2>
               {Object.keys(groupedLast7Days).length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">Nenhum exercício realizado nos últimos 7 dias.</p>
+                  <p className="text-gray-500 dark:text-gray-400">Nenhum exercício realizado nos últimos 7 dias.</p>
                 </div>
               ) : (
                 Object.entries(groupedLast7Days).map(([dateKey, logs]) => 
@@ -191,14 +191,14 @@ export function LogPage() {
                 <ChevronLeft size={16} />
                 Voltar aos últimos 7 dias
               </Button>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Mostrando {paginatedLogs.length} de {totalCount}
               </div>
             </div>
 
             {Object.keys(groupedPaginated).length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">Nenhum exercício encontrado.</p>
+                <p className="text-gray-500 dark:text-gray-400">Nenhum exercício encontrado.</p>
               </div>
             ) : (
               <>

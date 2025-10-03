@@ -198,9 +198,9 @@ export function Profile() {
   }
   
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 p-4 pb-24">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
       {/* Profile Card */}
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md border border-gray-200">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-8 w-full max-w-md border border-gray-200 dark:border-[#404040]">
         <div className="flex flex-col items-center mb-6">
           {/* Avatar Circle with Image Upload */}
           <div className="relative mb-4">
@@ -237,19 +237,19 @@ export function Profile() {
               disabled={uploadingImage}
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Perfil</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Perfil</h1>
         </div>
         
         <div className="space-y-4 mb-6">
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <p className="text-sm text-gray-500 mb-1">Nome</p>
-            <p className="text-lg font-semibold text-gray-800">
+          <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg p-4 border border-gray-200 dark:border-[#404040]">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Nome</p>
+            <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
               {nome || 'Carregando...'}
             </p>
           </div>
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <p className="text-sm text-gray-500 mb-1">Email</p>
-            <p className="text-lg font-semibold text-gray-800">
+          <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg p-4 border border-gray-200 dark:border-[#404040]">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Email</p>
+            <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
               {email || 'Carregando...'}
             </p>
           </div>
@@ -272,10 +272,10 @@ export function Profile() {
       </div>
 
       {/* Workouts Section */}
-      <div className="bg-white shadow-lg rounded-xl py-6 px-4 w-full max-w-2xl mt-8 border border-gray-200">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl py-6 px-4 w-full max-w-2xl mt-8 border border-gray-200 dark:border-[#404040]">
         <div className="flex items-center justify-between mb-6 px-2">
-          <h2 className="text-2xl font-bold text-gray-800">Seus Treinos</h2>
-          <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Seus Treinos</h2>
+          <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#1a1a1a] px-3 py-1 rounded-full">
             {workouts.length} {workouts.length === 1 ? 'treino' : 'treinos'}
           </span>
         </div>
@@ -288,7 +288,7 @@ export function Profile() {
           </div>
         ) : workouts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg mb-4">Você ainda não tem treinos cadastrados</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">Você ainda não tem treinos cadastrados</p>
             <Button
               onClick={() => navigate('/train')}
               className="bg-[#27AE60] hover:bg-[#219150] text-white px-6 py-2"
@@ -301,14 +301,14 @@ export function Profile() {
             {workouts.map((workout) => (
               <div
                 key={workout.id}
-                className="bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg p-4 transition-colors"
+                className="bg-gray-50 dark:bg-[#1a1a1a] hover:bg-gray-100 dark:hover:bg-[#252525] border border-gray-200 dark:border-[#404040] rounded-lg p-4 transition-colors"
               >
                 {/* Info Section */}
                 <div className="mb-3">
-                  <h3 className="text-lg font-bold text-gray-800 mb-1">
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-1">
                     {workout.dia}
                   </h3>
-                  <p className="text-base text-gray-600">
+                  <p className="text-base text-gray-600 dark:text-gray-400">
                     {workout.musculo}
                   </p>
                 </div>
@@ -370,15 +370,15 @@ export function Profile() {
       )}
 
       {isDeleteModalOpen && selectedWorkout && (
-        <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4">
-          <div className="bg-white rounded-lg p-6 w-80">
-            <h2 className="text-xl font-bold mb-4">Confirmar Exclusão</h2>
-            <p className="text-gray-700 mb-6">Tem certeza de que deseja excluir este treino?</p>
+        <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4">
+          <div className="bg-white dark:bg-[#2d2d2d] rounded-lg p-6 w-80 border border-gray-200 dark:border-[#404040]">
+            <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Confirmar Exclusão</h2>
+            <p className="text-gray-700 dark:text-gray-300 mb-6">Tem certeza de que deseja excluir este treino?</p>
             <div className="flex justify-end">
               <Button
                 type="button"
-                buttonTextColor="text-gray-800"
-                className="bg-gray-300 hover:bg-gray-400 mr-2"
+                buttonTextColor="text-gray-800 dark:text-gray-100"
+                className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 mr-2"
                 onClick={() => setIsDeleteModalOpen(false)}
               >
                 Cancelar
@@ -404,10 +404,10 @@ export function Profile() {
 
       {/* Footer Info Section */}
       <div className="mt-12 text-center space-y-2 pb-8">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           © {new Date().getFullYear()} TrainLog. All rights reserved.
         </p>
-        <p className="text-xs text-gray-600">
+        <p className="text-xs text-gray-600 dark:text-gray-300">
           Desenvolvido por{' '}
           <a 
             href='https://pedroluca.tech' 
@@ -418,7 +418,7 @@ export function Profile() {
             Pedro Luca Prates
           </a>
         </p>
-        <p className="text-xs text-gray-400">{getVersionWithPrefix()}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">{getVersionWithPrefix()}</p>
       </div>
     </main>
   )
@@ -426,15 +426,15 @@ export function Profile() {
 
 export const WorkoutCardSkeleton = () => {
   return (
-    <div className='animate-pulse bg-gray-50 border border-gray-200 rounded-lg p-4'>
+    <div className='animate-pulse bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] rounded-lg p-4'>
       <div className='mb-3'>
-        <div className='h-6 w-32 bg-gray-300 rounded mb-2'></div>
-        <div className='h-5 w-40 bg-gray-300 rounded'></div>
+        <div className='h-6 w-32 bg-gray-300 dark:bg-gray-600 rounded mb-2'></div>
+        <div className='h-5 w-40 bg-gray-300 dark:bg-gray-600 rounded'></div>
       </div>
       <div className='flex gap-2'>
-        <div className='h-11 w-12 bg-gray-300 rounded-lg'></div>
-        <div className='h-11 w-12 bg-gray-300 rounded-lg'></div>
-        <div className='h-11 w-12 bg-gray-300 rounded-lg'></div>
+        <div className='h-11 w-12 bg-gray-300 dark:bg-gray-600 rounded-lg'></div>
+        <div className='h-11 w-12 bg-gray-300 dark:bg-gray-600 rounded-lg'></div>
+        <div className='h-11 w-12 bg-gray-300 dark:bg-gray-600 rounded-lg'></div>
       </div>
     </div>
   )

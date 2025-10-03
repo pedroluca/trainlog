@@ -202,31 +202,31 @@ export function TrainingCard(props: TrainingCardProps) {
   return (
     <div
       className={`shadow-md relative rounded-lg overflow-hidden p-6 my-4 mx-2 transition-all min-h-[500px] flex flex-col ${
-        isFinished ? 'bg-[#27AE60] border-green-400' : 'bg-white'
+        isFinished ? 'bg-[#27AE60] border-green-400' : 'bg-white dark:bg-[#2d2d2d] border-gray-200 dark:border-[#404040]'
       }`}
     >
       <button
-        className={`absolute top-4 right-4 cursor-pointer z-10 ${isFinished ? 'text-[#f4f4f4] hover:bg-[#219150]' : 'text-gray-700 hover:bg-gray-100'} rounded-full p-2`}
+        className={`absolute top-4 right-4 cursor-pointer z-10 ${isFinished ? 'text-[#f4f4f4] hover:bg-[#219150]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'} rounded-full p-2`}
         onClick={() => setIsModalOpen(true)}
       >
         <EllipsisVertical />
       </button>
 
-      <h2 className={`text-3xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800'}`}>{title}</h2>
+      <h2 className={`text-3xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h2>
       
       {!isBreakTime ? (
         <>
           <div className='mb-auto'>
-            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
+            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
               <strong>Repetição:</strong> {sets} x {reps}
             </p>
-            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
+            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
               <strong>Carga:</strong> {weight} kg
             </p>
-            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
+            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
               <strong>Descanso:</strong> {formatTime(breakTime)} min
             </p>
-            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700'}`}>
+            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
               <strong>Você fez:</strong> {isFinished ? sets : setsDone} séries de {sets}
             </p>
           </div>
@@ -242,11 +242,11 @@ export function TrainingCard(props: TrainingCardProps) {
       ) : (
         <>
           <div className='mb-auto flex flex-col items-center justify-center flex-1'>
-            <p className='text-xl mb-6 text-gray-700 text-center'>
+            <p className='text-xl mb-6 text-gray-700 dark:text-gray-300 text-center'>
               <strong>Séries feitas:</strong> {setsDone + 1} de {sets} com {reps} repetições cada
             </p>
-            <h2 className='text-2xl font-bold mb-4 text-gray-500'>Intervalo de descanso:</h2>
-            <p className='text-gray-700 text-6xl font-mono mb-8'>{formatTime(timeLeft)}</p>
+            <h2 className='text-2xl font-bold mb-4 text-gray-500 dark:text-gray-400'>Intervalo de descanso:</h2>
+            <p className='text-gray-700 dark:text-gray-300 text-6xl font-mono mb-8'>{formatTime(timeLeft)}</p>
           </div>
           <Button
             className='w-full bg-red-400 hover:bg-red-500 py-4 text-lg rounded text-white font-bold mt-4'
@@ -265,53 +265,53 @@ export function TrainingCard(props: TrainingCardProps) {
       )}
 
       {isModalOpen && (
-        <div className='fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4'>
-          <div className='bg-white rounded-lg p-6 w-96'>
-            <h2 className='text-xl font-bold mb-4'>Editar Exercício</h2>
+        <div className='fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4'>
+          <div className='bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-96'>
+            <h2 className='text-xl font-bold mb-4 dark:text-gray-100'>Editar Exercício</h2>
             <form>
               <div className='mb-4'>
-                <label className='block text-gray-700 font-bold mb-2'>Nome do Exercício:</label>
+                <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Nome do Exercício:</label>
                 <input
                   type='text'
                   value={editedTitle}
                   onChange={(e) => setEditedTitle(e.target.value)}
-                  className='w-full border rounded px-3 py-2'
+                  className='w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100'
                 />
               </div>
               <div className='mb-4'>
-                <label className='block text-gray-700 font-bold mb-2'>Séries:</label>
+                <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Séries:</label>
                 <input
                   type='number'
                   value={editedSets}
                   onChange={(e) => setEditedSets(Number(e.target.value))}
-                  className='w-full border rounded px-3 py-2'
+                  className='w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100'
                 />
               </div>
               <div className='mb-4'>
-                <label className='block text-gray-700 font-bold mb-2'>Repetições:</label>
+                <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Repetições:</label>
                 <input
                   type='number'
                   value={editedReps}
                   onChange={(e) => setEditedReps(Number(e.target.value))}
-                  className='w-full border rounded px-3 py-2'
+                  className='w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100'
                 />
               </div>
               <div className='mb-4'>
-                <label className='block text-gray-700 font-bold mb-2'>Peso (kg):</label>
+                <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Peso (kg):</label>
                 <input
                   type='number'
                   value={editedWeight}
                   onChange={(e) => setEditedWeight(Number(e.target.value))}
-                  className='w-full border rounded px-3 py-2'
+                  className='w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100'
                 />
               </div>
               <div className='mb-4'>
-                <label className='block text-gray-700 font-bold mb-2'>Tempo de Descanso (MM:SS):</label>
+                <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Tempo de Descanso (MM:SS):</label>
                 <input
                   type='text'
                   value={editedBreakTime}
                   onChange={(e) => handleBreakTimeChange(e.target.value)}
-                  className='w-full border rounded px-3 py-2'
+                  className='w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100'
                   placeholder='00:00'
                 />
               </div>
@@ -325,8 +325,8 @@ export function TrainingCard(props: TrainingCardProps) {
                 </Button>
                 <Button
                   type='button'
-                  buttonTextColor='text-gray-800'
-                  className='bg-gray-300 hover:bg-gray-400 mr-2'
+                  buttonTextColor='text-gray-800 dark:text-gray-300'
+                  className='bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2'
                   onClick={() => setIsModalOpen(false)}
                 >
                   Cancelar
@@ -344,15 +344,15 @@ export function TrainingCard(props: TrainingCardProps) {
       )}
 
       {isDeleteModalOpen && (
-        <div className='fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] flex items-center justify-center px-4'>
-          <div className='bg-white rounded-lg p-6 w-80'>
-            <h2 className='text-xl font-bold mb-4'>Confirmar Exclusão</h2>
-            <p className='text-gray-700 mb-6'>Tem certeza de que deseja excluir este exercício?</p>
+        <div className='fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4'>
+          <div className='bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-80'>
+            <h2 className='text-xl font-bold mb-4 dark:text-gray-100'>Confirmar Exclusão</h2>
+            <p className='text-gray-700 dark:text-gray-300 mb-6'>Tem certeza de que deseja excluir este exercício?</p>
             <div className='flex justify-end'>
               <Button
                 type='button'
-                buttonTextColor='text-gray-800'
-                className='bg-gray-300 hover:bg-gray-400 mr-2'
+                buttonTextColor='text-gray-800 dark:text-gray-300'
+                className='bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2'
                 onClick={() => setIsDeleteModalOpen(false)}
               >
                 Cancelar
@@ -374,18 +374,18 @@ export function TrainingCard(props: TrainingCardProps) {
 
 export const TrainingCardSkeleton = () => {
   return (
-    <div className='animate-pulse shadow-md relative rounded-lg p-6 my-4 mx-2 bg-gray-100 border border-gray-300 min-h-[500px] flex flex-col'>
-      <div className='absolute top-4 right-4 h-6 w-6 bg-gray-300 rounded-full'></div>
-      <div className='h-8 w-48 bg-gray-300 rounded mb-6 mr-7'></div>
+    <div className='animate-pulse shadow-md relative rounded-lg p-6 my-4 mx-2 bg-gray-100 dark:bg-[#1a1a1a] border border-gray-300 dark:border-[#404040] min-h-[500px] flex flex-col'>
+      <div className='absolute top-4 right-4 h-6 w-6 bg-gray-300 dark:bg-gray-600 rounded-full'></div>
+      <div className='h-8 w-48 bg-gray-300 dark:bg-gray-600 rounded mb-6 mr-7'></div>
 
       <div className='space-y-3 mb-auto'>
-        <div className='h-5 w-56 bg-gray-300 rounded'></div>
-        <div className='h-5 w-40 bg-gray-300 rounded'></div>
-        <div className='h-5 w-48 bg-gray-300 rounded'></div>
-        <div className='h-5 w-60 bg-gray-300 rounded'></div>
+        <div className='h-5 w-56 bg-gray-300 dark:bg-gray-600 rounded'></div>
+        <div className='h-5 w-40 bg-gray-300 dark:bg-gray-600 rounded'></div>
+        <div className='h-5 w-48 bg-gray-300 dark:bg-gray-600 rounded'></div>
+        <div className='h-5 w-60 bg-gray-300 dark:bg-gray-600 rounded'></div>
       </div>
 
-      <div className='h-14 w-full bg-gray-300 rounded mt-4'></div>
+      <div className='h-14 w-full bg-gray-300 dark:bg-gray-600 rounded mt-4'></div>
     </div>
   )
 }
