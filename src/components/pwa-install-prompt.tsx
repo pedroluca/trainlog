@@ -28,7 +28,7 @@ export function PWAInstallPrompt() {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       
-      // Show prompt after 30 seconds of usage
+      // Show prompt after 15 seconds of usage
       setTimeout(() => {
         setShowPrompt(true)
       }, 15000)
