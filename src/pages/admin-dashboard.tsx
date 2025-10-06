@@ -12,6 +12,7 @@ type UserData = {
   email: string
   isAdmin?: boolean
   isActive?: boolean
+  isPremium?: boolean
   createdAt?: unknown
 }
 
@@ -86,6 +87,7 @@ export function AdminDashboard() {
         telefone: request.telefone,
         isActive: true,
         isAdmin: false,
+        isPremium: false,
         criadoEm: new Date().toISOString(),
       })
       console.log('User document created successfully')
@@ -143,6 +145,7 @@ export function AdminDashboard() {
             email: doc.data().email || 'Sem email',
             isAdmin: doc.data().isAdmin || false,
             isActive: doc.data().isActive !== undefined ? doc.data().isActive : true,
+            isPremium: doc.data().isPremium || false,
             createdAt: doc.data().createdAt,
           }))
           setUsers(usersData)
@@ -186,7 +189,7 @@ export function AdminDashboard() {
   }
 
   // const handleMigrateUsers = async () => {
-  //   if (!confirm('Tem certeza que deseja migrar todos os usuários existentes? Esta ação irá adicionar o campo "isActive: true" para todos os usuários que não possuem este campo.')) {
+  //   if (!confirm('Tem certeza que deseja migrar todos os usuários existentes? Esta ação irá adicionar o campo "isPremium: false" para todos os usuários que não possuem este campo.')) {
   //     return
   //   }
 
@@ -195,13 +198,13 @@ export function AdminDashboard() {
   //   let errorCount = 0
 
   //   try {
-  //     // Fetch all users that don't have isActive field or have it as undefined
+  //     // Fetch all users that don't have isPremium field or have it as undefined
   //     const usersRef = collection(db, 'usuarios')
   //     const usersSnapshot = await getDocs(usersRef)
       
   //     const usersToMigrate = usersSnapshot.docs.filter(doc => {
   //       const userData = doc.data()
-  //       return userData.isActive === undefined
+  //       return userData.isPremium === undefined
   //     })
 
   //     console.log(`Found ${usersToMigrate.length} users to migrate`)
@@ -211,7 +214,7 @@ export function AdminDashboard() {
   //       try {
   //         const userDocRef = doc(db, 'usuarios', userDoc.id)
   //         await updateDoc(userDocRef, {
-  //           isActive: true
+  //           isPremium: false
   //         })
   //         migratedCount++
   //         console.log(`Updated user ${userDoc.id}: ${userDoc.data().nome || 'No name'}`)
@@ -229,6 +232,7 @@ export function AdminDashboard() {
   //       email: doc.data().email || 'Sem email',
   //       isAdmin: doc.data().isAdmin || false,
   //       isActive: doc.data().isActive !== undefined ? doc.data().isActive : true,
+  //       isPremium: doc.data().isPremium || false,
   //       createdAt: doc.data().createdAt,
   //     }))
   //     setUsers(updatedUsersData)
@@ -247,6 +251,8 @@ export function AdminDashboard() {
   // }
 
   useEffect(() => {
+    document.title = 'Painel Admin - TrainLog'
+    
     // Check admin authentication
     if (!adminId || isAdmin !== 'true') {
       navigate('/admin')
@@ -276,6 +282,7 @@ export function AdminDashboard() {
           email: doc.data().email || 'Sem email',
           isAdmin: doc.data().isAdmin || false,
           isActive: doc.data().isActive !== undefined ? doc.data().isActive : true,
+          isPremium: doc.data().isPremium || false,
           createdAt: doc.data().createdAt,
         }))
         setUsers(usersData)
@@ -410,20 +417,20 @@ export function AdminDashboard() {
       </div>
 
       {/* Migration Section */}
-      {/* <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+      {/* <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Migração de Usuários
+            <h2 className="text-xl font-semibold text-white mb-2">
+              Migração de Usuários - isPremium
             </h2>
-            <p className="text-gray-600 text-sm">
-              Adicione o campo "isActive: true" para todos os usuários existentes que não possuem este campo.
+            <p className="text-gray-400 text-sm">
+              Adicione o campo "isPremium: false" para todos os usuários existentes que não possuem este campo.
             </p>
           </div>
           <Button
             onClick={handleMigrateUsers}
             disabled={migrating}
-            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300"
+            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg"
           >
             {migrating ? 'Migrando...' : 'Migrar Usuários'}
           </Button>
@@ -515,6 +522,7 @@ export function AdminDashboard() {
                     <th className="py-3 px-4 text-gray-400 font-semibold">Treinos</th>
                     <th className="py-3 px-4 text-gray-400 font-semibold">Logs</th>
                     <th className="py-3 px-4 text-gray-400 font-semibold">Última Atividade</th>
+                    <th className="py-3 px-4 text-gray-400 font-semibold">Premium</th>
                     <th className="py-3 px-4 text-gray-400 font-semibold">Status</th>
                   </tr>
                 </thead>
@@ -541,6 +549,13 @@ export function AdminDashboard() {
                             </span>
                           ) : (
                             <span className="text-gray-500 text-sm">Sem log de atividade</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          {user.isPremium ? (
+                            <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-semibold">Premium</span>
+                          ) : (
+                            <span className="bg-gray-600 text-gray-300 text-xs px-2 py-1 rounded-full">Free</span>
                           )}
                         </td>
                         <td className="py-3 px-4">

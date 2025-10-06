@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, db } from '../firebaseConfig'
@@ -12,6 +12,10 @@ export function AdminLogin() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    document.title = 'Admin - TrainLog'
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
