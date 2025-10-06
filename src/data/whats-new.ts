@@ -21,9 +21,9 @@ export type WhatsNewRelease = {
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
-  version: '1.10.0',
+  version: '1.10.1',
   date: '2025-10-06',
-  title: 'Novidades da Versão 1.10.0',
+  title: 'Novidades da Versão 1.10.1',
   items: [
     {
       id: 'dark-mode',
