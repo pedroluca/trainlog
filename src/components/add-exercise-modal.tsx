@@ -45,6 +45,19 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
     setTempoIntervalo(formattedValue)
   }
 
+  const adjustBreakTime = (adjustment: number) => {
+    const [minutes = 0, seconds = 0] = tempoIntervalo.split(':').map(Number)
+    let totalSeconds = minutes * 60 + seconds + adjustment
+    
+    // Don't allow negative values
+    if (totalSeconds < 0) totalSeconds = 0
+    
+    const newMinutes = Math.floor(totalSeconds / 60)
+    const newSeconds = totalSeconds % 60
+    
+    setTempoIntervalo(`${String(newMinutes).padStart(2, '0')}:${String(newSeconds).padStart(2, '0')}`)
+  }
+
   const handleAddExercise = async () => {
     try {
       const [minutes, seconds] = tempoIntervalo.split(':').map(Number)
@@ -117,57 +130,121 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="series">
               Séries:
             </label>
-            <input
-              id="series"
-              type="number"
-              value={series || ''}
-              onChange={(e) => setSeries(Number(e.target.value))}
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
-              placeholder="Ex: 3"
-              required
-            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSeries(Math.max(0, series - 1))}
+                className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+              >
+                -
+              </button>
+              <input
+                id="series"
+                type="number"
+                value={series || ''}
+                onChange={(e) => setSeries(Number(e.target.value))}
+                className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                placeholder="Ex: 3"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setSeries(series + 1)}
+                className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="repeticoes">
               Repetições:
             </label>
-            <input
-              id="repeticoes"
-              type="number"
-              value={repeticoes || ''}
-              onChange={(e) => setRepeticoes(Number(e.target.value))}
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
-              placeholder="Ex: 12"
-              required
-            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setRepeticoes(Math.max(0, repeticoes - 1))}
+                className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+              >
+                -
+              </button>
+              <input
+                id="repeticoes"
+                type="number"
+                value={repeticoes || ''}
+                onChange={(e) => setRepeticoes(Number(e.target.value))}
+                className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                placeholder="Ex: 12"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setRepeticoes(repeticoes + 1)}
+                className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="peso">
               Peso (kg):
             </label>
-            <input
-              id="peso"
-              type="number"
-              value={peso || ''}
-              onChange={(e) => setPeso(Number(e.target.value))}
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
-              placeholder="Ex: 20"
-              required
-            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPeso(Math.max(0, peso - 1))}
+                className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+              >
+                -
+              </button>
+              <input
+                id="peso"
+                type="number"
+                value={peso || ''}
+                onChange={(e) => setPeso(Number(e.target.value))}
+                className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                placeholder="Ex: 20"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setPeso(peso + 1)}
+                className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="tempoIntervalo">
               Tempo de intervalo (MM:SS):
             </label>
-            <input
-              id="tempoIntervalo"
-              type="text"
-              value={tempoIntervalo}
-              onChange={(e) => handleBreakTimeChange(e.target.value)}
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
-              placeholder="Ex: 01:30"
-              required
-            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => adjustBreakTime(-10)}
+                className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+              >
+                -
+              </button>
+              <input
+                id="tempoIntervalo"
+                type="text"
+                value={tempoIntervalo}
+                onChange={(e) => handleBreakTimeChange(e.target.value)}
+                className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                placeholder="Ex: 01:30"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => adjustBreakTime(10)}
+                className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
           </div>
           <div className="flex justify-end">
             <Button

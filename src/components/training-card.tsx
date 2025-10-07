@@ -82,6 +82,19 @@ export function TrainingCard(props: TrainingCardProps) {
     setEditedBreakTime(formattedValue)
   }
 
+  const adjustBreakTime = (adjustment: number) => {
+    const [minutes = 0, seconds = 0] = editedBreakTime.split(':').map(Number)
+    let totalSeconds = minutes * 60 + seconds + adjustment
+    
+    // Don't allow negative values
+    if (totalSeconds < 0) totalSeconds = 0
+    
+    const newMinutes = Math.floor(totalSeconds / 60)
+    const newSeconds = totalSeconds % 60
+    
+    setEditedBreakTime(`${String(newMinutes).padStart(2, '0')}:${String(newSeconds).padStart(2, '0')}`)
+  }
+
   const isFinished = isFeito
 
   useEffect(() => {
@@ -280,40 +293,104 @@ export function TrainingCard(props: TrainingCardProps) {
               </div>
               <div className='mb-4'>
                 <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Séries:</label>
-                <input
-                  type='number'
-                  value={editedSets}
-                  onChange={(e) => setEditedSets(Number(e.target.value))}
-                  className='w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100'
-                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditedSets(Math.max(0, editedSets - 1))}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    -
+                  </button>
+                  <input
+                    type='number'
+                    value={editedSets}
+                    onChange={(e) => setEditedSets(Number(e.target.value))}
+                    className='flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditedSets(editedSets + 1)}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
               <div className='mb-4'>
                 <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Repetições:</label>
-                <input
-                  type='number'
-                  value={editedReps}
-                  onChange={(e) => setEditedReps(Number(e.target.value))}
-                  className='w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100'
-                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditedReps(Math.max(0, editedReps - 1))}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    -
+                  </button>
+                  <input
+                    type='number'
+                    value={editedReps}
+                    onChange={(e) => setEditedReps(Number(e.target.value))}
+                    className='flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditedReps(editedReps + 1)}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
               <div className='mb-4'>
                 <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Peso (kg):</label>
-                <input
-                  type='number'
-                  value={editedWeight}
-                  onChange={(e) => setEditedWeight(Number(e.target.value))}
-                  className='w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100'
-                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditedWeight(Math.max(0, editedWeight - 1))}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    -
+                  </button>
+                  <input
+                    type='number'
+                    value={editedWeight}
+                    onChange={(e) => setEditedWeight(Number(e.target.value))}
+                    className='flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditedWeight(editedWeight + 1)}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
               <div className='mb-4'>
                 <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Tempo de Descanso (MM:SS):</label>
-                <input
-                  type='text'
-                  value={editedBreakTime}
-                  onChange={(e) => handleBreakTimeChange(e.target.value)}
-                  className='w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100'
-                  placeholder='00:00'
-                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => adjustBreakTime(-10)}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    -
+                  </button>
+                  <input
+                    type='text'
+                    value={editedBreakTime}
+                    onChange={(e) => handleBreakTimeChange(e.target.value)}
+                    className='flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
+                    placeholder='00:00'
+                  />
+                  <button
+                    type="button"
+                    onClick={() => adjustBreakTime(10)}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
               <div className='flex justify-end'>
                 <Button
