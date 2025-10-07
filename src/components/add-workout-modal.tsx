@@ -177,8 +177,9 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
   return (
     <div className="fixed inset-0 z-60 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4">
       <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-[100%] max-w-md relative">
-        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Criar um novo Treino</h2>
+        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Adicione um Treino</h2>
         
+        <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Escolha um modelo pronto:</h3>
         {/* Browse Templates Button */}
         <Button
           type="button"
@@ -187,7 +188,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
           onClick={() => setShowTemplates(true)}
         >
           <BookOpen size={20} />
-          Escolher Modelo Pronto
+          Modelos
         </Button>
 
         <div className="relative mb-6">
@@ -199,6 +200,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
           </div>
         </div>
 
+        <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Crie um do zero:</h3>
         <div className="mb-4">
           <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Grupo Muscular:</label>
           <input
@@ -215,7 +217,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
             className="bg-blue-500 hover:bg-blue-600 text-white w-full"
             onClick={handleAddWorkout}
             >
-            Criar do Zero
+            Criar
           </Button>
         </div>
         
@@ -228,7 +230,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
           </div>
         </div>
 
-        <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Adicionar treino compartilhado:</h3>
+        <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Adicione um treino compartilhado:</h3>
         <div className="mb-4">
           <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Código de compartilhamento:</label>
           <input
