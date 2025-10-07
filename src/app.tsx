@@ -10,6 +10,7 @@ import { Profile } from './pages/profile'
 import { Settings } from './pages/settings'
 import { LogPage } from './pages/log'
 import { Progress } from './pages/progress'
+import { BodyMetrics } from './pages/body-metrics'
 import { ResetPassword } from './pages/reset-password'
 import { AdminLogin } from './pages/admin-login'
 import { AdminDashboard } from './pages/admin-dashboard'
@@ -65,30 +66,31 @@ export function App() {
         <PWAInstallPrompt />
         <WhatsNewModal isOpen={showWhatsNew} onClose={() => setShowWhatsNew(false)} />
         <Routes>
-        {/* Rotas sem a BottomBar */}
-        <Route element={<LayoutWithoutBottomBar />}>
-          <Route path='/' element={<Home />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/cadastro' element={<Cadastro />} />
-        </Route>
+          {/* Rotas sem a BottomBar */}
+          <Route element={<LayoutWithoutBottomBar />}>
+            <Route path='/' element={<Home />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/cadastro' element={<Cadastro />} />
+          </Route>
 
-        {/* Reset Password (no layout) */}
-        <Route path='/reset-password' element={<ResetPassword />} />
+          {/* Reset Password (no layout) */}
+          <Route path='/reset-password' element={<ResetPassword />} />
 
-        {/* Rotas com a BottomBar */}
-        <Route element={<LayoutWithBottomBar />}>
-          <Route path='/log' element={<LogPage />} />
-          <Route path='/train' element={<Training />} />
-          <Route path='/progress' element={<Progress />} />
-          <Route path='/profile' element={<Profile />} />
-          <Route path='/settings' element={<Settings />} />
-        </Route>
+          {/* Rotas com a BottomBar */}
+          <Route element={<LayoutWithBottomBar />}>
+            <Route path='/log' element={<LogPage />} />
+            <Route path='/train' element={<Training />} />
+            <Route path='/progress' element={<Progress />} />
+            <Route path='/profile' element={<Profile />} />
+            <Route path='/settings' element={<Settings />} />
+            <Route path='/body-metrics' element={<BodyMetrics />} />
+          </Route>
 
-        {/* Admin Routes (no layout) */}
-        <Route path='/admin' element={<AdminLogin />} />
-        <Route path='/admin/dashboard' element={<AdminDashboard />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Admin Routes (no layout) */}
+          <Route path='/admin' element={<AdminLogin />} />
+          <Route path='/admin/dashboard' element={<AdminDashboard />} />
+        </Routes>
+      </BrowserRouter>
     </ThemeProvider>
   )
 }

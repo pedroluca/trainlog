@@ -62,5 +62,13 @@ service cloud.firestore {
       allow write: if request.auth.uid == resource.data.usuarioID;
       allow create: if request.auth.uid == request.resource.data.usuarioID;
     }
+    
+    // medicoescorporais collection (body measurements)
+    match /medicoescorporais/{medicaoId} {
+      allow read: if request.auth.uid == resource.data.usuarioID || isAdmin();
+      allow write: if request.auth.uid == resource.data.usuarioID || isAdmin();
+      allow create: if request.auth.uid == request.resource.data.usuarioID;
+      allow delete: if request.auth.uid == resource.data.usuarioID || isAdmin();
+    }
   }
 }

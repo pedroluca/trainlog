@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../firebaseConfig'
-import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, addDoc } from 'firebase/firestore'
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 
@@ -15,6 +15,12 @@ export function Profile() {
   const [nome, setNome] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
   const [photoURL, setPhotoURL] = useState<string | null>(null)
+  const [altura, setAltura] = useState<number>(0) // cm
+  const [peso, setPeso] = useState<number>(0) // kg
+  const [isPremium, setIsPremium] = useState<boolean>(false)
+  const [isEditingMetrics, setIsEditingMetrics] = useState(false)
+  const [editedAltura, setEditedAltura] = useState<string>('')
+  const [editedPeso, setEditedPeso] = useState<string>('')
   const [workouts, setWorkouts] = useState<Treino[]>([])
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -59,6 +65,11 @@ export function Profile() {
             setNome(userData.nome || 'Não disponível')
             setEmail(userData.email || 'Não disponível')
             setPhotoURL(userData.photoURL || null)
+            setAltura(userData.altura || 0)
+            setPeso(userData.peso || 0)
+            setIsPremium(userData.isPremium || false)
+            setEditedAltura(userData.altura ? (userData.altura / 100).toFixed(2) : '')
+            setEditedPeso(userData.peso ? userData.peso.toFixed(1) : '')
           } else {
             console.error('Usuário não encontrado no Firestore')
           }
@@ -96,6 +107,61 @@ export function Profile() {
     auth.signOut()
     localStorage.clear()
     navigate('/login')
+  }
+
+  const calculateIMC = (peso: number, altura: number) => {
+    if (!peso || !altura) return 0
+    const alturaMetros = altura / 100
+    return peso / (alturaMetros * alturaMetros)
+  }
+
+  const getIMCStatus = (imc: number) => {
+    if (imc === 0) return { label: 'N/A', color: 'text-gray-500' }
+    if (imc < 18.5) return { label: 'Abaixo do peso', color: 'text-blue-600' }
+    if (imc < 25) return { label: 'Normal', color: 'text-green-600' }
+    if (imc < 30) return { label: 'Sobrepeso', color: 'text-yellow-600' }
+    return { label: 'Obesidade', color: 'text-red-600' }
+  }
+
+  const handleSaveMetrics = async () => {
+    if (!usuarioID) return
+    
+    try {
+      const alturaEmCm = parseFloat(editedAltura) * 100
+      const pesoEmKg = parseFloat(editedPeso)
+      
+      if (!alturaEmCm || !pesoEmKg || alturaEmCm < 50 || alturaEmCm > 300 || pesoEmKg < 20 || pesoEmKg > 500) {
+        alert('Por favor, insira valores válidos (Altura: 0.50-3.00m, Peso: 20-500kg)')
+        return
+      }
+
+      const imc = calculateIMC(pesoEmKg, alturaEmCm)
+
+      // Update user document
+      await updateDoc(doc(db, 'usuarios', usuarioID), {
+        altura: alturaEmCm,
+        peso: pesoEmKg
+      })
+
+      // Add to body measurements collection (first measurement or update)
+      const measurementsRef = collection(db, 'medicoescorporais')
+      await addDoc(measurementsRef, {
+        usuarioID: usuarioID,
+        data: new Date().toISOString(),
+        peso: pesoEmKg,
+        altura: alturaEmCm,
+        imc: parseFloat(imc.toFixed(1))
+      })
+
+      setAltura(alturaEmCm)
+      setPeso(pesoEmKg)
+      setIsEditingMetrics(false)
+      
+      alert('Métricas atualizadas com sucesso!')
+    } catch (err) {
+      console.error('Erro ao salvar métricas:', err)
+      alert('Erro ao salvar métricas. Tente novamente.')
+    }
   }
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,7 +266,7 @@ export function Profile() {
   return (
     <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
       {/* Profile Card */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-8 w-full max-w-md border border-gray-200 dark:border-[#404040]">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-8 w-full max-w-lg border border-gray-200 dark:border-[#404040]">
         <div className="flex flex-col items-center mb-6">
           {/* Avatar Circle with Image Upload */}
           <div className="relative mb-4">
@@ -255,12 +321,149 @@ export function Profile() {
           </div>
         </div>
         
-        <button
-          onClick={handleLogout}
-          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
-        >
-          Sair da Conta
-        </button>
+        {/* Body Metrics Section */}
+        <div className="bg-gradient-to-br from-[#27AE60]/10 to-[#219150]/10 dark:from-[#27AE60]/20 dark:to-[#219150]/20 rounded-lg p-4 border border-[#27AE60]/30 dark:border-[#27AE60]/40 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+              <Activity size={20} className="text-[#27AE60]" />
+              Métricas Corporais
+            </h3>
+            {!isEditingMetrics && altura > 0 && peso > 0 && (
+              <button
+                onClick={() => setIsEditingMetrics(true)}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+              >
+                Editar
+              </button>
+            )}
+          </div>
+
+          {!isEditingMetrics ? (
+            <>
+              {altura > 0 && peso > 0 ? (
+                <>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040]">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Altura</p>
+                      <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{(altura / 100).toFixed(2)}m</p>
+                    </div>
+                    <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040]">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Peso</p>
+                      <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{peso.toFixed(1)}kg</p>
+                    </div>
+                  </div>
+                  <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040] mb-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">IMC</p>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{calculateIMC(peso, altura).toFixed(1)}</p>
+                      <p className={`text-sm font-medium ${getIMCStatus(calculateIMC(peso, altura)).color}`}>
+                        {getIMCStatus(calculateIMC(peso, altura)).label}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setIsEditingMetrics(true)}
+                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                    >
+                      <Plus size={16} />
+                      Nova Medição
+                    </button>
+                    {isPremium && (
+                      <button
+                        onClick={() => navigate('/body-metrics')}
+                        className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm"
+                      >
+                        Ver Histórico
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">Configure suas métricas corporais</p>
+                  <button
+                    onClick={() => setIsEditingMetrics(true)}
+                    className="bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                  >
+                    Adicionar Altura e Peso
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Altura (metros)</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditedAltura((prev) => Math.max(0.5, parseFloat(prev || '0') - 0.01).toFixed(2))}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editedAltura}
+                    onChange={(e) => setEditedAltura(e.target.value)}
+                    className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                    placeholder="1.75"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditedAltura((prev) => Math.min(3, parseFloat(prev || '0') + 0.01).toFixed(2))}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Peso (kg)</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditedPeso((prev) => Math.max(20, parseFloat(prev || '0') - 0.1).toFixed(1))}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={editedPeso}
+                    onChange={(e) => setEditedPeso(e.target.value)}
+                    className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                    placeholder="75.0"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditedPeso((prev) => Math.min(500, parseFloat(prev || '0') + 0.1).toFixed(1))}
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => setIsEditingMetrics(false)}
+                  className="flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveMetrics}
+                  className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                >
+                  Salvar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         
         <button
           onClick={() => navigate('/settings')}
@@ -272,7 +475,7 @@ export function Profile() {
       </div>
 
       {/* Workouts Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl py-6 px-4 w-full max-w-2xl mt-8 border border-gray-200 dark:border-[#404040]">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl py-6 px-4 w-full max-w-lg mt-8 border border-gray-200 dark:border-[#404040]">
         <div className="flex items-center justify-between mb-6 px-2">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Seus Treinos</h2>
           <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#1a1a1a] px-3 py-1 rounded-full">
@@ -343,6 +546,17 @@ export function Profile() {
           </div>
         )}
       </div>
+
+      {/* Logout Section */}
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-8 w-full max-w-lg mt-8 border border-gray-200 dark:border-[#404040]">
+        <button
+          onClick={handleLogout}
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
+        >
+          Sair da Conta
+        </button>
+      </div>
+
 
       {isEditModalOpen && selectedWorkout && (
         <EditWorkoutModal
