@@ -10,6 +10,7 @@ import { WorkoutCompleteModal } from '../components/workout-complete-modal'
 import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
+import { updateStreak } from '../data/streak-utils'
 
 const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
@@ -141,6 +142,21 @@ export function Training() {
       const hasCompletedToday = localStorage.getItem(completionKey) === 'true'
       
       if (allComplete && !isCompleteModalOpen && !hasCompletedToday) {
+        // Update streak when all exercises are completed
+        if (usuarioID) {
+          updateStreak(usuarioID).then((newStreak) => {
+            console.log('🔥 Streak updated to:', newStreak)
+            
+            // Dispatch custom event to update header
+            const event = new CustomEvent('streakUpdated', { 
+              detail: { newStreak } 
+            })
+            window.dispatchEvent(event)
+          }).catch(err => {
+            console.error('Error updating streak:', err)
+          })
+        }
+        
         // Small delay to let the last exercise animation finish
         setTimeout(() => {
           setIsCompleteModalOpen(true)
@@ -148,7 +164,7 @@ export function Training() {
         }, 500)
       }
     }
-  }, [exercises, isCompleteModalOpen, selectedWorkout])
+  }, [exercises, isCompleteModalOpen, selectedWorkout, usuarioID])
 
   const handleExerciseComplete = useCallback(() => {
     // Move to next exercise if not at the last one

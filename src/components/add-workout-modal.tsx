@@ -16,6 +16,16 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
   const [sharedWorkoutId, setSharedWorkoutId] = useState('')
   const [showTemplates, setShowTemplates] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'push_pull_legs' | 'upper_lower' | 'full_body'>('all')
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState<'success' | 'error'>('success')
+
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setToastMessage(message)
+    setToastType(type)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
 
   const handleAddWorkout = async () => {
     if (!usuarioID) return
@@ -26,10 +36,11 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
         dia: currentDay,
         musculo: muscleGroup,
       })
-      onClose()
+      showNotification('Treino criado com sucesso!', 'success')
+      setTimeout(() => onClose(), 1500)
     } catch (err) {
       console.error('Erro ao adicionar treino:', err)
-      alert('Erro ao adicionar treino.')
+      showNotification('Erro ao adicionar treino.', 'error')
     }
   }
 
@@ -41,7 +52,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
       const [workoutId, ownerId] = codeToUse.split('-')
   
       if (!workoutId || !ownerId) {
-        alert('Código de compartilhamento inválido.')
+        showNotification('Código de compartilhamento inválido.', 'error')
         return
       }
   
@@ -50,7 +61,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
       const workoutDoc = await getDoc(workoutRef)
   
       if (!workoutDoc.exists() || workoutDoc.data()?.usuarioID !== ownerId) {
-        alert('Treino compartilhado não encontrado ou você não tem permissão para acessá-lo.')
+        showNotification('Treino não encontrado ou sem permissão.', 'error')
         return
       }
   
@@ -65,17 +76,24 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
       const exercisesRef = collection(db, 'treinos', workoutId, 'exercicios')
       const exercisesSnapshot = await getDocs(exercisesRef)
   
-      const copyPromises = exercisesSnapshot.docs.map((exerciseDoc) =>
-        addDoc(collection(db, 'treinos', newWorkoutRef.id, 'exercicios'), exerciseDoc.data())
-      )
+      const copyPromises = exercisesSnapshot.docs.map((exerciseDoc) => {
+        const exerciseData = exerciseDoc.data()
+        return addDoc(collection(db, 'treinos', newWorkoutRef.id, 'exercicios'), {
+          ...exerciseData,
+          isFeito: false // Always start with exercises not completed
+        })
+      })
   
       await Promise.all(copyPromises)
   
-      alert(workoutIdCode ? 'Treino modelo adicionado com sucesso!' : 'Treino compartilhado adicionado com sucesso!')
-      onClose()
+      showNotification(
+        workoutIdCode ? 'Treino modelo adicionado!' : 'Treino compartilhado adicionado!',
+        'success'
+      )
+      setTimeout(() => onClose(), 1500)
     } catch (err) {
       console.error('Erro ao adicionar treino compartilhado:', err)
-      alert('Erro ao adicionar treino compartilhado.')
+      showNotification('Erro ao adicionar treino compartilhado.', 'error')
     }
   }
 
@@ -260,6 +278,17 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
         >
           <X />
         </Button>
+
+        {/* Toast Notification */}
+        {showToast && (
+          <div className={`fixed top-6 left-1/2 transform -translate-x-1/2 z-[70] px-6 py-3 rounded-lg shadow-lg transition-all ${
+            toastType === 'success' 
+              ? 'bg-green-500 dark:bg-green-600 text-white' 
+              : 'bg-red-500 dark:bg-red-600 text-white'
+          }`}>
+            <span className="font-medium">{toastMessage}</span>
+          </div>
+        )}
       </div>
     </div>
   )

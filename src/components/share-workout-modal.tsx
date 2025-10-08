@@ -25,12 +25,12 @@ export function ShareWorkoutModal({ workoutId, onClose }: ShareWorkoutModalProps
         <p className="text-gray-700 dark:text-gray-300 mb-4">Copie o código de compartilhamento do treino abaixo e mande para quem deseja compartilhar:</p>
         <div className="bg-gray-100 dark:bg-[#1a1a1a] p-2 rounded text-gray-800 dark:text-gray-100 mb-4 relative">
           {shareCode}
-          {copied && (
-            <div className="absolute -bottom-65 z-61 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-sm px-3 py-1 rounded shadow">
-              Copiado para a área de transferência!
-            </div>
-          )}
         </div>
+        {copied && (
+          <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[70] bg-green-500 dark:bg-green-600 text-white text-sm px-6 py-3 rounded-lg shadow-lg">
+            Copiado para a área de transferência!
+          </div>
+        )}
         <div className="flex justify-end">
           <Button
             type="button"
