@@ -14,6 +14,7 @@ import { BodyMetrics } from './pages/body-metrics'
 import { ResetPassword } from './pages/reset-password'
 import { AdminLogin } from './pages/admin-login'
 import { AdminDashboard } from './pages/admin-dashboard'
+import { StreakCalendar } from './pages/streak-calendar'
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
 import { WhatsNewModal } from './components/whats-new-modal'
@@ -84,6 +85,7 @@ export function App() {
             <Route path='/profile' element={<Profile />} />
             <Route path='/settings' element={<Settings />} />
             <Route path='/body-metrics' element={<BodyMetrics />} />
+            <Route path='/streak-calendar' element={<StreakCalendar />} />
           </Route>
 
           {/* Admin Routes (no layout) */}
