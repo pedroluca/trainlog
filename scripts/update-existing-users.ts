@@ -5,15 +5,19 @@
 
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, getDocs, doc, updateDoc } from 'firebase/firestore'
+import * as dotenv from 'dotenv'
 
-// Firebase config from your project
+// Load environment variables
+dotenv.config()
+
+// Firebase config from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyDkiH2j8IiLneTn6ree38hiqPIXRNmrpJA",
-  authDomain: "trainlog-ae8e6.firebaseapp.com",
-  projectId: "trainlog-ae8e6",
-  storageBucket: "trainlog-ae8e6.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID",
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID,
 }
 
 const app = initializeApp(firebaseConfig)
