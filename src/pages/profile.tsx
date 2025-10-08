@@ -370,9 +370,19 @@ export function Profile() {
               <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{longestStreak}</p>
             </div>
           </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-3 text-center">
-            Complete seus treinos programados para manter a sequência!
-          </p>
+          
+          {isPremium ? (
+            <button
+              onClick={() => navigate('/streak-calendar')}
+              className="w-full mt-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all"
+            >
+              📅 Ver Calendário Completo
+            </button>
+          ) : (
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-3 text-center">
+              Complete seus treinos programados para manter a sequência!
+            </p>
+          )}
         </div>
         
         {/* Body Metrics Section */}
