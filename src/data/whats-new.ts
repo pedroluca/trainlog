@@ -21,10 +21,26 @@ export type WhatsNewRelease = {
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
-  version: '1.10.1',
-  date: '2025-10-06',
-  title: 'Novidades da Versão 1.10.1',
+  version: '1.12.1',
+  date: '2025-10-08',
+  title: 'Novidades da Versão 1.12.1',
   items: [
+    {
+      id: 'new-interface',
+      icon: '✨',
+      title: 'Nova Interface',
+      description: 'Interface completamente redesenhada com melhor experiência de uso'
+    },
+    {
+      id: 'workout-streak',
+      icon: '🔥',
+      title: 'Sequência de Treinos (Streak)',
+      description: 'Mantenha sua motivação! Agora você pode acompanhar sua sequência de dias consecutivos de treino',
+      action: {
+        label: 'Ver no Perfil',
+        route: '/profile'
+      }
+    },
     {
       id: 'dark-mode',
       icon: '🌙',
@@ -36,26 +52,14 @@ export const currentRelease: WhatsNewRelease = {
       }
     },
     {
-      id: 'audio-notification',
-      icon: '🔔',
-      title: 'Apito ao Finalizar Intervalo',
-      description: 'Configure notificações sonoras quando o tempo de descanso terminar',
+      id: 'premium-calendar',
+      icon: '📅',
+      title: 'Calendário de Treinos Premium',
+      description: 'Visualize todo seu histórico de treinos em um calendário mensal interativo (exclusivo para usuários premium)',
       action: {
-        label: 'Configurar',
-        route: '/settings'
+        label: 'Ver Calendário',
+        route: '/streak-calendar'
       }
-    },
-    {
-      id: 'new-interface',
-      icon: '✨',
-      title: 'Nova Interface',
-      description: 'Interface completamente redesenhada com melhor experiência de uso'
-    },
-    {
-      id: 'progress-tab',
-      icon: '📈',
-      title: 'Aba de Progresso',
-      description: 'Acompanhe sua evolução com gráficos e estatísticas detalhadas dos seus treinos'
     }
   ]
 }
@@ -63,11 +67,43 @@ export const currentRelease: WhatsNewRelease = {
 // Historical releases (for reference)
 export const releaseHistory: WhatsNewRelease[] = [
   currentRelease,
-  // Add previous versions here as you release new ones
-  // {
-  //   version: '1.2.0',
-  //   date: '2025-09-15',
-  //   title: 'Novidades da Versão 1.2.0',
-  //   items: [...]
-  // }
+  {
+    version: '1.10.1',
+    date: '2025-10-06',
+    title: 'Novidades da Versão 1.10.1',
+    items: [
+      {
+        id: 'dark-mode',
+        icon: '🌙',
+        title: 'Modo Escuro',
+        description: 'Ative o modo escuro nas configurações para uma experiência mais confortável à noite',
+        action: {
+          label: 'Ir para Configurações',
+          route: '/settings'
+        }
+      },
+      {
+        id: 'audio-notification',
+        icon: '🔔',
+        title: 'Apito ao Finalizar Intervalo',
+        description: 'Configure notificações sonoras quando o tempo de descanso terminar',
+        action: {
+          label: 'Configurar',
+          route: '/settings'
+        }
+      },
+      {
+        id: 'new-interface',
+        icon: '✨',
+        title: 'Nova Interface',
+        description: 'Interface completamente redesenhada com melhor experiência de uso'
+      },
+      {
+        id: 'progress-tab',
+        icon: '📈',
+        title: 'Aba de Progresso',
+        description: 'Acompanhe sua evolução com gráficos e estatísticas detalhadas dos seus treinos'
+      }
+    ]
+  }
 ]
