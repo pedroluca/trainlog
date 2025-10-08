@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { db } from '../firebaseConfig'
+import { doc, getDoc } from 'firebase/firestore'
+import { Flame } from 'lucide-react'
 
 type HeaderProps = {
   hideDate?: boolean
@@ -7,6 +10,8 @@ type HeaderProps = {
 
 export function Header({ hideDate = false }: HeaderProps) {
   const [currentTime, setCurrentTime] = useState('')
+  const [streak, setStreak] = useState(0)
+  const usuarioID = localStorage.getItem('usuarioId')
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -29,15 +34,57 @@ export function Header({ hideDate = false }: HeaderProps) {
     return () => clearInterval(interval) 
   }, [])
 
+  useEffect(() => {
+    const fetchStreak = async () => {
+      if (!usuarioID) return
+      
+      try {
+        const userDocRef = doc(db, 'usuarios', usuarioID)
+        const userDoc = await getDoc(userDocRef)
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data()
+          setStreak(userData.currentStreak || 0)
+        }
+      } catch (err) {
+        console.error('Erro ao buscar streak:', err)
+      }
+    }
+
+    fetchStreak()
+    
+    // Listen for streak updates
+    const handleStreakUpdate = (event: CustomEvent) => {
+      setStreak(event.detail.newStreak)
+    }
+    
+    window.addEventListener('streakUpdated', handleStreakUpdate as EventListener)
+    
+    return () => {
+      window.removeEventListener('streakUpdated', handleStreakUpdate as EventListener)
+    }
+  }, [usuarioID])
+
   return (
     <header className='bg-gradient-to-r from-[#27AE60] to-[#229954] text-white shadow-lg'>
-      <main className={`${hideDate ? 'py-6' : 'py-4'} px-4 flex flex-col items-center justify-center border-b border-white/10`}>
+      <main className={`${hideDate ? 'py-6' : 'py-4'} px-4 flex items-center justify-between border-b border-white/10`}>
         <Link 
           to='/' 
           className='text-3xl font-bold tracking-tight hover:scale-105 transition-transform duration-200'
         >
           TrainLog
         </Link>
+        
+        {usuarioID && (
+          <Link
+            to='/profile'
+            className='flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors'
+            title='Seu streak de treinos'
+          >
+            <Flame size={20} className='text-orange-400' />
+            <span className='text-lg font-bold'>{streak}</span>
+          </Link>
+        )}
       </main>
       <section className={`py-2 px-4 flex items-center justify-center ${hideDate ? 'hidden' : ''}`}>
         <p className='text-sm text-white/90 font-medium'>{currentTime}</p>

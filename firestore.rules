@@ -28,10 +28,9 @@ service cloud.firestore {
       // Allow read if:
       // 1. User owns the workout, OR
       // 2. User is admin, OR
-      // 3. It's a system template (usuarioID == 'system')
-      allow read: if request.auth.uid == resource.data.usuarioID || 
-                     isAdmin() || 
-                     resource.data.usuarioID == 'system';
+      // 3. It's a system template (usuarioID == 'system'), OR
+      // 4. User is authenticated (to allow reading shared workouts)
+      allow read: if request.auth != null;
       
       // Allow write if user owns the workout or is admin
       allow write: if request.auth.uid == resource.data.usuarioID || isAdmin();
@@ -44,9 +43,8 @@ service cloud.firestore {
       
       // exercicios subcollection (nested inside treinos)
       match /exercicios/{exercicioId} {
-        allow read: if request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID || 
-                       isAdmin() ||
-                       get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID == 'system';
+        // Allow any authenticated user to read exercises (for sharing)
+        allow read: if request.auth != null;
         
         allow write: if request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID || 
                         isAdmin();

@@ -8,6 +8,7 @@ import { getUserWorkouts, Treino } from '../data/get-user-workouts'
 import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
+import { updateScheduledDays } from '../data/streak-utils'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -29,6 +30,8 @@ export function Profile() {
   const [disabledDays, setDisabledDays] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [currentStreak, setCurrentStreak] = useState(0)
+  const [longestStreak, setLongestStreak] = useState(0)
 
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
@@ -70,6 +73,8 @@ export function Profile() {
             setIsPremium(userData.isPremium || false)
             setEditedAltura(userData.altura ? (userData.altura / 100).toFixed(2) : '')
             setEditedPeso(userData.peso ? userData.peso.toFixed(1) : '')
+            setCurrentStreak(userData.currentStreak || 0)
+            setLongestStreak(userData.longestStreak || 0)
           } else {
             console.error('Usuário não encontrado no Firestore')
           }
@@ -91,6 +96,9 @@ export function Profile() {
             (a, b) => daysOrder.indexOf(a.dia) - daysOrder.indexOf(b.dia) // Ordena os treinos pelo dia
           )
           setWorkouts(sortedWorkouts)
+          
+          // Update scheduled days based on user's workouts
+          await updateScheduledDays(usuarioID)
         } catch (err) {
           console.error('Erro ao buscar treinos:', err)
         } finally {
@@ -100,8 +108,23 @@ export function Profile() {
 
       fetchUserData()
       fetchWorkouts()
+      
+      // Listen for streak updates
+      const handleStreakUpdate = (event: CustomEvent) => {
+        setCurrentStreak(event.detail.newStreak)
+        // Also update longest streak if needed
+        if (event.detail.newStreak > longestStreak) {
+          setLongestStreak(event.detail.newStreak)
+        }
+      }
+      
+      window.addEventListener('streakUpdated', handleStreakUpdate as EventListener)
+      
+      return () => {
+        window.removeEventListener('streakUpdated', handleStreakUpdate as EventListener)
+      }
     }
-  }, [usuarioID, navigate, daysOrder])
+  }, [usuarioID, navigate, daysOrder, longestStreak])
 
   const handleLogout = () => {
     auth.signOut()
@@ -270,7 +293,9 @@ export function Profile() {
         <div className="flex flex-col items-center mb-6">
           {/* Avatar Circle with Image Upload */}
           <div className="relative mb-4">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
+            <div className={`w-20 h-20 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden ${
+              isPremium ? 'ring-4 ring-amber-400 dark:ring-amber-500 shadow-lg shadow-amber-400/50' : ''
+            }`}>
               {photoURL ? (
                 <img 
                   src={photoURL} 
@@ -281,6 +306,14 @@ export function Profile() {
                 nome ? nome.charAt(0).toUpperCase() : '?'
               )}
             </div>
+            
+            {/* Premium Badge */}
+            {isPremium && (
+              <div className="absolute -top-2.5 -right-9 bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
+                <span>⭐</span>
+                <span>PRO</span>
+              </div>
+            )}
             
             {/* Edit Icon Button */}
             <label 
@@ -319,6 +352,27 @@ export function Profile() {
               {email || 'Carregando...'}
             </p>
           </div>
+        </div>
+        
+        {/* Workout Streak Section */}
+        <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/20 dark:to-red-500/20 rounded-lg p-4 border border-orange-500/30 dark:border-orange-500/40 mb-6">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-3">
+            <span className="text-2xl">🔥</span>
+            Sequência de Treinos
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040]">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Sequência Atual</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{currentStreak}</p>
+            </div>
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040]">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Melhor Sequência</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{longestStreak}</p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-3 text-center">
+            Complete seus treinos programados para manter a sequência!
+          </p>
         </div>
         
         {/* Body Metrics Section */}
