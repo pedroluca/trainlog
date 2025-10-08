@@ -63,6 +63,11 @@ export function AdminDashboard() {
   const [currentRequestsPage, setCurrentRequestsPage] = useState(1)
   const itemsPerPage = 10
 
+  // Sorting and filtering states
+  const [sortBy, setSortBy] = useState<'name' | 'lastActivity' | 'logs' | 'workouts'>('lastActivity')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [filterBy, setFilterBy] = useState<'all' | 'premium' | 'free' | 'active' | 'admin'>('all')
+
   const handleApproveRequest = async (request: RegistrationRequest) => {
     let userCreated = false
 
@@ -352,6 +357,63 @@ export function AdminDashboard() {
     navigate('/admin')
   }
 
+  // Filter and sort users
+  const getFilteredAndSortedUsers = () => {
+    // First, filter users
+    const filteredUsers = users.filter(user => {
+      switch (filterBy) {
+        case 'premium':
+          return user.isPremium === true
+        case 'free':
+          return !user.isPremium
+        case 'active':
+          return user.isActive === true
+        case 'admin':
+          return user.isAdmin === true
+        case 'all':
+        default:
+          return true
+      }
+    })
+
+    // Then, sort users
+    filteredUsers.sort((a, b) => {
+      let comparison = 0
+
+      switch (sortBy) {
+        case 'name':
+          comparison = a.nome.localeCompare(b.nome)
+          break
+        case 'lastActivity': {
+          const aLogs = logs.filter(l => l.usuarioID === a.id)
+          const bLogs = logs.filter(l => l.usuarioID === b.id)
+          const aLastLog = aLogs.length > 0 ? new Date(aLogs[0].data).getTime() : 0
+          const bLastLog = bLogs.length > 0 ? new Date(bLogs[0].data).getTime() : 0
+          comparison = aLastLog - bLastLog
+          break
+        }
+        case 'logs': {
+          const aLogsCount = logs.filter(l => l.usuarioID === a.id).length
+          const bLogsCount = logs.filter(l => l.usuarioID === b.id).length
+          comparison = aLogsCount - bLogsCount
+          break
+        }
+        case 'workouts': {
+          const aWorkoutsCount = workouts.filter(w => w.usuarioID === a.id).length
+          const bWorkoutsCount = workouts.filter(w => w.usuarioID === b.id).length
+          comparison = aWorkoutsCount - bWorkoutsCount
+          break
+        }
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+
+    return filteredUsers
+  }
+
+  const filteredAndSortedUsers = getFilteredAndSortedUsers()
+
   // Calculate statistics
   const totalUsers = users.length
   const totalWorkouts = workouts.length
@@ -502,14 +564,71 @@ export function AdminDashboard() {
 
       {/* Users Table */}
       <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 mb-6">
-        <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-          <Users size={24} />
-          Lista de Usuários
-        </h2>
-        {users.length === 0 ? (
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Users size={24} />
+            Lista de Usuários ({filteredAndSortedUsers.length})
+          </h2>
+        </div>
+
+        {/* Filters and Sorting Controls */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Filter By */}
+          <div>
+            <label className="text-gray-400 text-sm mb-2 block">Filtrar por:</label>
+            <select
+              value={filterBy}
+              onChange={(e) => {
+                setFilterBy(e.target.value as typeof filterBy)
+                setCurrentPage(1) // Reset to first page when filtering
+              }}
+              className="w-full bg-gray-700 text-white px-1 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-[#27AE60]"
+            >
+              <option value="all">Todos os Usuários</option>
+              <option value="premium">Premium</option>
+              <option value="free">Free</option>
+              <option value="active">Ativos</option>
+              <option value="admin">Admins</option>
+            </select>
+          </div>
+
+          {/* Sort By */}
+          <div>
+            <label className="text-gray-400 text-sm mb-2 block">Ordenar por:</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="w-full bg-gray-700 text-white px-1 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-[#27AE60]"
+            >
+              <option value="name">Nome</option>
+              <option value="lastActivity">Última Atividade</option>
+              <option value="logs">Total de Logs</option>
+              <option value="workouts">Total de Treinos</option>
+            </select>
+          </div>
+
+          {/* Sort Order */}
+          <div>
+            <label className="text-gray-400 text-sm mb-2 block">Ordem:</label>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
+              className="w-full bg-gray-700 text-white px-1 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-[#27AE60]"
+            >
+              <option value="desc">
+                {sortBy === 'name' ? 'Z → A' : 'Maior → Menor'}
+              </option>
+              <option value="asc">
+                {sortBy === 'name' ? 'A → Z' : 'Menor → Maior'}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        {filteredAndSortedUsers.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-400 text-lg mb-2">Nenhum usuário encontrado</p>
-            <p className="text-gray-500 text-sm">Verifique se há usuários cadastrados no Firestore</p>
+            <p className="text-gray-500 text-sm">Tente ajustar os filtros</p>
           </div>
         ) : (
           <>
@@ -527,7 +646,7 @@ export function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((user) => {
+                  {filteredAndSortedUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((user) => {
                     const userWorkouts = workouts.filter(w => w.usuarioID === user.id).length
                     const userLogs = logs.filter(l => l.usuarioID === user.id)
                     const userLogsCount = userLogs.length
@@ -575,7 +694,7 @@ export function AdminDashboard() {
             </div>
             
             {/* Pagination for users */}
-            {users.length > itemsPerPage && (
+            {filteredAndSortedUsers.length > itemsPerPage && (
               <div className="flex justify-center items-center gap-4 mt-6">
                 <Button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -585,11 +704,11 @@ export function AdminDashboard() {
                   Anterior
                 </Button>
                 <span className="text-gray-400">
-                  Página {currentPage} de {Math.ceil(users.length / itemsPerPage)}
+                  Página {currentPage} de {Math.ceil(filteredAndSortedUsers.length / itemsPerPage)}
                 </span>
                 <Button
-                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(users.length / itemsPerPage), prev + 1))}
-                  disabled={currentPage >= Math.ceil(users.length / itemsPerPage)}
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredAndSortedUsers.length / itemsPerPage), prev + 1))}
+                  disabled={currentPage >= Math.ceil(filteredAndSortedUsers.length / itemsPerPage)}
                   className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded disabled:opacity-50"
                 >
                   Próxima
