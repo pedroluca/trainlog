@@ -309,16 +309,16 @@ export function Profile() {
             
             {/* Premium Badge */}
             {isPremium && (
-              <div className="absolute -top-2.5 -right-9 bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
-                <span>⭐</span>
-                <span>PRO</span>
+              <div className="absolute -bottom-4 left-0 right-0 bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
+                {/* <span>⭐</span> */}
+                <span className="w-full text-center">PREMIUM</span>
               </div>
             )}
             
             {/* Edit Icon Button */}
             <label 
               htmlFor="profile-image-upload"
-              className="absolute bottom-0 right-0 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-1.5 cursor-pointer shadow-lg transition-colors"
+              className="absolute bottom-1 -right-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-1.5 cursor-pointer shadow-lg transition-colors"
               title="Alterar foto de perfil"
             >
               {uploadingImage ? (
@@ -336,7 +336,7 @@ export function Profile() {
               disabled={uploadingImage}
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Perfil</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-3">Perfil</h1>
         </div>
         
         <div className="space-y-4 mb-6">
