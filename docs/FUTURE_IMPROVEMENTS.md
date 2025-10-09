@@ -78,7 +78,7 @@ Pre-made workout plans:
 
 **Status:** 6 templates available in Add Workout modal!
 
-#### 4. **Rest Timer**
+#### 4. **Rest Timer** ✅ DONE
 Built-in timer between sets:
 - Countdown timer (default: 90 seconds)
 - Notification when rest is over
@@ -116,7 +116,7 @@ Let users download their data:
 
 **Why:** Free marketing via social shares
 
-#### 8. **Dark Mode** 🌙
+#### 8. **Dark Mode** 🌙 ✅ DONE
 Toggle between light/dark themes:
 - Use Tailwind's dark mode
 - Save preference to localStorage
@@ -159,7 +159,7 @@ Use AI to suggest:
 - Use OpenAI API (costs money but cheap)
 - Or rule-based system (free)
 
-#### 12. **Body Metrics Tracking**
+#### 12. **Body Metrics Tracking** ✅ DONE
 Track more than just workouts:
 - Body weight
 - Body fat percentage
@@ -176,7 +176,7 @@ Let users grant access to:
 - Add `sharedWith: string[]` array to user doc
 - New role: `coach` or `viewer`
 
-#### 14. **Workout Streaks**
+#### 14. **Workout Streaks** ✅ DONE
 Gamification:
 - Track consecutive workout days
 - Badges for milestones (7 days, 30 days, 100 days)
