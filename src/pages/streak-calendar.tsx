@@ -86,7 +86,7 @@ export function StreakCalendar() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     
-    // Streak counting starts TODAY (October 8, 2025)
+    // Streak counting starts October 8, 2025
     const streakStartDate = new Date(2025, 9, 8) // Month is 0-indexed
     streakStartDate.setHours(0, 0, 0, 0)
     
@@ -188,14 +188,19 @@ export function StreakCalendar() {
     setCurrentMonth(new Date())
   }
 
-  const getStatusColor = (status: DayStatus, isToday: boolean, isPast: boolean) => {
+  const getStatusColor = (status: DayStatus, isToday: boolean, date: Date) => {
+    // Streak feature started October 8, 2025
+    const streakStartDate = new Date(2025, 9, 8)
+    streakStartDate.setHours(0, 0, 0, 0)
+    const isBeforeStreakFeature = date < streakStartDate
+    
     // If completed
     if (status === 'completed') {
-      // Historical workouts (before today) - light orange/faded
-      if (isPast) {
+      // Days before streak feature implementation - always darker orange
+      if (isBeforeStreakFeature) {
         return 'bg-orange-200 dark:bg-orange-900/30 text-gray-600 dark:text-gray-400'
       }
-      // Current workouts (today onwards) - vibrant orange
+      // Days from Oct 8 onwards (active streak tracking) - vibrant orange
       return 'bg-orange-500 dark:bg-orange-600 text-white font-semibold'
     }
 
@@ -336,17 +341,13 @@ export function StreakCalendar() {
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-2">
             {calendarData.map((day, index) => {
-              const today = new Date()
-              today.setHours(0, 0, 0, 0)
-              const isPast = day.date < today && day.dayOfMonth > 0
-              
               return (
                 <div
                   key={index}
                   className={`aspect-square flex items-center justify-center rounded-lg text-sm transition-all ${
                     day.dayOfMonth === 0 
                       ? '' 
-                      : getStatusColor(day.status, day.isToday, isPast)
+                      : getStatusColor(day.status, day.isToday, day.date)
                   } ${day.status !== 'not-scheduled' && day.dayOfMonth > 0 ? 'cursor-pointer hover:opacity-80' : ''}`}
                 >
                   {day.dayOfMonth > 0 && (

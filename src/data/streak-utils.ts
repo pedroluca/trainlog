@@ -77,20 +77,36 @@ function getPreviousScheduledDay(currentDate: Date, scheduledDays: number[]): Da
  */
 async function wasWorkoutCompletedOnDate(usuarioID: string, date: Date): Promise<boolean> {
   try {
-    const dateStr = date.toISOString().split('T')[0] // YYYY-MM-DD
+    const targetDateStr = date.toDateString() // "Wed Oct 09 2025"
     
-    // Check if there's a log entry for this date
+    // Fetch all logs for this user
     const logsRef = collection(db, 'logs')
-    const q = query(
-      logsRef,
-      where('usuarioID', '==', usuarioID),
-      where('data', '>=', dateStr),
-      where('data', '<', dateStr + 'T23:59:59')
-    )
+    const q = query(logsRef, where('usuarioID', '==', usuarioID))
     const querySnapshot = await getDocs(q)
     
-    // If there are any logs for this date, workout was completed
-    return !querySnapshot.empty
+    // Check if any log matches the target date
+    for (const docSnap of querySnapshot.docs) {
+      const logData = docSnap.data()
+      if (logData.data) {
+        let logDate: Date
+        
+        // Handle both Firestore Timestamp and ISO string formats
+        if (typeof logData.data === 'string') {
+          logDate = new Date(logData.data)
+        } else if (logData.data.seconds) {
+          logDate = new Date(logData.data.seconds * 1000)
+        } else {
+          continue // Skip invalid data
+        }
+        
+        // Compare using toDateString() to ignore time
+        if (logDate.toDateString() === targetDateStr) {
+          return true
+        }
+      }
+    }
+    
+    return false
   } catch (err) {
     console.error('❌ Error checking workout completion:', err)
     return false
@@ -128,7 +144,7 @@ export async function updateStreak(usuarioID: string): Promise<number> {
     
     // Check if user already completed today (prevent double counting)
     const lastCompletedDate = userData.lastCompletedDate
-    const todayStr = today.toISOString().split('T')[0]
+    const todayStr = today.toDateString() // "Wed Oct 09 2025"
     if (lastCompletedDate === todayStr) {
       console.log('⚠️ Workout already completed today')
       return currentStreak
