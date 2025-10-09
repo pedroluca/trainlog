@@ -14,10 +14,11 @@
 - Graceful fallback when offline
 
 ### 3. **Auto-Update System**
-- Service worker checks for updates automatically
+- Service worker checks for updates every 60 seconds
 - Notification appears when new version is available
 - User can update with one click
 - No need to reinstall the app
+- 📄 **See [PWA_UPDATE_SYSTEM.md](./PWA_UPDATE_SYSTEM.md) for detailed update flow**
 
 ### 4. **Install Prompt**
 - Smart prompt appears after 30 seconds of usage
