@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../components/button'
 import { getVersionWithPrefix } from '../version'
 import { Eye, EyeOff } from 'lucide-react'
+import { trackLogin, trackPageView } from '../utils/analytics'
 
 export function Login() {
   const [email, setEmail] = useState('')
@@ -19,10 +20,13 @@ export function Login() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    trackPageView('login')
+    
     if (usuarioID) {
       navigate('/train')
     }
-  })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,6 +63,7 @@ export function Login() {
 
       // User is active, proceed with login
       localStorage.setItem("usuarioId", uid)
+      trackLogin('email')
       navigate('/train')
     } catch (err) {
       setError('Falha ao fazer login: Verifique suas credenciais!')

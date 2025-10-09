@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { updateStreak } from '../data/streak-utils'
+import { trackPageView, trackWorkoutCompleted } from '../utils/analytics'
 
 const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
@@ -77,6 +78,7 @@ export function Training() {
   }, [workouts, currentDayIndex])
 
   useEffect(() => {
+    trackPageView('training')
     fetchWorkouts()
     setReset(false)
   }, [fetchWorkouts])
@@ -161,6 +163,9 @@ export function Training() {
         setTimeout(() => {
           setIsCompleteModalOpen(true)
           localStorage.setItem(completionKey, 'true') // Save to localStorage
+          
+          // Track workout completion
+          trackWorkoutCompleted(selectedWorkout.dia, exercises.length)
         }, 500)
       }
     }
