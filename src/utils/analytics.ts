@@ -114,6 +114,22 @@ export const trackStreakCalendarViewed = () => {
   logEvent('streak_calendar_viewed')
 }
 
+export const trackPremiumUpgradeModalOpened = () => {
+  logEvent('premium_upgrade_modal_opened')
+}
+
+export const trackPremiumUpgradeRequested = () => {
+  logEvent('premium_upgrade_requested')
+}
+
+export const trackPremiumUpgradeApproved = (userId: string) => {
+  logEvent('premium_upgrade_approved', { user_id: userId })
+}
+
+export const trackPremiumUpgradeRejected = (userId: string) => {
+  logEvent('premium_upgrade_rejected', { user_id: userId })
+}
+
 // Settings Events
 export const trackDarkModeToggled = (enabled: boolean) => {
   logEvent('dark_mode_toggled', { enabled: enabled ? 1 : 0 })
