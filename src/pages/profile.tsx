@@ -290,7 +290,18 @@ export function Profile() {
     <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
       {/* Profile Card */}
       <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-8 w-full max-w-lg border border-gray-200 dark:border-[#404040]">
-        <div className="flex flex-col items-center mb-6">
+        <div className="flex flex-col items-center mb-6 relative">
+          {/* Plan Badge */}
+          {isPremium ? (
+            <div className="absolute -top-4 -right-4 bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
+              <span className="w-full text-center">PREMIUM</span>
+            </div>
+          ) : (
+            <div className="absolute -top-4 -right-4 bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
+              <span className="w-full text-center">FREE</span>
+            </div>
+          )}
+
           {/* Avatar Circle with Image Upload */}
           <div className="relative mb-4">
             <div className={`w-20 h-20 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden ${
@@ -307,13 +318,6 @@ export function Profile() {
               )}
             </div>
             
-            {/* Premium Badge */}
-            {isPremium && (
-              <div className="absolute -bottom-4 left-0 right-0 bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
-                {/* <span>⭐</span> */}
-                <span className="w-full text-center">PREMIUM</span>
-              </div>
-            )}
             
             {/* Edit Icon Button */}
             <label 
