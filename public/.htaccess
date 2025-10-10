@@ -1,6 +1,27 @@
 # TrainLog - Hostinger Configuration
 # This file ensures React Router works properly with Apache
 
+# MIME Types - CRITICAL for module scripts
+<IfModule mod_mime.c>
+  # JavaScript
+  AddType application/javascript .js .mjs
+  AddType application/json .json
+  
+  # Web App Manifest
+  AddType application/manifest+json .webmanifest
+  
+  # Images
+  AddType image/webp .webp
+  AddType image/svg+xml .svg
+  
+  # Fonts
+  AddType font/woff .woff
+  AddType font/woff2 .woff2
+  
+  # Default charset for text files
+  AddDefaultCharset utf-8
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /

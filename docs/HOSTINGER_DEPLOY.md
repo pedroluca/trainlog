@@ -1,9 +1,19 @@
 # TrainLog - Hostinger Deployment Guide
 
+## 🌐 Estrutura de Domínios
+
+Este projeto usa **subdomínio**:
+- **trainlog.site** → Landing page (pasta `public_html/`)
+- **app.trainlog.site** → React App (pasta `public_html/app/`)
+
 ## 📦 Passo a Passo para Deploy na Hostinger
 
 ### 1️⃣ **Build do Projeto**
 ```bash
+# Limpar build anterior
+rm -rf dist
+
+# Gerar novo build
 npm run build
 ```
 Isso cria a pasta `dist/` com todos os arquivos otimizados.
@@ -12,42 +22,42 @@ Isso cria a pasta `dist/` com todos os arquivos otimizados.
 Após o build, você terá:
 ```
 dist/
+├── .htaccess              ⚠️ CRÍTICO! (MIME types + React Router)
 ├── index.html
+├── site.webmanifest       ⚠️ PWA manifest
 ├── assets/
-│   ├── index-[hash].js
+│   ├── index-[hash].js    ⚠️ Deve carregar como application/javascript
 │   ├── index-[hash].css
 │   └── [outros arquivos]
-├── .htaccess (copiado automaticamente do public/)
 ├── favicon.ico
-├── manifest files
 └── service worker files
 ```
 
-### 3️⃣ **Upload para Hostinger**
+### 3️⃣ **Upload para Hostinger (Subdomínio)**
 
-#### **Opção A: Via File Manager (Web)**
+#### **Opção A: Via File Manager (Web)** ✅ RECOMENDADO
 1. Entre no painel da Hostinger (hpanel)
 2. Vá em **File Manager**
-3. Navegue até `public_html/` (ou o diretório do seu domínio)
-4. **DELETE tudo** dentro de `public_html/`
+3. Navegue até `public_html/app/` (⚠️ NÃO é a raiz!)
+4. **DELETE tudo** dentro de `public_html/app/` (mas não delete a pasta `app/` em si)
 5. **Upload** todo o conteúdo da pasta `dist/`
    - ⚠️ **IMPORTANTE:** Faça upload do **CONTEÚDO** da pasta dist, não a pasta em si
-   - Deve ficar: `public_html/index.html`, `public_html/assets/`, etc.
-   - NÃO: `public_html/dist/index.html`
+   - ✅ Deve ficar: `public_html/app/index.html`, `public_html/app/assets/`, etc.
+   - ❌ NÃO: `public_html/app/dist/index.html`
 
-#### **Opção B: Via FTP** (Recomendado para projetos grandes)
+#### **Opção B: Via FTP**
 1. Baixe um cliente FTP (FileZilla, WinSCP, etc.)
 2. Conecte usando as credenciais FTP da Hostinger
-3. Navegue até `public_html/`
+3. Navegue até `public_html/app/`
 4. Delete tudo dentro
 5. Faça upload do conteúdo da pasta `dist/`
 
-### 4️⃣ **Verificar .htaccess**
-Certifique-se que o arquivo `.htaccess` está em `public_html/.htaccess`
+### 4️⃣ **Verificar .htaccess** ⚠️ CRÍTICO
+Certifique-se que o arquivo `.htaccess` está em `public_html/app/.htaccess`
 
 Se não estiver visível:
 1. No File Manager, clique em **Settings** (canto superior direito)
-2. Marque **Show Hidden Files**
+2. Marque ✅ **Show Hidden Files**
 3. Procure por `.htaccess`
 4. Se não existir, crie manualmente com o conteúdo do arquivo `public/.htaccess`
 
