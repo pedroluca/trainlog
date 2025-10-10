@@ -9,12 +9,14 @@ import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus } from 'lucide
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
+import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
 
 export function Profile() {
   const navigate = useNavigate()
   const usuarioID = localStorage.getItem('usuarioId')
   const [nome, setNome] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
+  const [telefone, setTelefone] = useState<string | null>(null)
   const [photoURL, setPhotoURL] = useState<string | null>(null)
   const [altura, setAltura] = useState<number>(0) // cm
   const [peso, setPeso] = useState<number>(0) // kg
@@ -32,6 +34,7 @@ export function Profile() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
 
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
@@ -67,6 +70,7 @@ export function Profile() {
             const userData = userDoc.data()
             setNome(userData.nome || 'Não disponível')
             setEmail(userData.email || 'Não disponível')
+            setTelefone(userData.telefone || null)
             setPhotoURL(userData.photoURL || null)
             setAltura(userData.altura || 0)
             setPeso(userData.peso || 0)
@@ -285,7 +289,15 @@ export function Profile() {
       alert('Erro ao excluir treino.')
     }
   }
-  
+
+  const handleOpenUpgradeModal = () => {
+    setIsUpgradeModalOpen(true)
+  }
+
+  const handleCloseUpgradeModal = () => {
+    setIsUpgradeModalOpen(false)
+  }
+
   return (
     <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
       {/* Profile Card */}
@@ -297,7 +309,7 @@ export function Profile() {
               <span className="w-full text-center">PREMIUM</span>
             </div>
           ) : (
-            <div className="absolute -top-4 -right-4 bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
+            <div className="absolute -top-4 -right-4 bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center" onClick={() => handleOpenUpgradeModal()}>
               <span className="w-full text-center">FREE</span>
             </div>
           )}
@@ -681,6 +693,17 @@ export function Profile() {
         <ShareWorkoutModal
           workoutId={selectedWorkout.id}
           onClose={() => setIsShareModalOpen(false)}
+        />
+      )}
+
+      {isUpgradeModalOpen && (
+        <PremiumUpgradeModal  
+          isOpen={isUpgradeModalOpen}
+          onClose={handleCloseUpgradeModal}
+          userEmail={email || ''}
+          userName={nome || ''}
+          userId={usuarioID || ''}
+          userPhone={telefone || ''}
         />
       )}
 

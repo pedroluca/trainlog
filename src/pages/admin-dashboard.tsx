@@ -5,6 +5,7 @@ import { collection, getDocs, doc, getDoc, deleteDoc, setDoc, updateDoc } from '
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { Users, Dumbbell, FileText, TrendingUp, LogOut, UserPlus, Check, X } from 'lucide-react'
 import { Button } from '../components/button'
+import { trackPremiumUpgradeApproved, trackPremiumUpgradeRejected } from '../utils/analytics'
 
 type UserData = {
   id: string
@@ -45,6 +46,20 @@ type LogData = {
   data: string
 }
 
+type UpgradeRequest = {
+  id: string
+  userId: string
+  userName: string
+  userEmail: string
+  userPhone?: string
+  message: string
+  status: 'pending' | 'approved' | 'rejected'
+  createdAt: unknown
+  updatedAt: unknown
+  processedBy?: string
+  processedAt?: string
+}
+
 export function AdminDashboard() {
   const navigate = useNavigate()
   const adminId = localStorage.getItem('adminId')
@@ -55,12 +70,14 @@ export function AdminDashboard() {
   const [workouts, setWorkouts] = useState<WorkoutData[]>([])
   const [logs, setLogs] = useState<LogData[]>([])
   const [registrationRequests, setRegistrationRequests] = useState<RegistrationRequest[]>([])
+  const [upgradeRequests, setUpgradeRequests] = useState<UpgradeRequest[]>([])
   const [adminName, setAdminName] = useState('')
   // const [migrating, setMigrating] = useState(false)
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
   const [currentRequestsPage, setCurrentRequestsPage] = useState(1)
+  const [currentUpgradeRequestsPage, setCurrentUpgradeRequestsPage] = useState(1)
   const itemsPerPage = 10
 
   // Sorting and filtering states
@@ -68,7 +85,18 @@ export function AdminDashboard() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [filterBy, setFilterBy] = useState<'all' | 'premium' | 'free' | 'active' | 'admin'>('all')
 
+  // Modal states
+  const [approveRegModalOpen, setApproveRegModalOpen] = useState(false)
+  const [rejectRegModalOpen, setRejectRegModalOpen] = useState(false)
+  const [approveUpgradeModalOpen, setApproveUpgradeModalOpen] = useState(false)
+  const [rejectUpgradeModalOpen, setRejectUpgradeModalOpen] = useState(false)
+  const [selectedRequest, setSelectedRequest] = useState<RegistrationRequest | null>(null)
+  const [selectedUpgradeRequest, setSelectedUpgradeRequest] = useState<UpgradeRequest | null>(null)
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [processingRequest, setProcessingRequest] = useState(false)
+
   const handleApproveRequest = async (request: RegistrationRequest) => {
+    setProcessingRequest(true)
     let userCreated = false
 
     try {
@@ -124,7 +152,9 @@ export function AdminDashboard() {
       }))
       setUsers(usersData)
       
-      alert(`Usuário ${request.nome} aprovado com sucesso!`)
+      // Close modal and show success
+      setApproveRegModalOpen(false)
+      setSelectedRequest(null)
       
     } catch (err: unknown) {
       console.error('Error during approval process:', err)
@@ -135,7 +165,6 @@ export function AdminDashboard() {
       if (userCreated) {
         // User was created but something else failed
         console.log('User was created successfully, but cleanup failed')
-        alert(`Usuário ${request.nome} foi criado com sucesso, mas houve um problema ao limpar a solicitação. O usuário está ativo e pode fazer login.`)
         
         // Still update the UI to remove the request from the list
         setRegistrationRequests(prev => prev.filter(req => req.id !== request.id))
@@ -158,25 +187,20 @@ export function AdminDashboard() {
           console.error('Failed to refresh users list:', refreshError)
         }
         
+        setApproveRegModalOpen(false)
+        setSelectedRequest(null)
+        
       } else {
-        // User creation failed
-        if (error.code === 'auth/email-already-in-use') {
-          alert(`Erro: O email ${request.email} já está em uso. O usuário pode já ter sido aprovado anteriormente.`)
-        } else if (error.code === 'auth/weak-password') {
-          alert('Erro: A senha é muito fraca. Peça ao usuário para escolher uma senha mais forte.')
-        } else if (error.code === 'auth/invalid-email') {
-          alert('Erro: Email inválido.')
-        } else {
-          alert(`Erro ao aprovar usuário: ${error.message || 'Erro desconhecido'}`)
-        }
+        // User creation failed - keep modal open to show error
+        console.error('User creation failed:', error)
       }
+    } finally {
+      setProcessingRequest(false)
     }
   }
 
   const handleRejectRequest = async (request: RegistrationRequest) => {
-    if (!confirm(`Tem certeza que deseja rejeitar a solicitação de ${request.nome}?`)) {
-      return
-    }
+    setProcessingRequest(true)
 
     try {
       // Delete the request
@@ -186,10 +210,83 @@ export function AdminDashboard() {
       // Remove from pending requests list
       setRegistrationRequests(prev => prev.filter(req => req.id !== request.id))
       
-      alert(`Solicitação de ${request.nome} rejeitada.`)
+      setRejectRegModalOpen(false)
+      setSelectedRequest(null)
     } catch (err) {
       console.error('Erro ao rejeitar usuário:', err)
-      alert('Erro ao rejeitar usuário. Tente novamente.')
+    } finally {
+      setProcessingRequest(false)
+    }
+  }
+
+  const handleApproveUpgradeRequest = async (request: UpgradeRequest) => {
+    setProcessingRequest(true)
+
+    try {
+      // Update user to Premium
+      const userDocRef = doc(db, 'usuarios', request.userId)
+      await updateDoc(userDocRef, {
+        isPremium: true
+      })
+
+      // Update request status
+      const requestDocRef = doc(db, 'upgrade_requests', request.id)
+      await updateDoc(requestDocRef, {
+        status: 'approved',
+        processedBy: adminId,
+        processedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+
+      // Remove from pending requests
+      setUpgradeRequests(prev => prev.filter(req => req.id !== request.id))
+
+      // Update users list
+      setUsers(prev => prev.map(user => 
+        user.id === request.userId 
+          ? { ...user, isPremium: true }
+          : user
+      ))
+
+      // Track approval
+      trackPremiumUpgradeApproved(request.userId)
+
+      setApproveUpgradeModalOpen(false)
+      setSelectedUpgradeRequest(null)
+    } catch (err) {
+      console.error('Error approving upgrade request:', err)
+    } finally {
+      setProcessingRequest(false)
+    }
+  }
+
+  const handleRejectUpgradeRequest = async (request: UpgradeRequest) => {
+    setProcessingRequest(true)
+
+    try {
+      // Update request status
+      const requestDocRef = doc(db, 'upgrade_requests', request.id)
+      await updateDoc(requestDocRef, {
+        status: 'rejected',
+        processedBy: adminId,
+        processedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        rejectionReason: rejectionReason || 'Não especificado'
+      })
+
+      // Remove from pending requests
+      setUpgradeRequests(prev => prev.filter(req => req.id !== request.id))
+
+      // Track rejection
+      trackPremiumUpgradeRejected(request.userId)
+
+      setRejectUpgradeModalOpen(false)
+      setSelectedUpgradeRequest(null)
+      setRejectionReason('')
+    } catch (err) {
+      console.error('Error rejecting upgrade request:', err)
+    } finally {
+      setProcessingRequest(false)
     }
   }
 
@@ -308,6 +405,25 @@ export function AdminDashboard() {
         }))
         // Only show pending requests
         setRegistrationRequests(requestsData.filter(req => req.status === 'pending'))
+
+        // Fetch upgrade requests
+        const upgradeRequestsRef = collection(db, 'upgrade_requests')
+        const upgradeRequestsSnapshot = await getDocs(upgradeRequestsRef)
+        const upgradeRequestsData: UpgradeRequest[] = upgradeRequestsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          userId: doc.data().userId,
+          userName: doc.data().userName,
+          userEmail: doc.data().userEmail,
+          userPhone: doc.data().userPhone,
+          message: doc.data().message,
+          status: doc.data().status,
+          createdAt: doc.data().createdAt,
+          updatedAt: doc.data().updatedAt,
+          processedBy: doc.data().processedBy,
+          processedAt: doc.data().processedAt,
+        }))
+        // Only show pending upgrade requests
+        setUpgradeRequests(upgradeRequestsData.filter(req => req.status === 'pending'))
 
         // Fetch all workouts
         const workoutsRef = collection(db, 'treinos')
@@ -519,14 +635,20 @@ export function AdminDashboard() {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    onClick={() => handleApproveRequest(request)}
+                    onClick={() => {
+                      setSelectedRequest(request)
+                      setApproveRegModalOpen(true)
+                    }}
                     className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
                   >
                     <Check size={16} />
                     Aprovar
                   </Button>
                   <Button
-                    onClick={() => handleRejectRequest(request)}
+                    onClick={() => {
+                      setSelectedRequest(request)
+                      setRejectRegModalOpen(true)
+                    }}
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
                   >
                     <X size={16} />
@@ -553,6 +675,93 @@ export function AdminDashboard() {
               <Button
                 onClick={() => setCurrentRequestsPage(prev => Math.min(Math.ceil(registrationRequests.length / itemsPerPage), prev + 1))}
                 disabled={currentRequestsPage >= Math.ceil(registrationRequests.length / itemsPerPage)}
+                className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded disabled:opacity-50"
+              >
+                Próxima
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pending Upgrade Requests */}
+      {upgradeRequests.length > 0 && (
+        <div className="bg-gradient-to-br from-amber-900/20 to-orange-900/20 backdrop-blur-xl rounded-2xl p-6 border border-amber-500/30 mb-6">
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <span className="text-2xl">👑</span>
+            Solicitações de Upgrade Premium ({upgradeRequests.length})
+          </h2>
+          <div className="space-y-4">
+            {upgradeRequests.slice((currentUpgradeRequestsPage - 1) * itemsPerPage, currentUpgradeRequestsPage * itemsPerPage).map((request) => (
+              <div key={request.id} className="bg-gray-700/50 rounded-lg p-4 border border-amber-500/20">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <p className="text-white font-medium text-lg">{request.userName}</p>
+                    <p className="text-gray-400 text-sm mb-1">{request.userEmail}</p>
+                    {request.userPhone && (
+                      <a 
+                        href={`https://wa.me/55${request.userPhone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-400 hover:text-green-300 text-sm mb-1 flex items-center gap-1 w-fit"
+                      >
+                        📱 {request.userPhone}
+                        <span className="text-xs">(WhatsApp)</span>
+                      </a>
+                    )}
+                    <p className="text-gray-500 text-xs mb-3">
+                      Enviado em: {request.createdAt && typeof request.createdAt === 'object' && 'seconds' in request.createdAt
+                        ? `${new Date((request.createdAt as { seconds: number }).seconds * 1000).toLocaleDateString('pt-BR')} às ${new Date((request.createdAt as { seconds: number }).seconds * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+                        : 'N/A'}
+                    </p>
+                    <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-600">
+                      <p className="text-xs text-gray-400 mb-1">Motivo:</p>
+                      <p className="text-white text-sm">{request.message}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    onClick={() => {
+                      setSelectedUpgradeRequest(request)
+                      setApproveUpgradeModalOpen(true)
+                    }}
+                    className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 font-semibold"
+                  >
+                    <Check size={16} />
+                    Aprovar Premium
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setSelectedUpgradeRequest(request)
+                      setRejectUpgradeModalOpen(true)
+                    }}
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <X size={16} />
+                    Rejeitar
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Pagination for upgrade requests */}
+          {upgradeRequests.length > itemsPerPage && (
+            <div className="flex justify-center items-center gap-4 mt-6">
+              <Button
+                onClick={() => setCurrentUpgradeRequestsPage(prev => Math.max(1, prev - 1))}
+                disabled={currentUpgradeRequestsPage === 1}
+                className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded disabled:opacity-50"
+              >
+                Anterior
+              </Button>
+              <span className="text-gray-400">
+                Página {currentUpgradeRequestsPage} de {Math.ceil(upgradeRequests.length / itemsPerPage)}
+              </span>
+              <Button
+                onClick={() => setCurrentUpgradeRequestsPage(prev => Math.min(Math.ceil(upgradeRequests.length / itemsPerPage), prev + 1))}
+                disabled={currentUpgradeRequestsPage >= Math.ceil(upgradeRequests.length / itemsPerPage)}
                 className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded disabled:opacity-50"
               >
                 Próxima
@@ -746,6 +955,226 @@ export function AdminDashboard() {
           })}
         </div>
       </div>
+
+      {/* Approve Registration Modal */}
+      {approveRegModalOpen && selectedRequest && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl">
+            <h3 className="text-2xl font-bold text-white mb-4">Aprovar Registro</h3>
+            <div className="bg-gray-700/30 rounded-lg p-4 mb-6">
+              <p className="text-white font-semibold mb-2">{selectedRequest.nome}</p>
+              <p className="text-gray-400 text-sm mb-1">Email: {selectedRequest.email}</p>
+              <p className="text-gray-400 text-sm">Telefone: {selectedRequest.telefone || 'Não informado'}</p>
+            </div>
+            <p className="text-gray-300 mb-6">
+              Confirma a criação da conta para este usuário? Uma senha temporária será enviada por email.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setApproveRegModalOpen(false)
+                  setSelectedRequest(null)
+                }}
+                disabled={processingRequest}
+                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => handleApproveRequest(selectedRequest)}
+                disabled={processingRequest}
+                className="flex-1 bg-[#27AE60] hover:bg-[#229954] text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+              >
+                {processingRequest ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} />
+                    Confirmar Aprovação
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Registration Modal */}
+      {rejectRegModalOpen && selectedRequest && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl">
+            <h3 className="text-2xl font-bold text-white mb-4">Rejeitar Registro</h3>
+            <div className="bg-gray-700/30 rounded-lg p-4 mb-6">
+              <p className="text-white font-semibold mb-2">{selectedRequest.nome}</p>
+              <p className="text-gray-400 text-sm mb-1">Email: {selectedRequest.email}</p>
+              <p className="text-gray-400 text-sm">Telefone: {selectedRequest.telefone || 'Não informado'}</p>
+            </div>
+            <p className="text-gray-300 mb-6">
+              Confirma a exclusão desta solicitação de registro? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setRejectRegModalOpen(false)
+                  setSelectedRequest(null)
+                }}
+                disabled={processingRequest}
+                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => handleRejectRequest(selectedRequest)}
+                disabled={processingRequest}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+              >
+                {processingRequest ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <X size={16} />
+                    Confirmar Rejeição
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approve Upgrade Modal */}
+      {approveUpgradeModalOpen && selectedUpgradeRequest && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl">
+            <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 mb-4">
+              Aprovar Premium
+            </h3>
+            <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 rounded-lg p-4 mb-4 border border-amber-500/20">
+              <p className="text-white font-semibold mb-2">{selectedUpgradeRequest.userName}</p>
+              <p className="text-gray-300 text-sm mb-1">📧 {selectedUpgradeRequest.userEmail}</p>
+              {selectedUpgradeRequest.userPhone && (
+                <p className="text-gray-300 text-sm mb-2">📱 {selectedUpgradeRequest.userPhone}</p>
+              )}
+              {selectedUpgradeRequest.message && (
+                <div className="mt-3 pt-3 border-t border-amber-500/20">
+                  <p className="text-gray-400 text-xs mb-1">Mensagem do usuário:</p>
+                  <p className="text-gray-300 text-sm italic">"{selectedUpgradeRequest.message}"</p>
+                </div>
+              )}
+            </div>
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-6">
+              <p className="text-blue-300 text-sm">
+                💡 <strong>Lembrete:</strong> Entre em contato com o usuário para confirmar o pagamento antes de aprovar.
+              </p>
+            </div>
+            <p className="text-gray-300 mb-6">
+              Confirma a atualização desta conta para <strong className="text-amber-400">Premium</strong>?
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setApproveUpgradeModalOpen(false)
+                  setSelectedUpgradeRequest(null)
+                }}
+                disabled={processingRequest}
+                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => handleApproveUpgradeRequest(selectedUpgradeRequest)}
+                disabled={processingRequest}
+                className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+              >
+                {processingRequest ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} />
+                    Confirmar Premium
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Upgrade Modal */}
+      {rejectUpgradeModalOpen && selectedUpgradeRequest && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl">
+            <h3 className="text-2xl font-bold text-white mb-4">Rejeitar Upgrade Premium</h3>
+            <div className="bg-gray-700/30 rounded-lg p-4 mb-4">
+              <p className="text-white font-semibold mb-2">{selectedUpgradeRequest.userName}</p>
+              <p className="text-gray-400 text-sm mb-1">Email: {selectedUpgradeRequest.userEmail}</p>
+              {selectedUpgradeRequest.userPhone && (
+                <p className="text-gray-400 text-sm mb-2">Telefone: {selectedUpgradeRequest.userPhone}</p>
+              )}
+              {selectedUpgradeRequest.message && (
+                <div className="mt-3 pt-3 border-t border-gray-600">
+                  <p className="text-gray-500 text-xs mb-1">Mensagem:</p>
+                  <p className="text-gray-300 text-sm italic">"{selectedUpgradeRequest.message}"</p>
+                </div>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="text-gray-300 text-sm mb-2 block">
+                Motivo da rejeição <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Ex: Pagamento não confirmado, dados inválidos, etc."
+                className="w-full bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-red-500 min-h-[100px] resize-none"
+                disabled={processingRequest}
+              />
+            </div>
+            <p className="text-gray-400 text-sm mb-6">
+              O usuário será notificado sobre a rejeição com o motivo informado.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setRejectUpgradeModalOpen(false)
+                  setSelectedUpgradeRequest(null)
+                  setRejectionReason('')
+                }}
+                disabled={processingRequest}
+                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => handleRejectUpgradeRequest(selectedUpgradeRequest)}
+                disabled={processingRequest || !rejectionReason.trim()}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {processingRequest ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <X size={16} />
+                    Confirmar Rejeição
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -23,6 +23,21 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
+    // upgrade_requests collection (Premium upgrade requests)
+    match /upgrade_requests/{requestId} {
+      // Users can create their own upgrade requests
+      allow create: if request.auth != null && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'pending';
+      
+      // Users can read their own requests
+      allow read: if request.auth != null && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Only admins can update/delete upgrade requests
+      allow update, delete: if isAdmin();
+    }
+    
     // treinos collection
     match /treinos/{treinoId} {
       // Allow read if:
