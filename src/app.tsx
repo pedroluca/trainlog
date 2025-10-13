@@ -20,6 +20,7 @@ import { PWAUpdateNotification } from './components/pwa-update-notification'
 import { WhatsNewModal } from './components/whats-new-modal'
 import { ThemeProvider } from './contexts/theme-context'
 import { currentRelease } from './data/whats-new'
+import { checkAndResetStreakIfMissed, resetPreviousDaysExercises } from './data/streak-utils'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from './firebaseConfig'
 
@@ -57,6 +58,30 @@ export function App() {
 
     // Small delay to ensure user is logged in
     const timer = setTimeout(checkVersion, 1000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Check streak and reset previous days exercises on app load
+  useEffect(() => {
+    const initializeStreakChecks = async () => {
+      const usuarioID = localStorage.getItem('usuarioId')
+      if (!usuarioID) return
+
+      try {
+        // 1. First reset previous days exercises (prevent double-counting)
+        await resetPreviousDaysExercises(usuarioID)
+        
+        // 2. Then check if streak should be reset due to missed days
+        await checkAndResetStreakIfMissed(usuarioID)
+        
+        console.log('✅ Streak checks completed')
+      } catch (error) {
+        console.error('❌ Error in streak initialization:', error)
+      }
+    }
+
+    // Run on app load with small delay to ensure user is logged in
+    const timer = setTimeout(initializeStreakChecks, 1500)
     return () => clearTimeout(timer)
   }, [])
 

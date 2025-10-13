@@ -114,6 +114,141 @@ async function wasWorkoutCompletedOnDate(usuarioID: string, date: Date): Promise
 }
 
 /**
+ * Checks if user missed any scheduled days and resets streak to 0 if so
+ * This should run when the app loads
+ */
+export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<void> {
+  try {
+    const userDocRef = doc(db, 'usuarios', usuarioID)
+    const userDoc = await getDoc(userDocRef)
+    
+    if (!userDoc.exists()) return
+    
+    const userData = userDoc.data()
+    const scheduledDays = userData.scheduledDays || []
+    const lastCompletedDate = userData.lastCompletedDate
+    const currentStreak = userData.currentStreak || 0
+    
+    // If no scheduled days or no streak, nothing to check
+    if (scheduledDays.length === 0 || currentStreak === 0) return
+    
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    // If never completed a workout, nothing to check
+    if (!lastCompletedDate) return
+    
+    const lastCompleted = new Date(lastCompletedDate)
+    lastCompleted.setHours(0, 0, 0, 0)
+    
+    // If last completed was today, no need to check
+    if (lastCompleted.toDateString() === today.toDateString()) return
+    
+    // Check all days between last completed and today
+    const checkDate = new Date(lastCompleted)
+    checkDate.setDate(checkDate.getDate() + 1) // Start from day after last completed
+    
+    let missedScheduledDay = false
+    
+    while (checkDate < today) {
+      const checkDayOfWeek = checkDate.getDay()
+      
+      // If this was a scheduled day that wasn't completed, streak is broken
+      if (scheduledDays.includes(checkDayOfWeek)) {
+        const wasCompleted = await wasWorkoutCompletedOnDate(usuarioID, checkDate)
+        if (!wasCompleted) {
+          missedScheduledDay = true
+          console.log(`💔 Missed scheduled workout on ${checkDate.toDateString()}`)
+          break
+        }
+      }
+      
+      checkDate.setDate(checkDate.getDate() + 1)
+    }
+    
+    // If missed a scheduled day, reset current streak to 0
+    if (missedScheduledDay) {
+      await updateDoc(userDocRef, {
+        currentStreak: 0
+      })
+      
+      // Dispatch event to update UI
+      window.dispatchEvent(new CustomEvent('streakUpdated', { 
+        detail: { newStreak: 0 } 
+      }))
+      
+      console.log('🔄 Streak reset to 0 (missed a scheduled day)')
+    }
+  } catch (err) {
+    console.error('❌ Error checking missed streak:', err)
+  }
+}
+
+/**
+ * Resets all exercises checked status except for today's workout
+ * Prevents old workouts from being marked as complete
+ */
+export async function resetPreviousDaysExercises(usuarioID: string): Promise<void> {
+  try {
+    const today = new Date()
+    const todayDayOfWeek = today.getDay()
+    
+    // Map day numbers to Portuguese names
+    const dayNumberToName: Record<number, string> = {
+      0: 'Domingo',
+      1: 'Segunda-feira',
+      2: 'Terça-feira',
+      3: 'Quarta-feira',
+      4: 'Quinta-feira',
+      5: 'Sexta-feira',
+      6: 'Sábado'
+    }
+    
+    const todayName = dayNumberToName[todayDayOfWeek]
+    
+    // Get all user's workouts
+    const workoutsRef = collection(db, 'treinos')
+    const q = query(workoutsRef, where('usuarioID', '==', usuarioID))
+    const querySnapshot = await getDocs(q)
+    
+    let resetCount = 0
+    
+    // Reset checked status for all workouts that are NOT today
+    for (const docSnap of querySnapshot.docs) {
+      const workoutData = docSnap.data()
+      const workoutDay = workoutData.dia
+      
+      // Skip today's workout
+      if (workoutDay === todayName) continue
+      
+      // Check if any exercises are marked as checked
+      const exercises = workoutData.exercises || []
+      const hasCheckedExercises = exercises.some((ex: { checked?: boolean }) => ex.checked === true)
+      
+      if (hasCheckedExercises) {
+        // Reset all exercises to unchecked
+        const resetExercises = exercises.map((ex: { checked?: boolean }) => ({
+          ...ex,
+          checked: false
+        }))
+        
+        await updateDoc(doc(db, 'treinos', docSnap.id), {
+          exercises: resetExercises
+        })
+        
+        resetCount++
+      }
+    }
+    
+    if (resetCount > 0) {
+      console.log(`✅ Reset ${resetCount} previous day workout(s)`)
+    }
+  } catch (err) {
+    console.error('❌ Error resetting previous days exercises:', err)
+  }
+}
+
+/**
  * Updates user's streak when they complete all exercises of the day
  * Logic: 
  * - If previous scheduled day was completed → increment streak
