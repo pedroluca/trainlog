@@ -10,6 +10,7 @@ import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
+import { Toast, ToastState } from '../components/toast'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -35,6 +36,11 @@ export function Profile() {
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
+  const [toast, setToast] = useState<ToastState>({
+    show: false,
+    message: '',
+    type: 'success'
+  })
 
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
@@ -158,7 +164,7 @@ export function Profile() {
       const pesoEmKg = parseFloat(editedPeso)
       
       if (!alturaEmCm || !pesoEmKg || alturaEmCm < 50 || alturaEmCm > 300 || pesoEmKg < 20 || pesoEmKg > 500) {
-        alert('Por favor, insira valores válidos (Altura: 0.50-3.00m, Peso: 20-500kg)')
+        setToast({ show: true, message: 'Por favor, insira valores válidos (Altura: 0.50-3.00m, Peso: 20-500kg)', type: 'error' })
         return
       }
 
@@ -184,10 +190,10 @@ export function Profile() {
       setPeso(pesoEmKg)
       setIsEditingMetrics(false)
       
-      alert('Métricas atualizadas com sucesso!')
+      setToast({ show: true, message: 'Métricas atualizadas com sucesso!', type: 'success' })
     } catch (err) {
       console.error('Erro ao salvar métricas:', err)
-      alert('Erro ao salvar métricas. Tente novamente.')
+      setToast({ show: true, message: 'Erro ao salvar métricas. Tente novamente.', type: 'error' })
     }
   }
 
@@ -197,13 +203,13 @@ export function Profile() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecione uma imagem válida')
+      setToast({ show: true, message: 'Por favor, selecione uma imagem válida', type: 'error' })
       return
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('A imagem deve ter no máximo 5MB')
+      setToast({ show: true, message: 'A imagem deve ter no máximo 5MB', type: 'error' })
       return
     }
 
@@ -239,10 +245,10 @@ export function Profile() {
       // Update local state
       setPhotoURL(downloadURL)
       
-      alert('Foto de perfil atualizada com sucesso!')
+      setToast({ show: true, message: 'Foto de perfil atualizada com sucesso!', type: 'success' })
     } catch (err) {
       console.error('Erro ao fazer upload da imagem:', err)
-      alert('Erro ao atualizar foto de perfil. Tente novamente.')
+      setToast({ show: true, message: 'Erro ao atualizar foto de perfil. Tente novamente.', type: 'error' })
     } finally {
       setUploadingImage(false)
     }
@@ -286,7 +292,7 @@ export function Profile() {
       fetchWorkouts()
     } catch (err) {
       console.error('Erro ao excluir treino:', err)
-      alert('Erro ao excluir treino.')
+      setToast({ show: true, message: 'Erro ao excluir treino.', type: 'error' })
     }
   }
 
@@ -725,6 +731,14 @@ export function Profile() {
         </p>
         <p className="text-xs text-gray-400 dark:text-gray-500">{getVersionWithPrefix()}</p>
       </div>
+      
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      )}
     </main>
   )
 }

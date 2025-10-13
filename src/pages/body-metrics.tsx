@@ -5,6 +5,7 @@ import { collection, getDocs, query, where, addDoc, deleteDoc, doc, getDoc } fro
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { Button } from '../components/button'
+import { Toast, ToastState } from '../components/toast'
 
 type BodyMeasurement = {
   id: string
@@ -30,6 +31,13 @@ export function BodyMetrics() {
   const [newPeso, setNewPeso] = useState('')
   const [newAltura, setNewAltura] = useState('')
   const [newNotas, setNewNotas] = useState('')
+  
+  // Toast state
+  const [toast, setToast] = useState<ToastState>({
+    show: false,
+    message: '',
+    type: 'success'
+  })
 
   // Function to open add modal with pre-filled data
   const openAddModal = () => {
@@ -83,7 +91,7 @@ export function BodyMetrics() {
         setMeasurements(measurementsData)
       } catch (err) {
         console.error('Erro ao buscar medições:', err)
-        alert('Erro ao buscar medições. Verifique o console para detalhes.')
+        setToast({ show: true, message: 'Erro ao buscar medições. Verifique o console para detalhes.', type: 'error' })
       } finally {
         setLoading(false)
       }
@@ -99,7 +107,7 @@ export function BodyMetrics() {
           const isPremiumUser = userDoc.data()?.isPremium || false
           
           if (!isPremiumUser) {
-            alert('Esta página é exclusiva para usuários Premium.')
+            setToast({ show: true, message: 'Esta página é exclusiva para usuários Premium.', type: 'error' })
             navigate('/profile')
             return
           }
@@ -147,7 +155,7 @@ export function BodyMetrics() {
     const altura = parseFloat(newAltura) * 100 // Convert to cm
 
     if (!peso || !altura || peso < 20 || peso > 500 || altura < 50 || altura > 300) {
-      alert('Por favor, insira valores válidos (Altura: 0.50-3.00m, Peso: 20-500kg)')
+      setToast({ show: true, message: 'Por favor, insira valores válidos (Altura: 0.50-3.00m, Peso: 20-500kg)', type: 'error' })
       return
     }
 
@@ -169,10 +177,10 @@ export function BodyMetrics() {
       setNewAltura('')
       setNewNotas('')
       refetchMeasurements()
-      alert('Medição adicionada com sucesso!')
+      setToast({ show: true, message: 'Medição adicionada com sucesso!', type: 'success' })
     } catch (err) {
       console.error('Erro ao adicionar medição:', err)
-      alert('Erro ao adicionar medição. Tente novamente.')
+      setToast({ show: true, message: 'Erro ao adicionar medição. Tente novamente.', type: 'error' })
     }
   }
 
@@ -184,10 +192,10 @@ export function BodyMetrics() {
       setIsDeleteModalOpen(false)
       setSelectedMeasurement(null)
       refetchMeasurements()
-      alert('Medição excluída com sucesso!')
+      setToast({ show: true, message: 'Medição excluída com sucesso!', type: 'success' })
     } catch (err) {
       console.error('Erro ao excluir medição:', err)
-      alert('Erro ao excluir medição. Tente novamente.')
+      setToast({ show: true, message: 'Erro ao excluir medição. Tente novamente.', type: 'error' })
     }
   }
 
@@ -511,6 +519,14 @@ export function BodyMetrics() {
             </div>
           </div>
         </div>
+      )}
+
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
       )}
     </main>
   )

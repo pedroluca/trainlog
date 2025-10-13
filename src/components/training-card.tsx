@@ -4,6 +4,7 @@ import { EllipsisVertical, Trash2 } from 'lucide-react'
 import { addDoc, collection, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import beepSound from '../assets/beep.mp3'
+import { Toast, ToastState } from './toast'
 
 type TrainingCardProps = {
   id: string // ID do exercício
@@ -27,6 +28,11 @@ export function TrainingCard(props: TrainingCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [audioEnabled, setAudioEnabled] = useState(false)
+  const [toast, setToast] = useState<ToastState>({
+    show: false,
+    message: '',
+    type: 'success'
+  })
 
   const [editedTitle, setEditedTitle] = useState(title)
   const [editedSets, setEditedSets] = useState(sets)
@@ -162,7 +168,7 @@ export function TrainingCard(props: TrainingCardProps) {
       onEdit()
     } catch (err) {
       console.error('Erro ao excluir exercício:', err)
-      alert('Erro ao excluir exercício.')
+      setToast({ show: true, message: 'Erro ao excluir exercício.', type: 'error' })
     }
   }
 
@@ -208,7 +214,7 @@ export function TrainingCard(props: TrainingCardProps) {
       onEdit()
     } catch (err) {
       console.error('Erro ao atualizar exercício:', err)
-      alert('Erro ao atualizar exercício.')
+      setToast({ show: true, message: 'Erro ao atualizar exercício.', type: 'error' })
     }
   }
 
@@ -444,6 +450,14 @@ export function TrainingCard(props: TrainingCardProps) {
             </div>
           </div>
         </div>
+      )}
+      
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
       )}
     </div>
   )

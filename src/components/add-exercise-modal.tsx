@@ -3,6 +3,7 @@ import { collection, addDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
 import { exerciseLibrary } from '../data/exercise-library'
+import { Toast, ToastState } from './toast'
 
 type Props = {
   workoutId: string
@@ -16,6 +17,11 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
   const [peso, setPeso] = useState(0)
   const [tempoIntervalo, setTempoIntervalo] = useState('')
   const [selectedExerciseId, setSelectedExerciseId] = useState('')
+  const [toast, setToast] = useState<ToastState>({
+    show: false,
+    message: '',
+    type: 'success'
+  })
 
   const handleSelectExercise = (exerciseId: string) => {
     const exercise = exerciseLibrary.find(ex => ex.id === exerciseId)
@@ -74,7 +80,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
       onClose()
     } catch (err) {
       console.error('Erro ao adicionar exercício:', err)
-      alert('Erro ao adicionar exercício.')
+      setToast({ show: true, message: 'Erro ao adicionar exercício.', type: 'error' })
     }
   }
 
@@ -265,6 +271,14 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
           </div>
         </form>
       </div>
+      
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      )}
     </div>
   )
 }

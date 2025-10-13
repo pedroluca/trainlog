@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
+import { Toast, ToastState } from './toast'
 
 type EditWorkoutModalProps = {
   workout: { id: string; dia: string; musculo: string }
@@ -13,6 +14,11 @@ type EditWorkoutModalProps = {
 export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: EditWorkoutModalProps) {
   const [day, setDay] = useState(workout.dia)
   const [muscleGroup, setMuscleGroup] = useState(workout.musculo)
+  const [toast, setToast] = useState<ToastState>({
+    show: false,
+    message: '',
+    type: 'success'
+  })
 
   const handleSave = async () => {
     try {
@@ -22,7 +28,7 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
       onClose()
     } catch (err) {
       console.error('Erro ao salvar treino:', err)
-      alert('Erro ao salvar treino.')
+      setToast({ show: true, message: 'Erro ao salvar treino.', type: 'error' })
     }
   }
 
@@ -78,6 +84,14 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
           </div>
         </form>
       </div>
+      
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      )}
     </div>
   )
 }

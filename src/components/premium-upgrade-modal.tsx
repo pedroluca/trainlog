@@ -4,7 +4,8 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { X, Sparkles, Calendar, TrendingUp, Crown } from 'lucide-react'
 import { trackPremiumUpgradeModalOpened, trackPremiumUpgradeRequested } from '../utils/analytics'
-import QRCode from '../assets/qr-code-pix-value.jpg'
+import QRCode from '../assets/qr-code-upgrade.jpg'
+import { Toast, ToastState } from './toast'
 
 interface PremiumUpgradeModalProps {
   isOpen: boolean
@@ -20,10 +21,15 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
   const [loading, setLoading] = useState(false)
   const [requestSent, setRequestSent] = useState(false)
   const [pixKeyCopied, setPixKeyCopied] = useState(false)
+  const [toast, setToast] = useState<ToastState>({
+    show: false,
+    message: '',
+    type: 'success'
+  })
 
   // PIX Configuration (UPDATE WITH YOUR PIX KEY!)
   const PIX_KEY = 'suporte@trainlog.site' // TROCAR PELA SUA CHAVE PIX
-  const PIX_VALUE = '14.90'
+  const PIX_VALUE = '9.90' // Upgrade Premium fee (registration is R$ 14,90)
   const ADMIN_WHATSAPP = '5577936181281' // TROCAR PELO SEU WHATSAPP (com DDD, sem espaços)
 
   const copyPixKey = () => {
@@ -43,7 +49,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
 
   const handleUpgradeRequest = async () => {
     if (!message.trim()) {
-      alert('Por favor, conte-nos por que você quer o Premium!')
+      setToast({ show: true, message: 'Por favor, conte-nos por que você quer o Premium!', type: 'error' })
       return
     }
 
@@ -68,7 +74,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
       setRequestSent(true)
     } catch (error) {
       console.error('Error creating upgrade request:', error)
-      alert('Erro ao enviar solicitação. Tente novamente.')
+      setToast({ show: true, message: 'Erro ao enviar solicitação. Tente novamente.', type: 'error' })
     } finally {
       setLoading(false)
     }
@@ -297,15 +303,18 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
             </span>
             <div className='text-right'>
               <span className='text-2xl font-bold text-amber-600 dark:text-amber-400'>
-                R$ 14,90
+                R$ 9,90
               </span>
               <span className='text-xs text-gray-600 dark:text-gray-400 ml-1'>
-                / único
+                / upgrade
               </span>
             </div>
           </div>
           <p className='text-xs text-gray-600 dark:text-gray-400 text-center'>
-            💳 Pagamento via PIX • Acesso vitalício
+            💳 Pagamento via PIX • Acesso vitalício aos recursos Premium
+          </p>
+          <p className='text-xs text-gray-500 dark:text-gray-500 text-center mt-1'>
+            (Você já pagou R$ 14,90 no cadastro)
           </p>
         </div>
 
@@ -342,6 +351,14 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
           Após aprovação, você receberá instruções de pagamento por email
         </p>
       </div>
+      
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      )}
     </div>
   )
 }

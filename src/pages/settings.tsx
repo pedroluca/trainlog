@@ -6,6 +6,7 @@ import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 
 import { Button } from '../components/button'
 import { ArrowLeft, Volume2, VolumeX, Lock, Eye, EyeOff, Moon, Sun } from 'lucide-react'
 import { useTheme } from '../contexts/theme-context'
+import { Toast, ToastState } from '../components/toast'
 
 export function Settings() {
   const navigate = useNavigate()
@@ -29,6 +30,11 @@ export function Settings() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [toast, setToast] = useState<ToastState>({
+    show: false,
+    message: '',
+    type: 'success'
+  })
 
   useEffect(() => {
     if (!usuarioID) {
@@ -69,7 +75,7 @@ export function Settings() {
       setAudioEnabled(newAudioState)
     } catch (err) {
       console.error('Erro ao atualizar configuração de áudio:', err)
-      alert('Erro ao atualizar configuração de áudio.')
+      setToast({ show: true, message: 'Erro ao atualizar configuração de áudio.', type: 'error' })
     } finally {
       setLoadingAudio(false)
     }
@@ -365,6 +371,14 @@ export function Settings() {
           • E muito mais!
         </p>
       </div>
+      
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      )}
     </main>
   )
 }
