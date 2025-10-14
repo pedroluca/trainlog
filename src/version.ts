@@ -5,8 +5,8 @@
 
 export const APP_VERSION = {
   major: 1,
-  minor: 12,
-  patch: 6,
+  minor: 13,
+  patch: 0,
 }
 
 export const getVersion = (): string => {
