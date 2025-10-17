@@ -9,6 +9,7 @@ export interface Exercicio {
   peso: number
   tempoIntervalo: number
   isFeito: boolean
+  lastDoneDate?: string
 }
 
 export async function getWorkoutExercises(workoutId: string): Promise<Exercicio[]> {
@@ -26,6 +27,7 @@ export async function getWorkoutExercises(workoutId: string): Promise<Exercicio[
       peso: data.peso,
       tempoIntervalo: data.tempoIntervalo,
       isFeito: data.isFeito,
+      lastDoneDate: data.lastDoneDate
     } as Exercicio
   })
   

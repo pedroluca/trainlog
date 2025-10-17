@@ -136,7 +136,20 @@ export function Training() {
   const checkAllExercisesComplete = useCallback(() => {
     // Check if all exercises are marked as done
     if (exercises.length > 0 && selectedWorkout) {
-      const allComplete = exercises.every(ex => ex.isFeito)
+      const allComplete = exercises.every((ex) => {
+        console.log('🟩 Verificando exercício:', ex.titulo || ex.id)
+
+        if (!ex.isFeito || !ex.lastDoneDate) return false
+
+        const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD local
+        const done = new Date(ex.lastDoneDate).toLocaleDateString('en-CA')
+
+        const isToday = today === done
+        console.log(`   ${done} === ${today} → ${isToday ? '✅ igual' : '❌ diferente'}`)
+        return isToday
+      })
+
+      console.log('🏁 allComplete:', allComplete)
       
       // Create a unique key based on workout and today's date
       const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD

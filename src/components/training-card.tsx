@@ -117,16 +117,16 @@ export function TrainingCard(props: TrainingCardProps) {
   const handleFinishSet = useCallback(async () => {
     try {
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-      await updateDoc(exerciseRef, { isFeito: true })
+      await updateDoc(exerciseRef, { isFeito: true, lastDoneDate: new Date().toISOString() })
       
       // Add exercise to log when completed
       try {
         const usuarioId = localStorage.getItem('usuarioId')
-        console.log('User ID from localStorage:', usuarioId)
-        console.log('Exercise data:', { title, sets, reps, weight })
+        // console.log('User ID from localStorage:', usuarioId)
+        // console.log('Exercise data:', { title, sets, reps, weight })
         
         if (usuarioId) {
-          console.log('Creating log entry for user:', usuarioId)
+          // console.log('Creating log entry for user:', usuarioId)
           
           const logsRef = collection(db, 'logs')
           const logDoc = await addDoc(logsRef, {
