@@ -11,6 +11,7 @@ type HeaderProps = {
 export function Header({ hideDate = false }: HeaderProps) {
   const [currentTime, setCurrentTime] = useState('')
   const [streak, setStreak] = useState(0)
+  const [treinouHoje, setTreinouHoje] = useState(false)
   const usuarioID = localStorage.getItem('usuarioId')
 
   useEffect(() => {
@@ -37,29 +38,35 @@ export function Header({ hideDate = false }: HeaderProps) {
   useEffect(() => {
     const fetchStreak = async () => {
       if (!usuarioID) return
-      
       try {
         const userDocRef = doc(db, 'usuarios', usuarioID)
         const userDoc = await getDoc(userDocRef)
-        
         if (userDoc.exists()) {
           const userData = userDoc.data()
           setStreak(userData.currentStreak || 0)
+          const lastWorkoutDate = userData.lastWorkoutDate
+          if (lastWorkoutDate) {
+            const today = new Date()
+            const todayStr = today.toISOString().slice(0, 10)
+            setTreinouHoje(lastWorkoutDate === todayStr)
+          } else {
+            setTreinouHoje(false)
+          }
         }
       } catch (err) {
         console.error('Erro ao buscar streak:', err)
       }
     }
-
     fetchStreak()
-    
-    // Listen for streak updates
     const handleStreakUpdate = (event: CustomEvent) => {
       setStreak(event.detail.newStreak)
+      if (event.detail.lastWorkoutDate) {
+        const today = new Date()
+        const todayStr = today.toISOString().slice(0, 10)
+        setTreinouHoje(event.detail.lastWorkoutDate === todayStr)
+      }
     }
-    
     window.addEventListener('streakUpdated', handleStreakUpdate as EventListener)
-    
     return () => {
       window.removeEventListener('streakUpdated', handleStreakUpdate as EventListener)
     }
@@ -81,7 +88,7 @@ export function Header({ hideDate = false }: HeaderProps) {
             className='flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors'
             title='Seu streak de treinos'
           >
-            <Flame size={20} className='text-orange-400' />
+            <Flame size={20} className={treinouHoje ? 'text-orange-400' : 'text-gray-400'} />
             <span className='text-lg font-bold'>{streak}</span>
           </Link>
         )}

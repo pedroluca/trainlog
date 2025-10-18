@@ -8,7 +8,7 @@ import { AddWorkoutModal } from '../components/add-workout-modal'
 import { AddExerciseModal } from '../components/add-exercise-modal'
 import { WorkoutCompleteModal } from '../components/workout-complete-modal'
 import { useNavigate } from 'react-router-dom'
-import { collection, getDocs, updateDoc } from 'firebase/firestore'
+import { collection, doc, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { updateStreak } from '../data/streak-utils'
 import { trackPageView, trackWorkoutCompleted } from '../utils/analytics'
@@ -91,12 +91,12 @@ export function Training() {
 
   const handlePreviousDay = () => {
     setCurrentDayIndex((prevIndex) => (prevIndex === 0 ? 6 : prevIndex - 1))
-    setIsCompleteModalOpen(false) // Reset completion modal when changing days
+    setIsCompleteModalOpen(false)
   }
 
   const handleNextDay = () => {
     setCurrentDayIndex((prevIndex) => (prevIndex === 6 ? 0 : prevIndex + 1))
-    setIsCompleteModalOpen(false) // Reset completion modal when changing days
+    setIsCompleteModalOpen(false)
   }
 
   const handleResetExercises = async () => {
@@ -109,9 +109,8 @@ export function Training() {
         )
         await Promise.all(resetPromises)
         setReset(true)
-        setIsCompleteModalOpen(false) // Close completion modal if open
+        setIsCompleteModalOpen(false)
         
-        // Clear localStorage completion flag
         const today = new Date().toISOString().split('T')[0]
         const completionKey = `workout-completed-${selectedWorkout.id}-${today}`
         localStorage.removeItem(completionKey)
@@ -134,50 +133,42 @@ export function Training() {
   }
 
   const checkAllExercisesComplete = useCallback(() => {
-    // Check if all exercises are marked as done
     if (exercises.length > 0 && selectedWorkout) {
       const allComplete = exercises.every((ex) => {
-        console.log('🟩 Verificando exercício:', ex.titulo || ex.id)
-
         if (!ex.isFeito || !ex.lastDoneDate) return false
 
         const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD local
         const done = new Date(ex.lastDoneDate).toLocaleDateString('en-CA')
 
         const isToday = today === done
-        console.log(`   ${done} === ${today} → ${isToday ? '✅ igual' : '❌ diferente'}`)
         return isToday
       })
 
-      console.log('🏁 allComplete:', allComplete)
-      
-      // Create a unique key based on workout and today's date
       const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
       const completionKey = `workout-completed-${selectedWorkout.id}-${today}`
       const hasCompletedToday = localStorage.getItem(completionKey) === 'true'
       
       if (allComplete && !isCompleteModalOpen && !hasCompletedToday) {
-        // Update streak when all exercises are completed
         if (usuarioID) {
-          updateStreak(usuarioID).then((newStreak) => {
-            console.log('🔥 Streak updated to:', newStreak)
-            
-            // Dispatch custom event to update header
-            const event = new CustomEvent('streakUpdated', { 
-              detail: { newStreak } 
-            })
-            window.dispatchEvent(event)
+          updateStreak(usuarioID).then(async (newStreak) => {
+            try {
+              const userDocRef = doc(db, 'usuarios', usuarioID)
+              const todayStr = new Date().toISOString().slice(0, 10)
+              await updateDoc(userDocRef, { lastWorkoutDate: todayStr })
+              const event = new CustomEvent('streakUpdated', { 
+                detail: { newStreak, lastWorkoutDate: todayStr } 
+              })
+              window.dispatchEvent(event)
+            } catch (err) {
+              console.error('Erro ao atualizar lastWorkoutDate:', err)
+            }
           }).catch(err => {
             console.error('Error updating streak:', err)
           })
         }
-        
-        // Small delay to let the last exercise animation finish
         setTimeout(() => {
           setIsCompleteModalOpen(true)
-          localStorage.setItem(completionKey, 'true') // Save to localStorage
-          
-          // Track workout completion
+          localStorage.setItem(completionKey, 'true')
           trackWorkoutCompleted(selectedWorkout.dia, exercises.length)
         }, 500)
       }
@@ -185,20 +176,13 @@ export function Training() {
   }, [exercises, isCompleteModalOpen, selectedWorkout, usuarioID])
 
   const handleExerciseComplete = useCallback(() => {
-    // Move to next exercise if not at the last one
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex((prev) => prev + 1)
     }
     
-    // Check if all exercises are now complete
-    // We need to refetch to get the updated isFeito status
-    fetchExercisesForDay(true).then(() => {
-      // After fetching, check if all are complete
-      // This will be handled by the useEffect below
-    })
+    fetchExercisesForDay(true).then(() => {})
   }, [currentExerciseIndex, exercises.length, fetchExercisesForDay])
 
-  // Check for completion whenever exercises change
   useEffect(() => {
     checkAllExercisesComplete()
   }, [exercises, checkAllExercisesComplete])
