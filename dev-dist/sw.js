@@ -22,20 +22,18 @@ if (!self.define) {
   const singleRequire = (uri, parentUri) => {
     uri = new URL(uri + ".js", parentUri).href;
     return registry[uri] || (
-      
-        new Promise(resolve => {
-          if ("document" in self) {
-            const script = document.createElement("script");
-            script.src = uri;
-            script.onload = resolve;
-            document.head.appendChild(script);
-          } else {
-            nextDefineUri = uri;
-            importScripts(uri);
-            resolve();
-          }
-        })
-      
+      new Promise(resolve => {
+        if ("document" in self) {
+          const script = document.createElement("script");
+          script.src = uri;
+          script.onload = resolve;
+          document.head.appendChild(script);
+        } else {
+          nextDefineUri = uri;
+          importScripts(uri);
+          resolve();
+        }
+      })
       .then(() => {
         let promise = registry[uri];
         if (!promise) {
@@ -67,7 +65,9 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-57071a8e'], (function (workbox) { 'use strict';
+
+define(['./workbox-57071a8e'], (function (workbox) { 
+  'use strict';
 
   self.addEventListener('message', event => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -80,17 +80,27 @@ define(['./workbox-57071a8e'], (function (workbox) { 'use strict';
    * requests for URLs in the manifest.
    * See https://goo.gl/S9QRab
    */
-  workbox.precacheAndRoute([{
-    "url": "registerSW.js",
-    "revision": "3ca0b8505b4bec776b69afdba2768812"
-  }, {
-    "url": "index.html",
-    "revision": "0.o7hko70bkd"
-  }], {});
+  workbox.precacheAndRoute([
+    { "url": "registerSW.js", "revision": "3ca0b8505b4bec776b69afdba2768812" },
+    { "url": "index.html", "revision": "0.o7hko70bkd" }
+  ], {});
+  
   workbox.cleanupOutdatedCaches();
-  workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
-    allowlist: [/^\/$/]
-  }));
+
+  // 🚫 Evita cachear e interceptar .well-known (assetlinks.json, etc)
+  self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+    if (url.pathname.startsWith('/.well-known/')) {
+      return; // deixa passar direto pro servidor
+    }
+  });
+
+  workbox.registerRoute(
+    new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
+      allowlist: [/^\/$/]
+    })
+  );
+
   workbox.registerRoute(/^https:\/\/fonts\.googleapis\.com\/.*/i, new workbox.CacheFirst({
     "cacheName": "google-fonts-cache",
     plugins: [new workbox.ExpirationPlugin({
@@ -100,6 +110,7 @@ define(['./workbox-57071a8e'], (function (workbox) { 'use strict';
       statuses: [0, 200]
     })]
   }), 'GET');
+
   workbox.registerRoute(/^https:\/\/firebasestorage\.googleapis\.com\/.*/i, new workbox.CacheFirst({
     "cacheName": "firebase-storage-cache",
     plugins: [new workbox.ExpirationPlugin({
@@ -109,6 +120,7 @@ define(['./workbox-57071a8e'], (function (workbox) { 'use strict';
       statuses: [0, 200]
     })]
   }), 'GET');
+
   workbox.registerRoute(/^https:\/\/firestore\.googleapis\.com\/.*/i, new workbox.NetworkFirst({
     "cacheName": "firestore-cache",
     "networkTimeoutSeconds": 5,
