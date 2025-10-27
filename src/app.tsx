@@ -23,6 +23,7 @@ import { currentRelease } from './data/whats-new'
 import { checkAndResetStreakIfMissed, resetPreviousDaysExercises } from './data/streak-utils'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from './firebaseConfig'
+// import { Teste } from './pages/teste'
 
 export function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false)
@@ -104,6 +105,7 @@ export function App() {
 
           {/* Rotas com a BottomBar */}
           <Route element={<LayoutWithBottomBar />}>
+            {/* <Route path='/teste' element={<Teste />} /> */}
             <Route path='/log' element={<LogPage />} />
             <Route path='/train' element={<Training />} />
             <Route path='/progress' element={<Progress />} />

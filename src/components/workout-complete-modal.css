@@ -1,0 +1,39 @@
+@keyframes slideDownFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-down-content {
+  animation: slideDownFadeIn 0.7s cubic-bezier(.68,-0.55,.27,1.55);
+}
+@keyframes duoBounceGlow {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px #ffe066);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 16px #ffe066);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px #ffe066);
+    opacity: 1;
+  }
+}
+
+.duo-bounce-glow {
+  animation: duoBounceGlow 1.2s cubic-bezier(.68,-0.55,.27,1.55);
+}
