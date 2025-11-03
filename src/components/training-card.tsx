@@ -394,7 +394,7 @@ export function TrainingCard(props: TrainingCardProps) {
       )}
 
       {isModalOpen && (
-        <div className='fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4'>
+        <div className='fixed inset-0 z-70 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4'>
           <div className='bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-96'>
             <h2 className='text-xl font-bold mb-4 dark:text-gray-100'>Editar Exercício</h2>
             <form>
