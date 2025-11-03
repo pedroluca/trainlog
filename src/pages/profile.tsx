@@ -721,7 +721,7 @@ export function Profile() {
         <p className="text-xs text-gray-600 dark:text-gray-300">
           Desenvolvido por{' '}
           <a 
-            href='https://pedroluca.tech' 
+            href='https://pedroluca.dev.br' 
             target='_blank' 
             rel='noopener noreferrer' 
             className='text-[#27AE60] hover:text-[#219150] font-medium transition-colors'
