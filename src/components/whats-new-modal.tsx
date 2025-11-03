@@ -14,6 +14,12 @@ export function WhatsNewModal({ isOpen, onClose }: WhatsNewModalProps) {
   const navigate = useNavigate()
   const [show, setShow] = useState(false)
 
+  // Helper function to format date without timezone issues
+  const formatDate = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day).toLocaleDateString('pt-BR')
+  }
+
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => setShow(true), 10)
@@ -70,7 +76,7 @@ export function WhatsNewModal({ isOpen, onClose }: WhatsNewModalProps) {
               </h2>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Versão {currentRelease.version} • {new Date(currentRelease.date).toLocaleDateString('pt-BR')}
+              Versão {currentRelease.version} • {formatDate(currentRelease.date)}
             </p>
           </div>
           <button

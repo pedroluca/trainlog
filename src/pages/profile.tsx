@@ -11,6 +11,7 @@ import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
 import { Toast, ToastState } from '../components/toast'
+import { WhatsNewModal } from '../components/whats-new-modal'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -36,6 +37,7 @@ export function Profile() {
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
+  const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false)
   const [toast, setToast] = useState<ToastState>({
     show: false,
     message: '',
@@ -729,7 +731,12 @@ export function Profile() {
             Pedro Luca Prates
           </a>
         </p>
-        <p className="text-xs text-gray-400 dark:text-gray-500">{getVersionWithPrefix()}</p>
+        <button
+          onClick={() => setIsWhatsNewModalOpen(true)}
+          className="text-xs text-gray-400 dark:text-gray-500 hover:text-[#27AE60] dark:hover:text-[#27AE60] transition-colors cursor-pointer underline"
+        >
+          {getVersionWithPrefix()}
+        </button>
       </div>
       
       {toast.show && (
@@ -739,6 +746,11 @@ export function Profile() {
           onClose={() => setToast({ ...toast, show: false })}
         />
       )}
+
+      <WhatsNewModal
+        isOpen={isWhatsNewModalOpen}
+        onClose={() => setIsWhatsNewModalOpen(false)}
+      />
     </main>
   )
 }
