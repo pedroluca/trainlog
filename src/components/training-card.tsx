@@ -5,6 +5,8 @@ import { addDoc, collection, deleteDoc, doc, updateDoc, getDoc } from 'firebase/
 import { db } from '../firebaseConfig'
 import beepSound from '../assets/beep.mp3'
 import { Toast, ToastState } from './toast'
+import { ContextMenu } from './context-menu'
+import { AddNoteModal } from './add-note-modal'
 
 type TrainingCardProps = {
   id: string // ID do exercício
@@ -18,15 +20,20 @@ type TrainingCardProps = {
   reset?: boolean
   onEdit: () => void
   onComplete?: () => void // Callback when exercise is completed
+  nota?: string
+  usesProgressiveWeight?: boolean
+  progressiveSets?: Array<{ reps: number; weight: number }>
 }
 
 export function TrainingCard(props: TrainingCardProps) {
-  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, reset, onEdit, onComplete } = props
+  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, reset, onEdit, onComplete, nota, usesProgressiveWeight, progressiveSets } = props
   const [isBreakTime, setIsBreakTime] = useState(false)
   const [timeLeft, setTimeLeft] = useState(0)
   const [setsDone, setSetsDone] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false)
   const [audioEnabled, setAudioEnabled] = useState(false)
   const [toast, setToast] = useState<ToastState>({
     show: false,
@@ -41,6 +48,31 @@ export function TrainingCard(props: TrainingCardProps) {
   const [editedBreakTime, setEditedBreakTime] = useState(
     `${String(Math.floor(breakTime / 60)).padStart(2, '0')}:${String(Math.round(breakTime % 60)).padStart(2, '0')}`
   )
+  const [editedUsesProgressiveWeight, setEditedUsesProgressiveWeight] = useState(usesProgressiveWeight || false)
+  const [editedProgressiveSets, setEditedProgressiveSets] = useState<Array<{ reps: number; weight: number }>>(
+    progressiveSets || (usesProgressiveWeight ? Array.from({ length: sets }, () => ({ reps: reps, weight: weight })) : [])
+  )
+
+  // Sync progressive sets when number of sets changes
+  useEffect(() => {
+    if (editedUsesProgressiveWeight) {
+      setEditedProgressiveSets(currentSets => {
+        const currentLength = currentSets.length
+        if (editedSets > currentLength) {
+          // Add more sets
+          const newSets = Array.from({ length: editedSets - currentLength }, () => ({
+            reps: editedReps,
+            weight: editedWeight
+          }))
+          return [...currentSets, ...newSets]
+        } else if (editedSets < currentLength) {
+          // Remove sets
+          return currentSets.slice(0, editedSets)
+        }
+        return currentSets
+      })
+    }
+  }, [editedSets, editedUsesProgressiveWeight, editedReps, editedWeight])
 
   // Fetch audio setting on mount
   useEffect(() => {
@@ -203,18 +235,43 @@ export function TrainingCard(props: TrainingCardProps) {
       const totalBreakTime = minutes * 60 + seconds
   
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-      await updateDoc(exerciseRef, {
+      
+      const updateData: Record<string, unknown> = {
         titulo: editedTitle,
         series: editedSets,
         repeticoes: editedReps,
         peso: editedWeight,
         tempoIntervalo: totalBreakTime,
-      })
+        usesProgressiveWeight: editedUsesProgressiveWeight
+      }
+      
+      if (editedUsesProgressiveWeight) {
+        updateData.progressiveSets = editedProgressiveSets
+      } else {
+        // Remove progressive sets if disabled
+        updateData.progressiveSets = null
+      }
+      
+      await updateDoc(exerciseRef, updateData)
       setIsModalOpen(false)
       onEdit()
     } catch (err) {
       console.error('Erro ao atualizar exercício:', err)
       setToast({ show: true, message: 'Erro ao atualizar exercício.', type: 'error' })
+    }
+  }
+
+  const handleSaveNote = async (noteText: string) => {
+    try {
+      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+      await updateDoc(exerciseRef, {
+        nota: noteText
+      })
+      setToast({ show: true, message: 'Nota salva com sucesso!', type: 'success' })
+      onEdit()
+    } catch (err) {
+      console.error('Erro ao salvar nota:', err)
+      setToast({ show: true, message: 'Erro ao salvar nota.', type: 'error' })
     }
   }
 
@@ -226,28 +283,80 @@ export function TrainingCard(props: TrainingCardProps) {
     >
       <button
         className={`absolute top-4 right-4 cursor-pointer z-10 ${isFinished ? 'text-[#f4f4f4] hover:bg-[#219150]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'} rounded-full p-2`}
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => setIsContextMenuOpen(true)}
       >
         <EllipsisVertical />
       </button>
+
+      <ContextMenu
+        isOpen={isContextMenuOpen}
+        onClose={() => setIsContextMenuOpen(false)}
+        onEdit={() => setIsModalOpen(true)}
+        onAddNote={() => setIsNoteModalOpen(true)}
+      />
 
       <h2 className={`text-3xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h2>
       
       {!isBreakTime ? (
         <>
           <div className='mb-auto'>
-            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
-              <strong>Repetição:</strong> {sets} x {reps}
-            </p>
-            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
-              <strong>Carga:</strong> {weight} kg
-            </p>
-            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
-              <strong>Descanso:</strong> {formatTime(breakTime)} min
-            </p>
+            {usesProgressiveWeight && progressiveSets ? (
+              // Progressive weight display
+              <>
+                <p className={`text-lg mb-3 font-bold ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                  Peso Progressivo:
+                </p>
+                {progressiveSets.map((set, index) => {
+                  const isCurrentSet = index === setsDone
+                  const isCompleted = index < setsDone
+                  
+                  return (
+                    <p 
+                      key={index} 
+                      className={`text-base mb-2 transition-all ${
+                        isFinished 
+                          ? 'text-[#f4f4f4]' 
+                          : isCurrentSet
+                          ? 'text-[#27AE60] dark:text-[#2ecc71] font-bold text-lg scale-105'
+                          : isCompleted
+                          ? 'text-gray-400 dark:text-gray-600 line-through opacity-60'
+                          : 'text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {isCurrentSet && '➤ '}
+                      <strong>Série {index + 1}:</strong> {set.reps} reps × {set.weight} kg
+                      {isCompleted && ' ✓'}
+                    </p>
+                  )
+                })}
+                <p className={`text-lg mb-3 mt-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                  <strong>Descanso:</strong> {formatTime(breakTime)} min
+                </p>
+              </>
+            ) : (
+              // Normal display
+              <>
+                <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                  <strong>Repetição:</strong> {sets} x {reps}
+                </p>
+                <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                  <strong>Carga:</strong> {weight} kg
+                </p>
+                <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                  <strong>Descanso:</strong> {formatTime(breakTime)} min
+                </p>
+              </>
+            )}
             <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
               <strong>Você fez:</strong> {isFinished ? sets : setsDone} séries de {sets}
             </p>
+            {nota && (
+              <div className={`mt-4 p-3 rounded-lg ${isFinished ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                <p className={`text-sm ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-600 dark:text-gray-400'}`}>
+                  <strong>Nota:</strong> {nota}
+                </p>
+              </div>
+            )}
           </div>
           <Button 
             onClick={handleStartSet} 
@@ -261,9 +370,16 @@ export function TrainingCard(props: TrainingCardProps) {
       ) : (
         <>
           <div className='mb-auto flex flex-col items-center justify-center flex-1'>
-            <p className='text-xl mb-6 text-gray-700 dark:text-gray-300 text-center'>
-              <strong>Séries feitas:</strong> {setsDone + 1} de {sets} com {reps} repetições cada
-            </p>
+            {usesProgressiveWeight && progressiveSets ? (
+              <p className='text-xl mb-6 text-gray-700 dark:text-gray-300 text-center'>
+                <strong>Séries feitas:</strong> {setsDone + 1} de {sets}<br />
+                <span className='text-base'>({progressiveSets[setsDone]?.reps || reps} reps × {progressiveSets[setsDone]?.weight || weight} kg)</span>
+              </p>
+            ) : (
+              <p className='text-xl mb-6 text-gray-700 dark:text-gray-300 text-center'>
+                <strong>Séries feitas:</strong> {setsDone + 1} de {sets} com {reps} repetições cada
+              </p>
+            )}
             <h2 className='text-2xl font-bold mb-4 text-gray-500 dark:text-gray-400'>Intervalo de descanso:</h2>
             <p className='text-gray-700 dark:text-gray-300 text-6xl font-mono mb-8'>{formatTime(timeLeft)}</p>
           </div>
@@ -322,6 +438,73 @@ export function TrainingCard(props: TrainingCardProps) {
                   </button>
                 </div>
               </div>
+              
+              {/* Progressive Weight Toggle */}
+              <div className='mb-4'>
+                <label className='flex items-center gap-2 text-gray-700 dark:text-gray-300 font-bold cursor-pointer'>
+                  <input
+                    type='checkbox'
+                    checked={editedUsesProgressiveWeight}
+                    onChange={(e) => {
+                      setEditedUsesProgressiveWeight(e.target.checked)
+                      if (e.target.checked && editedProgressiveSets.length === 0) {
+                        // Initialize with current values
+                        setEditedProgressiveSets(
+                          Array.from({ length: editedSets }, () => ({
+                            reps: editedReps,
+                            weight: editedWeight
+                          }))
+                        )
+                      }
+                    }}
+                    className='w-4 h-4'
+                  />
+                  Usar peso progressivo nas séries?
+                </label>
+              </div>
+
+              {/* Progressive Sets Configuration */}
+              {editedUsesProgressiveWeight && editedProgressiveSets.length > 0 && (
+                <div className='mb-4 p-4 border border-gray-300 dark:border-[#404040] rounded bg-gray-50 dark:bg-[#1a1a1a]'>
+                  <p className='text-sm text-gray-600 dark:text-gray-400 mb-3'>
+                    Configure cada série individualmente:
+                  </p>
+                  {editedProgressiveSets.map((set, index) => (
+                    <div key={index} className='flex items-center gap-2 mb-2'>
+                      <span className='text-gray-700 dark:text-gray-300 text-sm font-bold w-16'>
+                        Série {index + 1}:
+                      </span>
+                      <input
+                        type='number'
+                        value={set.reps}
+                        onChange={(e) => {
+                          const newSets = [...editedProgressiveSets]
+                          newSets[index].reps = Number(e.target.value)
+                          setEditedProgressiveSets(newSets)
+                        }}
+                        className='w-16 border dark:border-[#404040] rounded px-2 py-1 dark:bg-[#2d2d2d] dark:text-gray-100 text-center text-sm'
+                        placeholder='Reps'
+                      />
+                      <span className='text-gray-600 dark:text-gray-400 text-sm'>reps ×</span>
+                      <input
+                        type='number'
+                        value={set.weight}
+                        onChange={(e) => {
+                          const newSets = [...editedProgressiveSets]
+                          newSets[index].weight = Number(e.target.value)
+                          setEditedProgressiveSets(newSets)
+                        }}
+                        className='w-16 border dark:border-[#404040] rounded px-2 py-1 dark:bg-[#2d2d2d] dark:text-gray-100 text-center text-sm'
+                        placeholder='Peso'
+                      />
+                      <span className='text-gray-600 dark:text-gray-400 text-sm'>kg</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!editedUsesProgressiveWeight && (
+                <>
               <div className='mb-4'>
                 <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Repetições:</label>
                 <div className="flex items-center gap-2">
@@ -372,6 +555,8 @@ export function TrainingCard(props: TrainingCardProps) {
                   </button>
                 </div>
               </div>
+                </>
+              )}
               <div className='mb-4'>
                 <label className='block text-gray-700 dark:text-gray-300 font-bold mb-2'>Tempo de Descanso (MM:SS):</label>
                 <div className="flex items-center gap-2">
@@ -451,6 +636,14 @@ export function TrainingCard(props: TrainingCardProps) {
           </div>
         </div>
       )}
+
+      <AddNoteModal
+        isOpen={isNoteModalOpen}
+        onClose={() => setIsNoteModalOpen(false)}
+        onSave={handleSaveNote}
+        currentNote={nota}
+        exerciseTitle={title}
+      />
       
       {toast.show && (
         <Toast

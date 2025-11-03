@@ -283,6 +283,9 @@ export function Training() {
                         reset={reset}
                         onEdit={() => fetchExercisesForDay(true)}
                         onComplete={handleExerciseComplete}
+                        nota={currentExercise.nota}
+                        usesProgressiveWeight={currentExercise.usesProgressiveWeight}
+                        progressiveSets={currentExercise.progressiveSets}
                       />
                     </div>
                   )}

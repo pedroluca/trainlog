@@ -10,6 +10,9 @@ export interface Exercicio {
   tempoIntervalo: number
   isFeito: boolean
   lastDoneDate?: string
+  nota?: string
+  usesProgressiveWeight?: boolean
+  progressiveSets?: Array<{ reps: number; weight: number }>
 }
 
 export async function getWorkoutExercises(workoutId: string): Promise<Exercicio[]> {
@@ -27,7 +30,10 @@ export async function getWorkoutExercises(workoutId: string): Promise<Exercicio[
       peso: data.peso,
       tempoIntervalo: data.tempoIntervalo,
       isFeito: data.isFeito,
-      lastDoneDate: data.lastDoneDate
+      lastDoneDate: data.lastDoneDate,
+      nota: data.nota,
+      usesProgressiveWeight: data.usesProgressiveWeight,
+      progressiveSets: data.progressiveSets
     } as Exercicio
   })
   

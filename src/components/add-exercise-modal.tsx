@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { collection, addDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
@@ -17,11 +17,32 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
   const [peso, setPeso] = useState(0)
   const [tempoIntervalo, setTempoIntervalo] = useState('')
   const [selectedExerciseId, setSelectedExerciseId] = useState('')
+  const [usesProgressiveWeight, setUsesProgressiveWeight] = useState(false)
+  const [progressiveSets, setProgressiveSets] = useState<Array<{ reps: number; weight: number }>>([])
   const [toast, setToast] = useState<ToastState>({
     show: false,
     message: '',
     type: 'success'
   })
+
+  // Sync progressive sets when series changes
+  useEffect(() => {
+    if (usesProgressiveWeight && series > 0) {
+      setProgressiveSets(currentSets => {
+        const currentLength = currentSets.length
+        if (series > currentLength) {
+          const newSets = Array.from({ length: series - currentLength }, () => ({
+            reps: repeticoes || 10,
+            weight: peso || 0
+          }))
+          return [...currentSets, ...newSets]
+        } else if (series < currentLength) {
+          return currentSets.slice(0, series)
+        }
+        return currentSets
+      })
+    }
+  }, [series, usesProgressiveWeight, repeticoes, peso])
 
   const handleSelectExercise = (exerciseId: string) => {
     const exercise = exerciseLibrary.find(ex => ex.id === exerciseId)
@@ -70,13 +91,21 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
       const totalBreakTime = minutes * 60 + seconds
 
       const exercisesRef = collection(db, 'treinos', workoutId, 'exercicios')
-      await addDoc(exercisesRef, {
+      
+      const exerciseData: Record<string, unknown> = {
         titulo,
         series,
         repeticoes,
         peso,
-        tempoIntervalo: totalBreakTime, // Salva em segundos
-      })
+        tempoIntervalo: totalBreakTime,
+        usesProgressiveWeight
+      }
+      
+      if (usesProgressiveWeight) {
+        exerciseData.progressiveSets = progressiveSets
+      }
+      
+      await addDoc(exercisesRef, exerciseData)
       onClose()
     } catch (err) {
       console.error('Erro ao adicionar exercício:', err)
@@ -162,6 +191,73 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               </button>
             </div>
           </div>
+          
+          {/* Progressive Weight Toggle */}
+          <div>
+            <label className='flex items-center gap-2 text-gray-700 dark:text-gray-300 font-bold cursor-pointer'>
+              <input
+                type='checkbox'
+                checked={usesProgressiveWeight}
+                onChange={(e) => {
+                  setUsesProgressiveWeight(e.target.checked)
+                  if (e.target.checked) {
+                    // Initialize with current values
+                    setProgressiveSets(
+                      Array.from({ length: series || 3 }, () => ({
+                        reps: repeticoes || 10,
+                        weight: peso || 0
+                      }))
+                    )
+                  }
+                }}
+                className='w-4 h-4'
+              />
+              Usar peso progressivo nas séries?
+            </label>
+          </div>
+
+          {/* Progressive Sets Configuration */}
+          {usesProgressiveWeight && (
+            <div className='p-4 border border-gray-300 dark:border-[#404040] rounded bg-gray-50 dark:bg-[#1a1a1a]'>
+              <p className='text-sm text-gray-600 dark:text-gray-400 mb-3'>
+                Configure cada série individualmente:
+              </p>
+              {progressiveSets.map((set, index) => (
+                <div key={index} className='flex items-center gap-2 mb-2'>
+                  <span className='text-gray-700 dark:text-gray-300 text-sm font-bold w-16'>
+                    Série {index + 1}:
+                  </span>
+                  <input
+                    type='number'
+                    value={set.reps}
+                    onChange={(e) => {
+                      const newSets = [...progressiveSets]
+                      newSets[index].reps = Number(e.target.value)
+                      setProgressiveSets(newSets)
+                    }}
+                    className='w-16 border dark:border-[#404040] rounded px-2 py-1 dark:bg-[#2d2d2d] dark:text-gray-100 text-center text-sm'
+                    placeholder='Reps'
+                  />
+                  <span className='text-gray-600 dark:text-gray-400 text-sm'>reps ×</span>
+                  <input
+                    type='number'
+                    value={set.weight}
+                    onChange={(e) => {
+                      const newSets = [...progressiveSets]
+                      newSets[index].weight = Number(e.target.value)
+                      setProgressiveSets(newSets)
+                    }}
+                    className='w-16 border dark:border-[#404040] rounded px-2 py-1 dark:bg-[#2d2d2d] dark:text-gray-100 text-center text-sm'
+                    placeholder='Peso'
+                  />
+                  <span className='text-gray-600 dark:text-gray-400 text-sm'>kg</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!usesProgressiveWeight && (
+            <>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="repeticoes">
               Repetições:
@@ -222,6 +318,8 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               </button>
             </div>
           </div>
+            </>
+          )}
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="tempoIntervalo">
               Tempo de intervalo (MM:SS):
