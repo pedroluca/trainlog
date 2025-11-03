@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from './button'
 import { EllipsisVertical, Trash2 } from 'lucide-react'
-import { addDoc, collection, deleteDoc, doc, updateDoc, getDoc } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, updateDoc, getDoc, deleteField } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import beepSound from '../assets/beep.mp3'
 import { Toast, ToastState } from './toast'
@@ -236,20 +236,14 @@ export function TrainingCard(props: TrainingCardProps) {
   
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
       
-      const updateData: Record<string, unknown> = {
+      const updateData = {
         titulo: editedTitle,
         series: editedSets,
         repeticoes: editedReps,
         peso: editedWeight,
         tempoIntervalo: totalBreakTime,
-        usesProgressiveWeight: editedUsesProgressiveWeight
-      }
-      
-      if (editedUsesProgressiveWeight) {
-        updateData.progressiveSets = editedProgressiveSets
-      } else {
-        // Remove progressive sets if disabled
-        updateData.progressiveSets = null
+        usesProgressiveWeight: editedUsesProgressiveWeight,
+        progressiveSets: editedUsesProgressiveWeight ? editedProgressiveSets : deleteField()
       }
       
       await updateDoc(exerciseRef, updateData)
