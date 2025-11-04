@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { auth, db, secondaryAuth } from '../firebaseConfig'
-import { collection, getDocs, doc, getDoc, deleteDoc, setDoc, updateDoc } from 'firebase/firestore'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { Users, Dumbbell, FileText, TrendingUp, LogOut, UserPlus, Check, X } from 'lucide-react'
+import { auth, db } from '../firebaseConfig'
+import { collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { Users, Dumbbell, FileText, TrendingUp, LogOut, Check, X } from 'lucide-react'
 import { Button } from '../components/button'
 import { trackPremiumUpgradeApproved, trackPremiumUpgradeRejected } from '../utils/analytics'
 
@@ -15,18 +14,6 @@ type UserData = {
   isActive?: boolean
   isPremium?: boolean
   createdAt?: unknown
-}
-
-type RegistrationRequest = {
-  id: string
-  nome: string
-  email: string
-  telefone: string
-  senha: string
-  status: 'pending' | 'approved' | 'rejected'
-  criadoEm: string
-  aprovedoEm?: string | null
-  aprovedoPor?: string | null
 }
 
 type WorkoutData = {
@@ -69,14 +56,12 @@ export function AdminDashboard() {
   const [users, setUsers] = useState<UserData[]>([])
   const [workouts, setWorkouts] = useState<WorkoutData[]>([])
   const [logs, setLogs] = useState<LogData[]>([])
-  const [registrationRequests, setRegistrationRequests] = useState<RegistrationRequest[]>([])
   const [upgradeRequests, setUpgradeRequests] = useState<UpgradeRequest[]>([])
   const [adminName, setAdminName] = useState('')
   // const [migrating, setMigrating] = useState(false)
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
-  const [currentRequestsPage, setCurrentRequestsPage] = useState(1)
   const [currentUpgradeRequestsPage, setCurrentUpgradeRequestsPage] = useState(1)
   const itemsPerPage = 10
 
@@ -86,138 +71,11 @@ export function AdminDashboard() {
   const [filterBy, setFilterBy] = useState<'all' | 'premium' | 'free' | 'active' | 'admin'>('all')
 
   // Modal states
-  const [approveRegModalOpen, setApproveRegModalOpen] = useState(false)
-  const [rejectRegModalOpen, setRejectRegModalOpen] = useState(false)
   const [approveUpgradeModalOpen, setApproveUpgradeModalOpen] = useState(false)
   const [rejectUpgradeModalOpen, setRejectUpgradeModalOpen] = useState(false)
-  const [selectedRequest, setSelectedRequest] = useState<RegistrationRequest | null>(null)
   const [selectedUpgradeRequest, setSelectedUpgradeRequest] = useState<UpgradeRequest | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [processingRequest, setProcessingRequest] = useState(false)
-
-  const handleApproveRequest = async (request: RegistrationRequest) => {
-    setProcessingRequest(true)
-    let userCreated = false
-
-    try {
-      // Step 1: Create Firebase user account using SECONDARY auth (won't affect admin session)
-      console.log('Creating Firebase user account...')
-      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, request.email, request.senha)
-      const user = userCredential.user
-      userCreated = true
-      console.log('Firebase user created successfully:', user.uid)
-
-      // Step 2: Sign out from secondary auth immediately
-      await secondaryAuth.signOut()
-      console.log('Signed out from secondary auth')
-
-      // Step 3: Create user document in Firestore (using primary db connection)
-      console.log('Creating user document in Firestore...')
-      const userDocRef = doc(db, 'usuarios', user.uid)
-      await setDoc(userDocRef, {
-        nome: request.nome,
-        email: request.email,
-        telefone: request.telefone,
-        isActive: true,
-        isAdmin: false,
-        isPremium: false,
-        criadoEm: new Date().toISOString(),
-      })
-      console.log('User document created successfully')
-
-      // Step 4: Update the registration request status to approved
-      console.log('Updating registration request status to approved...')
-      const requestDocRef = doc(db, 'registrationRequests', request.id)
-      await updateDoc(requestDocRef, {
-        status: 'approved',
-        aprovedoEm: new Date().toISOString(),
-        aprovedoPor: adminId,
-      })
-      console.log('Registration request updated to approved successfully')
-
-      // Step 5: Update UI state
-      console.log('Updating UI state...')
-      setRegistrationRequests(prev => prev.filter(req => req.id !== request.id))
-      
-      // Refresh users list to show the new user
-      const usersRef = collection(db, 'usuarios')
-      const usersSnapshot = await getDocs(usersRef)
-      const usersData: UserData[] = usersSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        nome: doc.data().nome || 'Sem nome',
-        email: doc.data().email || 'Sem email',
-        isAdmin: doc.data().isAdmin || false,
-        isActive: doc.data().isActive !== undefined ? doc.data().isActive : true,
-        createdAt: doc.data().createdAt,
-      }))
-      setUsers(usersData)
-      
-      // Close modal and show success
-      setApproveRegModalOpen(false)
-      setSelectedRequest(null)
-      
-    } catch (err: unknown) {
-      console.error('Error during approval process:', err)
-      
-      // Provide more specific error messages
-      const error = err as { code?: string; message?: string }
-      
-      if (userCreated) {
-        // User was created but something else failed
-        console.log('User was created successfully, but cleanup failed')
-        
-        // Still update the UI to remove the request from the list
-        setRegistrationRequests(prev => prev.filter(req => req.id !== request.id))
-        
-        // Refresh users list
-        try {
-          const usersRef = collection(db, 'usuarios')
-          const usersSnapshot = await getDocs(usersRef)
-          const usersData: UserData[] = usersSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            nome: doc.data().nome || 'Sem nome',
-            email: doc.data().email || 'Sem email',
-            isAdmin: doc.data().isAdmin || false,
-            isActive: doc.data().isActive !== undefined ? doc.data().isActive : true,
-            isPremium: doc.data().isPremium || false,
-            createdAt: doc.data().createdAt,
-          }))
-          setUsers(usersData)
-        } catch (refreshError) {
-          console.error('Failed to refresh users list:', refreshError)
-        }
-        
-        setApproveRegModalOpen(false)
-        setSelectedRequest(null)
-        
-      } else {
-        // User creation failed - keep modal open to show error
-        console.error('User creation failed:', error)
-      }
-    } finally {
-      setProcessingRequest(false)
-    }
-  }
-
-  const handleRejectRequest = async (request: RegistrationRequest) => {
-    setProcessingRequest(true)
-
-    try {
-      // Delete the request
-      const requestDocRef = doc(db, 'registrationRequests', request.id)
-      await deleteDoc(requestDocRef)
-
-      // Remove from pending requests list
-      setRegistrationRequests(prev => prev.filter(req => req.id !== request.id))
-      
-      setRejectRegModalOpen(false)
-      setSelectedRequest(null)
-    } catch (err) {
-      console.error('Erro ao rejeitar usuário:', err)
-    } finally {
-      setProcessingRequest(false)
-    }
-  }
 
   const handleApproveUpgradeRequest = async (request: UpgradeRequest) => {
     setProcessingRequest(true)
@@ -388,23 +246,6 @@ export function AdminDashboard() {
           createdAt: doc.data().createdAt,
         }))
         setUsers(usersData)
-
-        // Fetch registration requests
-        const requestsRef = collection(db, 'registrationRequests')
-        const requestsSnapshot = await getDocs(requestsRef)
-        const requestsData: RegistrationRequest[] = requestsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          nome: doc.data().nome,
-          email: doc.data().email,
-          telefone: doc.data().telefone,
-          senha: doc.data().senha,
-          status: doc.data().status,
-          criadoEm: doc.data().criadoEm,
-          aprovedoEm: doc.data().aprovedoEm,
-          aprovedoPor: doc.data().aprovedoPor,
-        }))
-        // Only show pending requests
-        setRegistrationRequests(requestsData.filter(req => req.status === 'pending'))
 
         // Fetch upgrade requests
         const upgradeRequestsRef = collection(db, 'upgrade_requests')
@@ -614,75 +455,6 @@ export function AdminDashboard() {
           </Button>
         </div>
       </div> */}
-
-      {/* Pending Registration Requests */}
-      {registrationRequests.length > 0 && (
-        <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 mb-6">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <UserPlus size={24} />
-            Solicitações Pendentes ({registrationRequests.length})
-          </h2>
-          <div className="space-y-4">
-            {registrationRequests.slice((currentRequestsPage - 1) * itemsPerPage, currentRequestsPage * itemsPerPage).map((request) => (
-              <div key={request.id} className="bg-gray-700/30 rounded-lg p-4 flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-white font-medium text-lg">{request.nome}</p>
-                  <p className="text-gray-400 text-sm mb-1">{request.email}</p>
-                  <p className="text-gray-400 text-sm mb-1">{request.telefone}</p>
-                  <p className="text-gray-500 text-xs">
-                    Enviado em: {new Date(request.criadoEm).toLocaleDateString('pt-BR')} às {new Date(request.criadoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => {
-                      setSelectedRequest(request)
-                      setApproveRegModalOpen(true)
-                    }}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                  >
-                    <Check size={16} />
-                    Aprovar
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setSelectedRequest(request)
-                      setRejectRegModalOpen(true)
-                    }}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                  >
-                    <X size={16} />
-                    Rejeitar
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Pagination for requests */}
-          {registrationRequests.length > itemsPerPage && (
-            <div className="flex justify-center items-center gap-4 mt-6">
-              <Button
-                onClick={() => setCurrentRequestsPage(prev => Math.max(1, prev - 1))}
-                disabled={currentRequestsPage === 1}
-                className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded disabled:opacity-50"
-              >
-                Anterior
-              </Button>
-              <span className="text-gray-400">
-                Página {currentRequestsPage} de {Math.ceil(registrationRequests.length / itemsPerPage)}
-              </span>
-              <Button
-                onClick={() => setCurrentRequestsPage(prev => Math.min(Math.ceil(registrationRequests.length / itemsPerPage), prev + 1))}
-                disabled={currentRequestsPage >= Math.ceil(registrationRequests.length / itemsPerPage)}
-                className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded disabled:opacity-50"
-              >
-                Próxima
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Pending Upgrade Requests */}
       {upgradeRequests.length > 0 && (
@@ -955,98 +727,6 @@ export function AdminDashboard() {
           })}
         </div>
       </div>
-
-      {/* Approve Registration Modal */}
-      {approveRegModalOpen && selectedRequest && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl">
-            <h3 className="text-2xl font-bold text-white mb-4">Aprovar Registro</h3>
-            <div className="bg-gray-700/30 rounded-lg p-4 mb-6">
-              <p className="text-white font-semibold mb-2">{selectedRequest.nome}</p>
-              <p className="text-gray-400 text-sm mb-1">Email: {selectedRequest.email}</p>
-              <p className="text-gray-400 text-sm">Telefone: {selectedRequest.telefone || 'Não informado'}</p>
-            </div>
-            <p className="text-gray-300 mb-6">
-              Confirma a criação da conta para este usuário? Uma senha temporária será enviada por email.
-            </p>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => {
-                  setApproveRegModalOpen(false)
-                  setSelectedRequest(null)
-                }}
-                disabled={processingRequest}
-                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => handleApproveRequest(selectedRequest)}
-                disabled={processingRequest}
-                className="flex-1 bg-[#27AE60] hover:bg-[#229954] text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
-              >
-                {processingRequest ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    <Check size={16} />
-                    Confirmar Aprovação
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reject Registration Modal */}
-      {rejectRegModalOpen && selectedRequest && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl">
-            <h3 className="text-2xl font-bold text-white mb-4">Rejeitar Registro</h3>
-            <div className="bg-gray-700/30 rounded-lg p-4 mb-6">
-              <p className="text-white font-semibold mb-2">{selectedRequest.nome}</p>
-              <p className="text-gray-400 text-sm mb-1">Email: {selectedRequest.email}</p>
-              <p className="text-gray-400 text-sm">Telefone: {selectedRequest.telefone || 'Não informado'}</p>
-            </div>
-            <p className="text-gray-300 mb-6">
-              Confirma a exclusão desta solicitação de registro? Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => {
-                  setRejectRegModalOpen(false)
-                  setSelectedRequest(null)
-                }}
-                disabled={processingRequest}
-                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => handleRejectRequest(selectedRequest)}
-                disabled={processingRequest}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
-              >
-                {processingRequest ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    <X size={16} />
-                    Confirmar Rejeição
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Approve Upgrade Modal */}
       {approveUpgradeModalOpen && selectedUpgradeRequest && (
