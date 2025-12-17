@@ -1,25 +1,104 @@
 {
+  "id": "/?source=pwa",
   "name": "TrainLog - Seu Diário de Treinos",
   "short_name": "TrainLog",
   "description": "Registre e acompanhe seus treinos de musculação",
-  "icons": [
-    {
-      "src": "/web-app-manifest-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/web-app-manifest-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "background_color": "#27AE60",
-  "theme_color": "#27AE60",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "scope": "/",
-  "start_url": "/"
+  "background_color": "#27AE60",
+  "theme_color": "#27AE60",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": [
+    "health",
+    "fitness",
+    "sports"
+  ],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "type": "image/x-icon",
+      "sizes": "16x16 32x32"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/icon-192-maskable.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/print_1.png",
+      "sizes": "454x919",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/print_2.png",
+      "sizes": "454x919",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/print_3.png",
+      "sizes": "454x919",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/print_4.png",
+      "sizes": "454x919",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/print_5.png",
+      "sizes": "454x919",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/print_6.png",
+      "sizes": "454x919",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/print_7.png",
+      "sizes": "454x919",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/print_8.png",
+      "sizes": "454x919",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/print_9.png",
+      "sizes": "1919x916",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
 }
