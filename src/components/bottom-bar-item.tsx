@@ -5,7 +5,7 @@ export function BottomBarItem({ to, children }: { to: string; children: React.Re
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `cursor-pointer p-4 transition-colors duration-200 ${
+        `cursor-pointer p-4 transition-all duration-300 relative z-10 ${
           isActive ? 'text-white' : 'text-white/50 hover:text-white/80'
         }`
       }
