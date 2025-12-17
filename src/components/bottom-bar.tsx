@@ -1,4 +1,4 @@
-import { Dumbbell, FileText, UserRound, TrendingUp } from 'lucide-react'
+import { Dumbbell, UserRound, TrendingUp } from 'lucide-react'
 import { BottomBarItem } from './bottom-bar-item'
 
 export function BottomBar() {
@@ -18,14 +18,14 @@ export function BottomBar() {
         
         {/* Content */}
         <div className='relative flex items-center gap-8'>
-          <BottomBarItem to='/log'>
+          {/* <BottomBarItem to='/log'>
             <FileText size={28} />
+          </BottomBarItem> */}
+          <BottomBarItem to='/progress'>
+            <TrendingUp size={28} />
           </BottomBarItem>
           <BottomBarItem to='/train'>
             <Dumbbell size={28} />
-          </BottomBarItem>
-          <BottomBarItem to='/progress'>
-            <TrendingUp size={28} />
           </BottomBarItem>
           <BottomBarItem to='/profile'>
             <UserRound size={28} />

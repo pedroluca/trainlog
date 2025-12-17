@@ -148,6 +148,13 @@ export function LogPage() {
   return (
     <main className='flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64 pb-32'>
       <div className="w-full max-w-2xl">
+        <button
+          onClick={() => navigate('/profile')}
+          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 mb-4"
+        >
+          ← Voltar ao Perfil
+        </button>
+
         <div className="flex justify-between items-center mb-6">
           <h1 className='text-2xl font-bold text-gray-800 dark:text-gray-100'>Histórico de Exercícios</h1>
           <div className="text-sm text-gray-600 dark:text-gray-400">
