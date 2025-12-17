@@ -62,7 +62,7 @@ export const currentRelease: WhatsNewRelease = {
       description: 'Visualize todo seu histórico de treinos em um calendário mensal interativo (exclusivo para usuários premium)',
       action: {
         label: 'Ver Calendário',
-        route: '/streak-calendar'
+        route: '/profile/streak-calendar'
       }
     }
   ]
@@ -99,7 +99,7 @@ export const releaseHistory: WhatsNewRelease[] = [
         description: 'Ative o modo escuro nas configurações para uma experiência mais confortável à noite',
         action: {
           label: 'Ir para Configurações',
-          route: '/settings'
+          route: '/profile/settings'
         }
       },
       {
@@ -109,7 +109,7 @@ export const releaseHistory: WhatsNewRelease[] = [
         description: 'Visualize todo seu histórico de treinos em um calendário mensal interativo (exclusivo para usuários premium)',
         action: {
           label: 'Ver Calendário',
-          route: '/streak-calendar'
+          route: '/profile/streak-calendar'
         }
       }
     ]
@@ -136,7 +136,7 @@ export const releaseHistory: WhatsNewRelease[] = [
         description: 'Configure notificações sonoras quando o tempo de descanso terminar',
         action: {
           label: 'Configurar',
-          route: '/settings'
+          route: '/profile/settings'
         }
       },
       {

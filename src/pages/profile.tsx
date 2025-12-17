@@ -397,7 +397,7 @@ export function Profile() {
           
           {isPremium ? (
             <button
-              onClick={() => navigate('/streak-calendar')}
+              onClick={() => navigate('/profile/streak-calendar')}
               className="w-full mt-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all"
             >
               📅 Ver Calendário Completo
@@ -459,7 +459,7 @@ export function Profile() {
                     </button>
                     {isPremium && (
                       <button
-                        onClick={() => navigate('/body-metrics')}
+                        onClick={() => navigate('/profile/body-metrics')}
                         className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm"
                       >
                         Ver Histórico
@@ -554,7 +554,7 @@ export function Profile() {
         </div>
         
         <button
-          onClick={() => navigate('/settings')}
+          onClick={() => navigate('/profile/settings')}
           className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md mt-3 flex items-center justify-center gap-2"
         >
           <Settings size={20} />
@@ -562,7 +562,7 @@ export function Profile() {
         </button>
         
         <button
-          onClick={() => navigate('/log')}
+          onClick={() => navigate('/profile/log')}
           className="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md mt-3 flex items-center justify-center gap-2"
         >
           <FileText size={20} />

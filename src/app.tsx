@@ -31,48 +31,39 @@ export function App() {
   useEffect(() => {
     const checkVersion = async () => {
       const usuarioID = localStorage.getItem('usuarioId')
-      if (!usuarioID) return // Don't show to non-logged-in users
+      if (!usuarioID) return
 
-      // Check localStorage first (fast)
       const lastSeenVersion = localStorage.getItem('lastSeenVersion')
       
-      // If versions don't match, check Firestore for cross-device sync
       if (lastSeenVersion !== currentRelease.version) {
         try {
           const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
           const firestoreVersion = userDoc.data()?.lastSeenVersion
           
-          // If Firestore also doesn't have current version, show modal
           if (firestoreVersion !== currentRelease.version) {
             setShowWhatsNew(true)
           } else {
-            // Sync localStorage with Firestore
             localStorage.setItem('lastSeenVersion', currentRelease.version)
           }
         } catch (error) {
           console.error('Error checking version:', error)
-          // On error, show modal if localStorage version doesn't match
           setShowWhatsNew(true)
         }
       }
     }
 
-    // Small delay to ensure user is logged in
     const timer = setTimeout(checkVersion, 1000)
     return () => clearTimeout(timer)
   }, [])
 
-  // Check streak and reset previous days exercises on app load
   useEffect(() => {
     const initializeStreakChecks = async () => {
       const usuarioID = localStorage.getItem('usuarioId')
       if (!usuarioID) return
 
       try {
-        // 1. First reset previous days exercises (prevent double-counting)
         await resetPreviousDaysExercises(usuarioID)
         
-        // 2. Then check if streak should be reset due to missed days
         await checkAndResetStreakIfMissed(usuarioID)
         
         console.log('✅ Streak checks completed')
@@ -81,7 +72,6 @@ export function App() {
       }
     }
 
-    // Run on app load with small delay to ensure user is logged in
     const timer = setTimeout(initializeStreakChecks, 1500)
     return () => clearTimeout(timer)
   }, [])
@@ -93,29 +83,27 @@ export function App() {
         <PWAInstallPrompt />
         <WhatsNewModal isOpen={showWhatsNew} onClose={() => setShowWhatsNew(false)} />
         <Routes>
-          {/* Rotas sem a BottomBar */}
           <Route element={<LayoutWithoutBottomBar />}>
             <Route path='/' element={<Home />} />
             <Route path='/login' element={<Login />} />
             <Route path='/cadastro' element={<Cadastro />} />
           </Route>
 
-          {/* Reset Password (no layout) */}
           <Route path='/reset-password' element={<ResetPassword />} />
 
-          {/* Rotas com a BottomBar */}
           <Route element={<LayoutWithBottomBar />}>
             {/* <Route path='/teste' element={<Teste />} /> */}
-            <Route path='/log' element={<LogPage />} />
             <Route path='/train' element={<Training />} />
             <Route path='/progress' element={<Progress />} />
-            <Route path='/profile' element={<Profile />} />
-            <Route path='/settings' element={<Settings />} />
-            <Route path='/body-metrics' element={<BodyMetrics />} />
-            <Route path='/streak-calendar' element={<StreakCalendar />} />
+            <Route path='/profile'>
+              <Route index element={<Profile />} />
+              <Route path='settings' element={<Settings />} />
+              <Route path='body-metrics' element={<BodyMetrics />} />
+              <Route path='streak-calendar' element={<StreakCalendar />} />
+              <Route path='log' element={<LogPage />} />
+            </Route>
           </Route>
 
-          {/* Admin Routes (no layout) */}
           <Route path='/admin' element={<AdminLogin />} />
           <Route path='/admin/dashboard' element={<AdminDashboard />} />
         </Routes>

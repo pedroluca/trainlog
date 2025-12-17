@@ -13,7 +13,7 @@ export function BottomBar() {
   const isLogged = usuarioID ? true : false
   const location = useLocation()
 
-  const activeIndex = navItems.find(item => location.pathname === item.to)?.index ?? 1
+  const activeIndex = navItems.find(item => location.pathname.startsWith(item.to))?.index ?? 1
 
   const itemWidth = 60 // p-4 (16px * 2) + icon (28px)
   const gap = 32
