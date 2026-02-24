@@ -16,26 +16,26 @@ export function BottomBar() {
   const activeIndex = navItems.find(item => location.pathname.startsWith(item.to))?.index ?? 1
 
   const itemWidth = 60 // p-4 (16px * 2) + icon (28px)
-  const gap = 32
+  const gap = 40
   const translateX = activeIndex * (itemWidth + gap)
 
   return (
     <nav
       className={`${
         isLogged ? 'fixed' : 'hidden'
-      } bottom-6 left-0 right-0 flex items-center justify-center px-4 z-10`}
+      } bottom-6 left-0 right-0 flex items-center justify-center px-6 z-10`}
     >
-      <div className='bg-[#1a4d2e]/80 backdrop-blur-2xl rounded-4xl px-8 py-1 shadow-[0_8px_32px_rgba(26,77,46,0.4)] border border-white/20 flex items-center justify-center gap-12 relative overflow-hidden'>
-        <div className='absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-4xl'></div>
+      <div className='bg-[#1a4d2e]/80 backdrop-blur-2xl rounded-full p-1 shadow-[0_8px_32px_rgba(26,77,46,0.4)] border border-white/20 flex items-center justify-center gap-12 relative overflow-hidden'>
+        <div className='absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-full'></div>
         
-        <div className='relative flex items-center gap-8'>
+        <div className='relative flex items-center gap-10'>
           <div
             className='absolute rounded-full transition-all duration-500 ease-out pointer-events-none'
             style={{
-              width: `${itemWidth + 12}px`,
+              width: `${itemWidth}px`,
               height: `${itemWidth}px`,
               transform: `translateX(${translateX}px)`,
-              left: -6,
+              left: 0,
               top: '50%',
               marginTop: `-${itemWidth / 2}px`,
             }}
