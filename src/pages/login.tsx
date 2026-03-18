@@ -95,9 +95,9 @@ export function Login() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-7rem)] bg-gray-100">
-      <div className="bg-white shadow-md rounded-lg p-8 w-[85%] max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-7rem)] bg-gray-100 dark:bg-[#1a1a1a]">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-md rounded-lg p-8 w-[85%] max-w-md border border-gray-200 dark:border-[#404040]">
+        <h1 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
           {showForgotPassword ? 'Recuperar Senha' : 'Login'}
         </h1>
         
@@ -114,19 +114,19 @@ export function Login() {
           /* Login Form */
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-gray-700 font-bold mb-2">Email:</label>
+              <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Email:</label>
               <input
                 type="email"
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border rounded px-3 py-2"
+                className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
                 placeholder="Digite seu email"
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-bold mb-2">Senha:</label>
+              <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Senha:</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -134,13 +134,13 @@ export function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full border rounded px-3 py-2 pr-10"
+                  className="w-full border dark:border-[#404040] rounded px-3 py-2 pr-10 dark:bg-[#1a1a1a] dark:text-gray-100"
                   placeholder="Digite sua senha"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -171,18 +171,18 @@ export function Login() {
         ) : (
           /* Forgot Password Form */
           <div className="space-y-4">
-            <p className="text-gray-600 text-sm text-center mb-4">
+            <p className="text-gray-600 dark:text-gray-400 text-sm text-center mb-4">
               Digite seu email para receber um link de recuperação de senha
             </p>
             <div>
-              <label className="block text-gray-700 font-bold mb-2">Email:</label>
+              <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Email:</label>
               <input
                 type="email"
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border rounded px-3 py-2"
+                className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
                 placeholder="Digite seu email"
               />
             </div>
@@ -205,7 +205,7 @@ export function Login() {
                 setResetEmailSent(false)
                 setError('')
               }}
-              className="w-full text-sm text-gray-600 hover:underline mt-2"
+              className="w-full text-sm text-gray-600 dark:text-gray-400 hover:underline mt-2"
             >
               ← Voltar para login
             </button>
@@ -213,7 +213,7 @@ export function Login() {
         )}
         
         {!showForgotPassword && (
-          <p className="text-center mt-4">
+          <p className="text-center mt-4 text-gray-600 dark:text-gray-400">
             Não tem uma conta?{' '}
             <Link to="/cadastro" className="text-blue-500 hover:underline">
               Cadastre-se
@@ -224,7 +224,7 @@ export function Login() {
       
       {/* Version Display */}
       <div className="mt-4">
-        <p className="text-xs text-gray-500">{getVersionWithPrefix()}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-500">{getVersionWithPrefix()}</p>
       </div>
     </main>
   )
