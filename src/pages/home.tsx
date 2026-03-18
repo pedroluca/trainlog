@@ -23,7 +23,7 @@ export function Home() {
           <div className="w-20 h-20 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <Dumbbell size={40} className="text-white" />
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-[#27AE60] to-[#219150] bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-[#27AE60] to-[#219150] bg-clip-text text-transparent mb-4 pb-4">
             TrainLog
           </h1>
           <p className="text-gray-600 text-xl max-w-2xl mx-auto">
