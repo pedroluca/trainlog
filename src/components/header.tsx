@@ -2,14 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
-// import { Flame } from 'lucide-react'
 
-type HeaderProps = {
-  hideDate?: boolean
-}
-
-export function Header({ hideDate = false }: HeaderProps) {
-  // const [currentTime, setCurrentTime] = useState('')
+export function Header() {
   const [streak, setStreak] = useState(0)
   const [treinouHoje, setTreinouHoje] = useState(false)
   const usuarioID = localStorage.getItem('usuarioId')
@@ -74,10 +68,10 @@ export function Header({ hideDate = false }: HeaderProps) {
 
   return (
     <header className='bg-gradient-to-r from-[#27AE60] to-[#229954] text-white shadow-lg'>
-      <main className={`${hideDate ? 'py-6' : 'py-4'} px-4 flex items-center justify-between border-b border-white/10`}>
+      <main className={`py-4 md:py-6 px-4 flex items-center justify-between border-b border-white/10`}>
         <Link 
           to='/' 
-          className='text-3xl font-bold tracking-tight hover:scale-105 transition-transform duration-200'
+          className='text-3xl md:text-4xl font-bold tracking-tight hover:scale-105 transition-transform duration-200'
         >
           TrainLog
         </Link>
@@ -85,18 +79,14 @@ export function Header({ hideDate = false }: HeaderProps) {
         {usuarioID && (
           <Link
             to='/profile'
-            className='flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors'
+            className={`flex items-center gap-2 ${treinouHoje ? 'bg-orange-400/50 hover:bg-orange-500/50' : 'bg-white/10 hover:bg-white/20'} pr-4 pl-3 py-2 rounded-full transition-colors`}
             title='Seu streak de treinos'
           >
-            {/* <Flame size={20} className={treinouHoje ? 'text-orange-400' : 'text-gray-400'} /> */}
-            <span className={treinouHoje ? 'text-orange-400' : 'text-gray-400'}>🔥</span>
-            <span className='text-lg font-bold'>{streak}</span>
+            <span className='text-xl md:text-3xl' style={{ filter: treinouHoje ? 'none' : 'grayscale(1)' }}>🔥</span>
+            <span className='text-xl md:text-3xl font-bold'>{streak}</span>
           </Link>
         )}
       </main>
-      {/* <section className={`py-2 px-4 flex items-center justify-center ${hideDate ? 'hidden' : ''}`}>
-        <p className='text-sm text-white/90 font-medium'>{currentTime}</p>
-      </section> */}
     </header>
   )
 }
