@@ -9,31 +9,31 @@ type HeaderProps = {
 }
 
 export function Header({ hideDate = false }: HeaderProps) {
-  const [currentTime, setCurrentTime] = useState('')
+  // const [currentTime, setCurrentTime] = useState('')
   const [streak, setStreak] = useState(0)
   const [treinouHoje, setTreinouHoje] = useState(false)
   const usuarioID = localStorage.getItem('usuarioId')
 
-  useEffect(() => {
-    const updateDateTime = () => {
-      const now = new Date()
-      const options: Intl.DateTimeFormatOptions = {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      }
-      setCurrentTime(now.toLocaleString('pt-BR', options))
-    }
+  // useEffect(() => {
+  //   const updateDateTime = () => {
+  //     const now = new Date()
+  //     const options: Intl.DateTimeFormatOptions = {
+  //       weekday: 'long',
+  //       year: 'numeric',
+  //       month: 'long',
+  //       day: 'numeric',
+  //       hour: '2-digit',
+  //       minute: '2-digit',
+  //       second: '2-digit',
+  //     }
+  //     setCurrentTime(now.toLocaleString('pt-BR', options))
+  //   }
 
-    updateDateTime() 
-    const interval = setInterval(updateDateTime, 1000) 
+  //   updateDateTime() 
+  //   const interval = setInterval(updateDateTime, 1000) 
 
-    return () => clearInterval(interval) 
-  }, [])
+  //   return () => clearInterval(interval) 
+  // }, [])
 
   useEffect(() => {
     const fetchStreak = async () => {
@@ -94,9 +94,9 @@ export function Header({ hideDate = false }: HeaderProps) {
           </Link>
         )}
       </main>
-      <section className={`py-2 px-4 flex items-center justify-center ${hideDate ? 'hidden' : ''}`}>
+      {/* <section className={`py-2 px-4 flex items-center justify-center ${hideDate ? 'hidden' : ''}`}>
         <p className='text-sm text-white/90 font-medium'>{currentTime}</p>
-      </section>
+      </section> */}
     </header>
   )
 }
