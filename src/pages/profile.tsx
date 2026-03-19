@@ -20,6 +20,8 @@ export function Profile() {
   const [email, setEmail] = useState<string | null>(null)
   const [telefone, setTelefone] = useState<string | null>(null)
   const [photoURL, setPhotoURL] = useState<string | null>(null)
+  const [dataNascimento, setDataNascimento] = useState<string | null>(null)
+  const [instagram, setInstagram] = useState<string | null>(null)
   const [altura, setAltura] = useState<number>(0) // cm
   const [peso, setPeso] = useState<number>(0) // kg
   const [isPremium, setIsPremium] = useState<boolean>(false)
@@ -80,6 +82,8 @@ export function Profile() {
             setEmail(userData.email || 'Não disponível')
             setTelefone(userData.telefone || null)
             setPhotoURL(userData.photoURL || null)
+            setDataNascimento(userData.dataNascimento || null)
+            setInstagram(userData.instagram || null)
             setAltura(userData.altura || 0)
             setPeso(userData.peso || 0)
             setIsPremium(userData.isPremium || false)
@@ -311,24 +315,25 @@ export function Profile() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
       {/* Profile Card */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-8 w-full max-w-lg border border-gray-200 dark:border-[#404040]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 pt-8 w-full max-w-lg md:max-w-2xl border border-gray-200 dark:border-[#404040]">
+        {/* Avatar */}
         <div className="flex flex-col items-center mb-6 relative">
           {/* Plan Badge */}
           {isPremium ? (
-            <div className="absolute -top-4 -right-4 bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
+            <div className="absolute -top-4 right-0 md:left-0 md:right-auto bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
               <span className="w-full text-center">PREMIUM</span>
             </div>
           ) : (
-            <div className="absolute -top-4 -right-4 bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center" onClick={() => handleOpenUpgradeModal()}>
+            <div className="absolute -top-4 right-0 md:left-0 md:right-auto bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center" onClick={() => handleOpenUpgradeModal()}>
               <span className="w-full text-center">FREE</span>
             </div>
           )}
 
           {/* Avatar Circle with Image Upload */}
           <div className="relative mb-4">
-            <div className={`w-20 h-20 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full flex items-center justify-center text-white text-3xl font-bold overflow-hidden ${
+            <div className={`w-20 md:w-30 h-20 md:h-30 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full md:rounded-2xl flex items-center justify-center text-white text-3xl font-bold overflow-hidden ${
               isPremium ? 'ring-4 ring-amber-400 dark:ring-amber-500 shadow-lg shadow-amber-400/50' : ''
             }`}>
               {photoURL ? (
@@ -366,33 +371,174 @@ export function Profile() {
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-3">Perfil</h1>
         </div>
         
-        <div className="space-y-4 mb-6">
-          <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg p-4 border border-gray-200 dark:border-[#404040]">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Nome</p>
-            <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+        {/* Personal Info Fields */}
+        <div className="md:col-span-2 grid grid-cols-2 gap-2">
+          <div className="col-span-full bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Nome</p>
+            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
               {nome || 'Carregando...'}
             </p>
           </div>
-          <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg p-4 border border-gray-200 dark:border-[#404040]">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Email</p>
-            <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+          <div className="col-span-full bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Email</p>
+            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
               {email || 'Carregando...'}
             </p>
           </div>
+          <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Data de Nascimento</p>
+            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
+              {dataNascimento ? new Date(dataNascimento + 'T00:00:00').toLocaleDateString('pt-BR') : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>}
+            </p>
+          </div>
+          <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Instagram</p>
+            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
+              {instagram ? (
+                <span className="text-[#27AE60]">@{instagram.replace(/^@/, '')}</span>
+              ) : (
+                <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>
+              )}
+            </p>
+          </div>
+
+          {/* Body Metrics as info fields */}
+          <div className="col-span-full grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Altura</p>
+              <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
+                {altura > 0 ? `${(altura / 100).toFixed(2)}m` : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">—</span>}
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Peso</p>
+              <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
+                {peso > 0 ? `${peso.toFixed(1)}kg` : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">—</span>}
+              </p>
+            </div>
+            <div className="col-span-2 md:col-span-1 flex md:flex-col gap-4 md:gap-1 items-center md:items-start justify-between bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
+              <p className="text-xs text-gray-500 dark:text-gray-400">IMC</p>
+              {altura > 0 && peso > 0 ? (
+                <div className='flex md:w-full justify-between items-center flex-1'>
+                  <p className="text-base font-semibold text-gray-800 dark:text-gray-100">{calculateIMC(peso, altura).toFixed(1)}</p>
+                  <p className={`text-xs font-medium mt-0.5 ${getIMCStatus(calculateIMC(peso, altura)).color}`}>
+                    {getIMCStatus(calculateIMC(peso, altura)).label}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-gray-400 dark:text-gray-500 font-normal text-sm">—</p>
+              )}
+            </div>
+          </div>
+
+          {/* Metrics action buttons */}
+          <div className="col-span-full flex gap-2">
+            {!isEditingMetrics ? (
+              <>
+                <button
+                  onClick={() => setIsEditingMetrics(true)}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                >
+                  <Plus size={16} />
+                  {altura > 0 && peso > 0 ? 'Nova Medição' : 'Adicionar Métricas'}
+                </button>
+                {isPremium && altura > 0 && peso > 0 && (
+                  <button
+                    onClick={() => navigate('/profile/body-metrics')}
+                    className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                  >
+                    <Activity size={16} />
+                    Ver Histórico
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className="flex-1 space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Altura (metros)</label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditedAltura((prev) => Math.max(0.5, parseFloat(prev || '0') - 0.01).toFixed(2))}
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editedAltura}
+                      onChange={(e) => setEditedAltura(e.target.value)}
+                      className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                      placeholder="1.75"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditedAltura((prev) => Math.min(3, parseFloat(prev || '0') + 0.01).toFixed(2))}
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Peso (kg)</label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditedPeso((prev) => Math.max(20, parseFloat(prev || '0') - 0.1).toFixed(1))}
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={editedPeso}
+                      onChange={(e) => setEditedPeso(e.target.value)}
+                      className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                      placeholder="75.0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditedPeso((prev) => Math.min(500, parseFloat(prev || '0') + 0.1).toFixed(1))}
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setIsEditingMetrics(false)}
+                    className="flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveMetrics}
+                    className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        
+
         {/* Workout Streak Section */}
-        <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/20 dark:to-red-500/20 rounded-lg p-4 border border-orange-500/30 dark:border-orange-500/40 mb-6">
+        <div className="md:col-span-2 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/20 dark:to-red-500/20 rounded-lg p-4 border border-orange-500/30 dark:border-orange-500/40">
           <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-3">
             <span className="text-2xl">🔥</span>
             Sequência de Treinos
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040]">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 border border-gray-200 dark:border-[#404040]">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Sequência Atual</p>
               <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{currentStreak}</p>
             </div>
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040]">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 border border-gray-200 dark:border-[#404040]">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Melhor Sequência</p>
               <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{longestStreak}</p>
             </div>
@@ -412,169 +558,27 @@ export function Profile() {
           )}
         </div>
         
-        {/* Body Metrics Section */}
-        <div className="bg-gradient-to-br from-[#27AE60]/10 to-[#219150]/10 dark:from-[#27AE60]/20 dark:to-[#219150]/20 rounded-lg p-4 border border-[#27AE60]/30 dark:border-[#27AE60]/40 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-              <Activity size={20} className="text-[#27AE60]" />
-              Métricas Corporais
-            </h3>
-            {!isEditingMetrics && altura > 0 && peso > 0 && (
-              <button
-                onClick={() => setIsEditingMetrics(true)}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
-              >
-                Editar
-              </button>
-            )}
-          </div>
-
-          {!isEditingMetrics ? (
-            <>
-              {altura > 0 && peso > 0 ? (
-                <>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040]">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Altura</p>
-                      <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{(altura / 100).toFixed(2)}m</p>
-                    </div>
-                    <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040]">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Peso</p>
-                      <p className="text-lg font-bold text-gray-800 dark:text-gray-100">{peso.toFixed(1)}kg</p>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-gray-200 dark:border-[#404040] mb-3">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">IMC</p>
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{calculateIMC(peso, altura).toFixed(1)}</p>
-                      <p className={`text-sm font-medium ${getIMCStatus(calculateIMC(peso, altura)).color}`}>
-                        {getIMCStatus(calculateIMC(peso, altura)).label}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setIsEditingMetrics(true)}
-                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
-                    >
-                      <Plus size={16} />
-                      Nova Medição
-                    </button>
-                    {isPremium && (
-                      <button
-                        onClick={() => navigate('/profile/body-metrics')}
-                        className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm"
-                      >
-                        Ver Histórico
-                      </button>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">Configure suas métricas corporais</p>
-                  <button
-                    onClick={() => setIsEditingMetrics(true)}
-                    className="bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
-                  >
-                    Adicionar Altura e Peso
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Altura (metros)</label>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditedAltura((prev) => Math.max(0.5, parseFloat(prev || '0') - 0.01).toFixed(2))}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={editedAltura}
-                    onChange={(e) => setEditedAltura(e.target.value)}
-                    className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
-                    placeholder="1.75"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setEditedAltura((prev) => Math.min(3, parseFloat(prev || '0') + 0.01).toFixed(2))}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Peso (kg)</label>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditedPeso((prev) => Math.max(20, parseFloat(prev || '0') - 0.1).toFixed(1))}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={editedPeso}
-                    onChange={(e) => setEditedPeso(e.target.value)}
-                    className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
-                    placeholder="75.0"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setEditedPeso((prev) => Math.min(500, parseFloat(prev || '0') + 0.1).toFixed(1))}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={() => setIsEditingMetrics(false)}
-                  className="flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSaveMetrics}
-                  className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
-                >
-                  Salvar
-                </button>
-              </div>
-            </div>
-          )}
+        <div className="md:col-span-1 md:order-2 flex flex-col gap-2">
+          <button
+            onClick={() => navigate('/profile/settings')}
+            className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md flex items-center justify-center gap-2"
+          >
+            <Settings size={20} />
+            Configurações
+          </button>
+          
+          <button
+            onClick={() => navigate('/profile/log')}
+            className="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md flex items-center justify-center gap-2"
+          >
+            <FileText size={20} />
+            Log de atividades
+          </button>
         </div>
-        
-        <button
-          onClick={() => navigate('/profile/settings')}
-          className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md mt-3 flex items-center justify-center gap-2"
-        >
-          <Settings size={20} />
-          Configurações
-        </button>
-        
-        <button
-          onClick={() => navigate('/profile/log')}
-          className="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md mt-3 flex items-center justify-center gap-2"
-        >
-          <FileText size={20} />
-          Log de atividades
-        </button>
       </div>
 
       {/* Workouts Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl py-6 px-4 w-full max-w-lg mt-8 border border-gray-200 dark:border-[#404040]">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 w-full max-w-lg md:max-w-2xl mt-8 border border-gray-200 dark:border-[#404040]">
         <div className="flex items-center justify-between mb-6 px-2">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Seus Treinos</h2>
           <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#1a1a1a] px-3 py-1 rounded-full">
@@ -599,7 +603,7 @@ export function Profile() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {workouts.map((workout) => (
               <div
                 key={workout.id}
@@ -647,10 +651,10 @@ export function Profile() {
       </div>
 
       {/* Logout Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-8 w-full max-w-lg mt-8 border border-gray-200 dark:border-[#404040]">
+      <div className="flex justify-center bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 w-full max-w-lg md:max-w-2xl mt-8 border border-gray-200 dark:border-[#404040]">
         <button
           onClick={handleLogout}
-          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
+          className="w-full md:max-w-sm bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
         >
           Sair da Conta
         </button>
