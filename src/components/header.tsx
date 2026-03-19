@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
-import { Flame } from 'lucide-react'
+// import { Flame } from 'lucide-react'
 
 type HeaderProps = {
   hideDate?: boolean
@@ -88,7 +88,8 @@ export function Header({ hideDate = false }: HeaderProps) {
             className='flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors'
             title='Seu streak de treinos'
           >
-            <Flame size={20} className={treinouHoje ? 'text-orange-400' : 'text-gray-400'} />
+            {/* <Flame size={20} className={treinouHoje ? 'text-orange-400' : 'text-gray-400'} /> */}
+            <span className={treinouHoje ? 'text-orange-400' : 'text-gray-400'}>🔥</span>
             <span className='text-lg font-bold'>{streak}</span>
           </Link>
         )}
