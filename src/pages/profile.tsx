@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
@@ -24,6 +24,7 @@ export function Profile() {
   const [instagram, setInstagram] = useState<string | null>(null)
   const [altura, setAltura] = useState<number>(0) // cm
   const [peso, setPeso] = useState<number>(0) // kg
+  const [username, setUsername] = useState<string | null>(null)
   const [isPremium, setIsPremium] = useState<boolean>(false)
   const [isEditingMetrics, setIsEditingMetrics] = useState(false)
   const [editedAltura, setEditedAltura] = useState<string>('')
@@ -40,6 +41,11 @@ export function Profile() {
   const [longestStreak, setLongestStreak] = useState(0)
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
   const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false)
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [editedNome, setEditedNome] = useState('')
+  const [editedUsername, setEditedUsername] = useState('')
+  const [editedDataNascimento, setEditedDataNascimento] = useState('')
+  const [editedInstagram, setEditedInstagram] = useState('')
   const [toast, setToast] = useState<ToastState>({
     show: false,
     message: '',
@@ -86,6 +92,7 @@ export function Profile() {
             setInstagram(userData.instagram || null)
             setAltura(userData.altura || 0)
             setPeso(userData.peso || 0)
+            setUsername(userData.username || null)
             setIsPremium(userData.isPremium || false)
             setEditedAltura(userData.altura ? (userData.altura / 100).toFixed(2) : '')
             setEditedPeso(userData.peso ? userData.peso.toFixed(1) : '')
@@ -314,26 +321,63 @@ export function Profile() {
     setIsUpgradeModalOpen(false)
   }
 
+  const handleOpenEditProfile = () => {
+    setEditedNome(nome || '')
+    setEditedUsername(username || '')
+    setEditedDataNascimento(dataNascimento || '')
+    setEditedInstagram(instagram?.replace(/^@/, '') || '')
+    setIsEditingProfile(true)
+  }
+
+  const handleSaveProfile = async () => {
+    if (!usuarioID) return
+    try {
+      await updateDoc(doc(db, 'usuarios', usuarioID), {
+        nome: editedNome.trim(),
+        username: editedUsername.trim(),
+        dataNascimento: editedDataNascimento,
+        instagram: editedInstagram.replace(/^@/, '').trim(),
+      })
+      setNome(editedNome.trim())
+      setUsername(editedUsername.trim())
+      setDataNascimento(editedDataNascimento)
+      setInstagram(editedInstagram.replace(/^@/, '').trim())
+      setIsEditingProfile(false)
+      setToast({ show: true, message: 'Perfil atualizado com sucesso!', type: 'success' })
+    } catch (err) {
+      console.error('Erro ao salvar perfil:', err)
+      setToast({ show: true, message: 'Erro ao salvar. Tente novamente.', type: 'error' })
+    }
+  }
+
   return (
     <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
       {/* Profile Card */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 pt-8 w-full max-w-lg md:max-w-2xl border border-gray-200 dark:border-[#404040]">
+      <div className="relative grid grid-cols-1 md:grid-cols-3 gap-2 bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 pt-8 md:pt-4 w-full max-w-lg md:max-w-2xl border border-gray-200 dark:border-[#404040]">
+        {/* Edit Profile Button */}
+        <button
+          onClick={handleOpenEditProfile}
+          className="absolute top-3 right-3 p-1.5 rounded-full bg-gray-100 dark:bg-[#404040] hover:bg-gray-200 dark:hover:bg-[#505050] text-gray-500 dark:text-gray-300 transition-colors"
+          title="Editar perfil"
+        >
+          <Pencil size={15} />
+        </button>
         {/* Avatar */}
-        <div className="flex flex-col items-center mb-6 relative">
+        <div className="flex flex-col items-center relative">
           {/* Plan Badge */}
           {isPremium ? (
-            <div className="absolute -top-4 right-0 md:left-0 md:right-auto bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
+            <div className="absolute -top-4 md:top-0 left-0 bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
               <span className="w-full text-center">PREMIUM</span>
             </div>
           ) : (
-            <div className="absolute -top-4 right-0 md:left-0 md:right-auto bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center" onClick={() => handleOpenUpgradeModal()}>
+            <div className="absolute -top-4 md:top-0 left-0 bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center" onClick={() => handleOpenUpgradeModal()}>
               <span className="w-full text-center">FREE</span>
             </div>
           )}
 
           {/* Avatar Circle with Image Upload */}
-          <div className="relative mb-4">
-            <div className={`w-20 md:w-30 h-20 md:h-30 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full md:rounded-2xl flex items-center justify-center text-white text-3xl font-bold overflow-hidden ${
+          <div className="relative mb-4 md:mt-10">
+            <div className={`w-20 md:w-36 h-20 md:h-36 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full md:rounded-2xl flex items-center justify-center text-white text-3xl font-bold overflow-hidden ${
               isPremium ? 'ring-4 ring-amber-400 dark:ring-amber-500 shadow-lg shadow-amber-400/50' : ''
             }`}>
               {photoURL ? (
@@ -368,22 +412,13 @@ export function Profile() {
               disabled={uploadingImage}
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-3">Perfil</h1>
+          <h1 className="text-base md:text-lg -mb-4 md:-mb-0 font-bold text-gray-800 dark:text-gray-100">{username || 'Carregando...'}</h1>
         </div>
         
         {/* Personal Info Fields */}
         <div className="md:col-span-2 grid grid-cols-2 gap-2">
-          <div className="col-span-full bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Nome</p>
-            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
-              {nome || 'Carregando...'}
-            </p>
-          </div>
-          <div className="col-span-full bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Email</p>
-            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
-              {email || 'Carregando...'}
-            </p>
+          <div className="col-span-full py-2">
+            <h1 className="text-2xl text-center md:text-left font-bold text-gray-800 dark:text-gray-100">{nome || 'Carregando...'}</h1>
           </div>
           <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Data de Nascimento</p>
@@ -728,6 +763,86 @@ export function Profile() {
           userId={usuarioID || ''}
           userPhone={telefone || ''}
         />
+      )}
+
+      {/* Edit Profile Modal */}
+      {isEditingProfile && (
+        <div className="fixed inset-0 z-30 bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-white dark:bg-[#2d2d2d] rounded-2xl w-full max-w-sm shadow-2xl border border-gray-200 dark:border-[#404040] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#404040]">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Editar Perfil</h2>
+              <button
+                onClick={() => setIsEditingProfile(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-[#404040] text-gray-400 dark:text-gray-500 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Fields */}
+            <div className="px-5 py-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nome</label>
+                <input
+                  type="text"
+                  value={editedNome}
+                  onChange={(e) => setEditedNome(e.target.value)}
+                  placeholder="Seu nome"
+                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Username</label>
+                <input
+                  type="text"
+                  value={editedUsername}
+                  onChange={(e) => setEditedUsername(e.target.value)}
+                  placeholder="seu_username"
+                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Data de Nascimento</label>
+                <input
+                  type="date"
+                  value={editedDataNascimento}
+                  onChange={(e) => setEditedDataNascimento(e.target.value)}
+                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Instagram</label>
+                <div className="flex items-center border border-gray-200 dark:border-[#404040] rounded-lg overflow-hidden bg-gray-50 dark:bg-[#1a1a1a] focus-within:ring-2 focus-within:ring-[#27AE60]/50">
+                  <span className="px-3 text-sm text-gray-400 dark:text-gray-500 select-none">@</span>
+                  <input
+                    type="text"
+                    value={editedInstagram}
+                    onChange={(e) => setEditedInstagram(e.target.value.replace(/^@/, ''))}
+                    placeholder="seu_instagram"
+                    className="flex-1 py-2 pr-3 text-sm text-gray-800 dark:text-gray-100 bg-transparent focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 px-5 pb-5">
+              <button
+                onClick={() => setIsEditingProfile(false)}
+                className="flex-1 bg-gray-100 dark:bg-[#404040] hover:bg-gray-200 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-200 font-semibold py-2.5 rounded-lg text-sm transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 rounded-lg text-sm transition-colors"
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Footer Info Section */}
