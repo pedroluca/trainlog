@@ -269,7 +269,7 @@ export function Training() {
 
                   {/* Current exercise card */}
                   {currentExercise && (
-                    <div className="w-full">
+                    <div className="w-full md:flex md:justify-center">
                       <TrainingCard
                         key={currentExercise.id}
                         id={currentExercise.id}
