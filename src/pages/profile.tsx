@@ -218,26 +218,30 @@ export function Profile() {
     try {
       setUploadingImage(true)
 
-      // Create FormData for Cloudinary upload
+      // Create FormData for API Upload
       const formData = new FormData()
-      formData.append('file', file)
-      formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
-      formData.append('folder', 'profile-images')
-      formData.append('public_id', usuarioID) // Use userId as filename (overwrites old image)
+      formData.append('image', file)
+      formData.append('userId', usuarioID)
 
-      // Upload to Cloudinary
-      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`
-      const response = await fetch(cloudinaryUrl, {
+      // Use a variável de ambiente ou substitua essa string diretamente pela URL real do seu PHP na Hostinger
+      const apiUrl = import.meta.env.VITE_API_UPLOAD_URL
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       })
 
       if (!response.ok) {
-        throw new Error('Falha no upload da imagem')
+        throw new Error('Falha no upload da imagem no servidor')
       }
 
       const data = await response.json()
-      const downloadURL = data.secure_url
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Falha na resposta do servidor')
+      }
+
+      const downloadURL = data.imageUrl
 
       // Update Firestore user document
       await updateDoc(doc(db, 'usuarios', usuarioID), {
@@ -337,7 +341,6 @@ export function Profile() {
                 nome ? nome.charAt(0).toUpperCase() : '?'
               )}
             </div>
-            
             
             {/* Edit Icon Button */}
             <label 
