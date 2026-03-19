@@ -103,6 +103,7 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
     const userData = userDoc.data()
     const scheduledDays = userData.scheduledDays || []
     const lastCompletedDate = userData.lastCompletedDate
+    const lastWorkoutDate = userData.lastWorkoutDate // YYYY-MM-DD — saved on first full completion
     const currentStreak = userData.currentStreak || 0
     
     if (scheduledDays.length === 0 || currentStreak === 0) return
@@ -126,8 +127,14 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
       const checkDayOfWeek = checkDate.getDay()
       
       if (scheduledDays.includes(checkDayOfWeek)) {
+        // Primary check: logs collection
         const wasCompleted = await wasWorkoutCompletedOnDate(usuarioID, checkDate)
-        if (!wasCompleted) {
+        
+        // Secondary check: lastWorkoutDate (protects against "added exercises after completion" scenario)
+        const checkDateStr = checkDate.toLocaleDateString('en-CA') // YYYY-MM-DD
+        const wasCompletedViaLastWorkout = lastWorkoutDate === checkDateStr
+
+        if (!wasCompleted && !wasCompletedViaLastWorkout) {
           missedScheduledDay = true
           break
         }
