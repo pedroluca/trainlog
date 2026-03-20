@@ -46,12 +46,17 @@ jobs:
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} repo
           cd repo
 
-          git checkout deploy || git checkout -b deploy
-          git pull origin deploy || true
+          # 🔥 garante que a branch existe localmente baseada na remota
+          git fetch origin
 
+          git checkout -B deploy origin/deploy || git checkout -b deploy
+
+          # 🔥 sincroniza arquivos
           rsync -av --delete ../dist/ .
 
           git add .
-          git commit -m "Deploy build $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes"
+
+          # 🔥 SEMPRE cria commit (ESSENCIAL)
+          git commit -m "Deploy build $(date +'%Y-%m-%d %H:%M:%S')" --allow-empty
 
           git push origin deploy
