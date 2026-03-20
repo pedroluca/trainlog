@@ -40,16 +40,14 @@ jobs:
       # 🔥 Aqui começa a mágica
       - name: Publish dist to deploy branch
         run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} repo
           cd repo
 
           git checkout deploy || git checkout -b deploy
 
-          # 🔑 IDENTIDADE (obrigatório)
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-
-          # 🔥 sincroniza exatamente o dist
           rsync -av --delete ../dist/ .
 
           git add .
