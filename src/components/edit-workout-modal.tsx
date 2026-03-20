@@ -40,22 +40,34 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
         <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Editar Treino</h2>
         <form className="space-y-4">
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Dia da Semana:</label>
-            <select
-              value={day}
-              onChange={(e) => setDay(e.target.value)}
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
-            >
-              {daysOfWeek.map((dayOption) => (
-                <option
-                  key={dayOption}
-                  value={dayOption}
-                  disabled={disabledDays.includes(dayOption) && dayOption !== workout.dia} // Desabilita dias já cadastrados, exceto o dia atual do treino
-                >
-                  {dayOption}
-                </option>
-              ))}
-            </select>
+            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
+              Dia da Semana: <span className="text-[#27AE60] font-normal">{day}</span>
+            </label>
+            <div className="flex gap-1.5">
+              {daysOfWeek.map((dayOption) => {
+                const isDisabled = disabledDays.includes(dayOption) && dayOption !== workout.dia
+                const isSelected = day === dayOption
+                return (
+                  <button
+                    key={dayOption}
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => !isDisabled && setDay(dayOption)}
+                    className={`flex-1 aspect-square rounded-lg text-xs font-bold transition-all flex items-center justify-center
+                      ${isSelected
+                        ? 'bg-[#27AE60] text-white ring-2 ring-[#27AE60] ring-offset-2 dark:ring-offset-[#2d2d2d] shadow-md'
+                        : isDisabled
+                          ? 'bg-gray-100 dark:bg-[#1a1a1a] text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                          : 'bg-gray-100 dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#404040] cursor-pointer'
+                      }`}
+                    title={isDisabled ? `${dayOption} já tem treino` : dayOption}
+                  >
+                    {dayOption.charAt(0)}
+                  </button>
+                )
+              })}
+            </div>
+
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Grupo Muscular:</label>
