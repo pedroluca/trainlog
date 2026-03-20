@@ -45,6 +45,11 @@ jobs:
 
           git checkout deploy || git checkout -b deploy
 
+          # 🔑 IDENTIDADE (obrigatório)
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          # 🔥 sincroniza exatamente o dist
           rsync -av --delete ../dist/ .
 
           git add .
