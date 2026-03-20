@@ -332,14 +332,28 @@ export function Profile() {
   const handleSaveProfile = async () => {
     if (!usuarioID) return
     try {
+      const trimmedUsername = editedUsername.trim()
+
+      // Verifica unicidade do username (apenas se foi alterado)
+      if (trimmedUsername && trimmedUsername !== username) {
+        const usersRef = collection(db, 'usuarios')
+        const usernameQuery = query(usersRef, where('username', '==', trimmedUsername))
+        const usernameSnap = await getDocs(usernameQuery)
+        const alreadyExists = usernameSnap.docs.some(d => d.id !== usuarioID)
+        if (alreadyExists) {
+          setToast({ show: true, message: `O username "@${trimmedUsername}" já está em uso.`, type: 'error' })
+          return
+        }
+      }
+
       await updateDoc(doc(db, 'usuarios', usuarioID), {
         nome: editedNome.trim(),
-        username: editedUsername.trim(),
+        username: trimmedUsername,
         dataNascimento: editedDataNascimento,
         instagram: editedInstagram.replace(/^@/, '').trim(),
       })
       setNome(editedNome.trim())
-      setUsername(editedUsername.trim())
+      setUsername(trimmedUsername)
       setDataNascimento(editedDataNascimento)
       setInstagram(editedInstagram.replace(/^@/, '').trim())
       setIsEditingProfile(false)
