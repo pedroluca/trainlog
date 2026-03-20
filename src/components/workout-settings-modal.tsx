@@ -139,7 +139,7 @@ export function WorkoutSettingsModal({
                   onAddExercise();
                 }}
               >
-                <Plus size={18} /> Adicionar Exercício
+                <Plus size={18} /> Adicionar
               </Button>
               <Button
                 type="button"
@@ -150,7 +150,7 @@ export function WorkoutSettingsModal({
                   onResetExercises();
                 }}
               >
-                <IterationCw size={18} /> Reiniciar Treino
+                <IterationCw size={18} /> Reiniciar
               </Button>
             </div>
           </div>
