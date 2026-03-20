@@ -230,7 +230,7 @@ export function Training() {
                 <span className='dark:text-gray-300'>Exercícios</span>
               </h3> */}
               {exercises.length > 0 ? (
-                <div className='w-full lg:w-1/2 flex flex-col items-center flex-1 overflow-hidden'>
+                <div className='w-full lg:w-1/2 pb-24 flex flex-col items-center flex-1 overflow-hidden'>
                   {/* Navigation arrows & Progress */}
                   <div className="flex items-center justify-between w-full mb-3 flex-shrink-0">
                     <button

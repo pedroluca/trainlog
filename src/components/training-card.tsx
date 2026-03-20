@@ -271,7 +271,7 @@ export function TrainingCard(props: TrainingCardProps) {
 
   return (
     <div
-      className={`shadow-md md:w-xl relative rounded-lg overflow-hidden p-6 mx-2 transition-all min-h-[500px] md:min-h-[700px] flex flex-col ${
+      className={`shadow-md md:w-xl relative rounded-lg overflow-hidden p-6 mx-2 transition-all min-h-[375px] max-h-[500px] md:min-h-[700px] flex flex-col ${
         isFinished ? 'bg-[#27AE60] border-green-400' : 'bg-white dark:bg-[#2d2d2d] border-gray-200 dark:border-[#404040]'
       }`}
     >
@@ -370,12 +370,12 @@ export function TrainingCard(props: TrainingCardProps) {
                 <span className='text-base'>({progressiveSets[setsDone]?.reps || reps} reps × {progressiveSets[setsDone]?.weight || weight} kg)</span>
               </p>
             ) : (
-              <p className='text-xl md:text-3xl mb-6 text-gray-700 dark:text-gray-300 text-center'>
+              <p className='text-xl md:text-3xl mb-4 text-gray-700 dark:text-gray-300 text-center'>
                 <strong>Séries feitas:</strong> {setsDone + 1} de {sets} com {reps} repetições cada
               </p>
             )}
-            <h2 className='text-2xl md:text-4xl font-bold mb-4 text-gray-500 dark:text-gray-400'>Intervalo de descanso:</h2>
-            <p className='text-gray-700 dark:text-gray-300 text-6xl md:text-8xl font-mono mb-8'>{formatTime(timeLeft)}</p>
+            {/* <h2 className='text-2xl md:text-4xl font-bold mb-4 text-gray-500 dark:text-gray-400'>Intervalo de descanso:</h2> */}
+            <p className='text-gray-700 dark:text-gray-300 text-6xl md:text-8xl font-mono mb-4'>{formatTime(timeLeft)}</p>
           </div>
           <Button
             className='w-full bg-red-400 hover:bg-red-500 py-4 text-lg md:text-2xl rounded text-white font-bold mt-4'
