@@ -45,8 +45,7 @@ jobs:
 
           git checkout deploy || git checkout -b deploy
 
-          rm -rf *
-          cp -r ../dist/* .
+          rsync -av --delete ../dist/ .
 
           git add .
           git commit -m "Deploy build $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes"
