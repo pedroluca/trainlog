@@ -46,8 +46,17 @@ jobs:
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} repo
           cd repo
 
-          git checkout deploy || git checkout -b deploy
+          # 🔥 garante base limpa
+          git checkout main
 
+          # 🔥 recria deploy sempre (sem usar --force no push)
+          git branch -D deploy || true
+          git checkout -b deploy
+
+          # 🔥 limpa tudo controlado
+          git rm -rf . > /dev/null 2>&1 || true
+
+          # 🔥 copia build
           rsync -av --delete ../dist/ .
 
           git add .
