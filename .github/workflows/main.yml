@@ -1,0 +1,43 @@
+name: Build and Publish Dist
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install deps
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      # 🔥 Aqui começa a mágica
+      - name: Publish dist to deploy branch
+        run: |
+          cd dist
+
+          git init
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add .
+          git commit -m "Deploy build from main $(date +'%Y-%m-%d %H:%M:%S')"
+
+          git branch -M deploy
+
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
+          git push origin deploy --force
