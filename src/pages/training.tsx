@@ -192,8 +192,8 @@ export function Training() {
   const currentExercise = exercises[currentExerciseIndex]
 
   return (
-    <main className="flex flex-col items-center min-h-screen bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64 pb-32">
-      <div className="flex items-center justify-center w-full max-w-md mb-4">
+    <main className="flex flex-col items-center h-[calc(100dvh-74px)] md:h-[calc(100dvh-89px)] overflow-hidden bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64">
+      <div className="flex items-center justify-center w-full max-w-md mb-2 flex-shrink-0">
         <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handlePreviousDay}>
           <ChevronLeft />
         </button>
@@ -209,13 +209,12 @@ export function Training() {
             <WorkoutHeaderSkeleton />
             <div className='w-full grid grid-cols-1'>
               <TrainingCardSkeleton />
-              <TrainingCardSkeleton />
             </div>
           </>
         ) : (
           selectedWorkout ? (
             <>
-              <div className="flex justify-between items-center w-full border-b border-gray-400 pb-2">
+              <div className="flex justify-between items-center w-full border-b border-gray-400 pb-2 mb-2 flex-shrink-0">
                 <h3 className="text-2xl font-semibold dark:text-gray-300">
                   Dia de: {selectedWorkout.musculo}
                 </h3>
@@ -231,9 +230,9 @@ export function Training() {
                 <span className='dark:text-gray-300'>Exercícios</span>
               </h3> */}
               {exercises.length > 0 ? (
-                <div className='w-full lg:w-1/2 flex flex-col items-center'>
-                  {/* Navigation arrows */}
-                  <div className="flex items-center justify-between w-full mt-6">
+                <div className='w-full lg:w-1/2 flex flex-col items-center flex-1 overflow-hidden'>
+                  {/* Navigation arrows & Progress */}
+                  <div className="flex items-center justify-between w-full mb-3 flex-shrink-0">
                     <button
                       className={`cursor-pointer p-2 rounded-full transition-colors ${
                         currentExerciseIndex === 0
@@ -246,9 +245,26 @@ export function Training() {
                       <ChevronLeft size={32} />
                     </button>
                     
-                    <span className="text-gray-600 dark:text-gray-400 font-medium">
-                      {currentExerciseIndex + 1} de {exercises.length}
-                    </span>
+                    <div className="flex flex-col items-center gap-1.5">
+                      <span className="text-gray-600 dark:text-gray-400 font-medium text-sm">
+                        {currentExerciseIndex + 1} de {exercises.length}
+                      </span>
+                      <div className="flex gap-1.5 justify-center">
+                        {exercises.map((_, index) => (
+                          <button
+                            key={index}
+                            className={`h-2 rounded-full transition-all ${
+                              index === currentExerciseIndex
+                                ? 'bg-[#27AE60] w-6'
+                                : exercises[index].isFeito
+                                ? 'bg-green-300 dark:bg-green-600 w-2'
+                                : 'bg-gray-300 dark:bg-gray-600 w-2'
+                            }`}
+                            onClick={() => setCurrentExerciseIndex(index)}
+                          />
+                        ))}
+                      </div>
+                    </div>
                     
                     <button
                       className={`cursor-pointer p-2 rounded-full transition-colors ${
@@ -266,42 +282,25 @@ export function Training() {
                   {/* Current exercise card */}
                   {currentExercise && (
                     <div className="w-full md:flex md:justify-center">
-                      <TrainingCard
-                        key={currentExercise.id}
-                        id={currentExercise.id}
-                        workoutId={selectedWorkout.id}
-                        title={currentExercise.titulo}
-                        sets={currentExercise.series}
-                        reps={currentExercise.repeticoes}
-                        weight={currentExercise.peso}
-                        breakTime={currentExercise.tempoIntervalo}
-                        isFeito={currentExercise.isFeito}
-                        reset={reset}
-                        onEdit={() => fetchExercisesForDay(true)}
-                        onComplete={handleExerciseComplete}
-                        nota={currentExercise.nota}
-                        usesProgressiveWeight={currentExercise.usesProgressiveWeight}
-                        progressiveSets={currentExercise.progressiveSets}
-                      />
+                        <TrainingCard
+                          key={currentExercise.id}
+                          id={currentExercise.id}
+                          workoutId={selectedWorkout.id}
+                          title={currentExercise.titulo}
+                          sets={currentExercise.series}
+                          reps={currentExercise.repeticoes}
+                          weight={currentExercise.peso}
+                          breakTime={currentExercise.tempoIntervalo}
+                          isFeito={currentExercise.isFeito}
+                          reset={reset}
+                          onEdit={() => fetchExercisesForDay(true)}
+                          onComplete={handleExerciseComplete}
+                          nota={currentExercise.nota}
+                          usesProgressiveWeight={currentExercise.usesProgressiveWeight}
+                          progressiveSets={currentExercise.progressiveSets}
+                        />
                     </div>
                   )}
-
-                  {/* Progress dots */}
-                  <div className="flex gap-2 mt-4">
-                    {exercises.map((_, index) => (
-                      <button
-                        key={index}
-                        className={`w-3 h-3 rounded-full transition-all ${
-                          index === currentExerciseIndex
-                            ? 'bg-[#27AE60] w-8'
-                            : exercises[index].isFeito
-                            ? 'bg-green-300 dark:bg-green-600'
-                            : 'bg-gray-300 dark:bg-gray-600'
-                        }`}
-                        onClick={() => setCurrentExerciseIndex(index)}
-                      />
-                    ))}
-                  </div>
                 </div>
               ) : (
                 <>
