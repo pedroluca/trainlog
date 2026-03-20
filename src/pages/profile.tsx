@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../firebaseConfig'
 import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, addDoc } from 'firebase/firestore'
@@ -54,24 +54,24 @@ export function Profile() {
 
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
-  useEffect(() => {
-    const fetchDisabledDays = async () => {
-      try {
-        const workoutsRef = collection(db, 'treinos')
-        const querySnapshot = await getDocs(
-          query(workoutsRef, where('usuarioID', '==', usuarioID))
-        )
-        const days = querySnapshot.docs
-          .map((doc) => doc.data().dia as string)
-          .filter((day, index, self) => self.indexOf(day) === index)
-        setDisabledDays(days)
-      } catch (err) {
-        console.error('Erro ao buscar dias com treinos cadastrados:', err)
-      }
+  const fetchDisabledDays = useCallback(async () => {
+    try {
+      const workoutsRef = collection(db, 'treinos')
+      const querySnapshot = await getDocs(
+        query(workoutsRef, where('usuarioID', '==', usuarioID))
+      )
+      const days = querySnapshot.docs
+        .map((doc) => doc.data().dia as string)
+        .filter((day, index, self) => self.indexOf(day) === index)
+      setDisabledDays(days)
+    } catch (err) {
+      console.error('Erro ao buscar dias com treinos cadastrados:', err)
     }
-
-    fetchDisabledDays()
   }, [usuarioID])
+
+  useEffect(() => {
+    fetchDisabledDays()
+  }, [fetchDisabledDays])
   
   useEffect(() => {
     if (!usuarioID) {
@@ -716,6 +716,7 @@ export function Profile() {
               }
             }
             fetchWorkouts()
+            fetchDisabledDays()
           }}
           disabledDays={disabledDays} // Passa os dias desabilitados para o modal
         />
