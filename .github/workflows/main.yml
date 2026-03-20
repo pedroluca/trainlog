@@ -43,17 +43,15 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
 
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} repo
-          cd repo
+          cd dist
 
-          # 🔥 PUXA A DEPLOY REAL
-          git checkout deploy || git checkout -b deploy
-          git pull origin deploy || true
-
-          # 🔥 sincroniza com dist
-          rsync -av --delete ../dist/ .
-
+          git init
           git add .
-          git commit -m "Deploy build $(date +'%Y-%m-%d %H:%M:%S')" --allow-empty
 
-          git push origin deploy
+          git commit -m "Deploy build $(date +'%Y-%m-%d %H:%M:%S')"
+
+          git branch -M deploy
+
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
+          git push origin deploy --force
