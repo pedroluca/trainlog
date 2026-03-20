@@ -53,4 +53,4 @@ jobs:
 
           git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
 
-          git push origin deploy --force
+          git push origin deploy
