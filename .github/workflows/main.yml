@@ -48,8 +48,7 @@ jobs:
 
           git checkout main
 
-          git branch -D deploy || true
-          git checkout -b deploy
+          git checkout -B deploy
 
           git rm -rf . > /dev/null 2>&1 || true
 
@@ -58,4 +57,4 @@ jobs:
           git add .
           git commit -m "Deploy build $(date +'%Y-%m-%d %H:%M:%S')" --allow-empty
 
-          git push origin deploy
+          git push origin HEAD:deploy
