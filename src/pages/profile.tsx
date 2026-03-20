@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
@@ -426,7 +426,7 @@ export function Profile() {
               disabled={uploadingImage}
             />
           </div>
-          <h1 className="text-base md:text-lg -mb-4 md:-mb-0 font-bold text-gray-800 dark:text-gray-100">{username || 'Carregando...'}</h1>
+          <h1 className="text-base md:text-lg -mb-4 md:-mb-0 font-bold text-gray-800 dark:text-gray-100">{username ? '@' + username : ''}</h1>
         </div>
         
         {/* Personal Info Fields */}
@@ -577,34 +577,31 @@ export function Profile() {
         </div>
 
         {/* Workout Streak Section */}
-        <div className="md:col-span-2 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/20 dark:to-red-500/20 rounded-lg p-4 border border-orange-500/30 dark:border-orange-500/40">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-3">
-            <span className="text-2xl">🔥</span>
-            Sequência de Treinos
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 border border-gray-200 dark:border-[#404040]">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Sequência Atual</p>
-              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{currentStreak}</p>
+        <div className="md:col-span-2 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/20 dark:to-red-500/20 rounded-lg p-2 border border-orange-500/30 dark:border-orange-500/40">
+          <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 flex items-center justify-between gap-2 mb-2">
+            <div className='flex gap-2 items-center'>
+              <Flame className="text-orange-500" size={18} />
+              Sequência de Treinos
             </div>
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 border border-gray-200 dark:border-[#404040]">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Melhor Sequência</p>
-              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{longestStreak}</p>
-            </div>
-          </div>
-          
-          {isPremium ? (
+            {isPremium && (
             <button
               onClick={() => navigate('/profile/streak-calendar')}
-              className="w-full mt-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all"
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium py-1.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-all"
             >
-              📅 Ver Calendário Completo
+              <CalendarDays size={16} /> Calendário
             </button>
-          ) : (
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-3 text-center">
-              Complete seus treinos programados para manter a sequência!
-            </p>
           )}
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-1.5 border border-gray-200 dark:border-[#404040]">
+              <p className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-0.5">Atual</p>
+              <p className="text-xl font-bold text-orange-600 dark:text-orange-400">{currentStreak}</p>
+            </div>
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-1.5 border border-gray-200 dark:border-[#404040]">
+              <p className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-0.5">Recorde</p>
+              <p className="text-xl font-bold text-gray-800 dark:text-gray-100">{longestStreak}</p>
+            </div>
+          </div>
         </div>
         
         <div className="md:col-span-1 md:order-2 flex flex-col gap-2">
@@ -627,7 +624,7 @@ export function Profile() {
       </div>
 
       {/* Workouts Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 w-full max-w-lg md:max-w-2xl mt-8 border border-gray-200 dark:border-[#404040]">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 w-full max-w-lg md:max-w-2xl mt-4 border border-gray-200 dark:border-[#404040]">
         <div className="flex items-center justify-between mb-6 px-2">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Seus Treinos</h2>
           <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#1a1a1a] px-3 py-1 rounded-full">
@@ -700,7 +697,7 @@ export function Profile() {
       </div>
 
       {/* Logout Section */}
-      <div className="flex justify-center bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 w-full max-w-lg md:max-w-2xl mt-8 border border-gray-200 dark:border-[#404040]">
+      <div className="flex justify-center bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 w-full max-w-lg md:max-w-2xl mt-4 border border-gray-200 dark:border-[#404040]">
         <button
           onClick={handleLogout}
           className="w-full md:max-w-sm bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
