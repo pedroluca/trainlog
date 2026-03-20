@@ -46,15 +46,14 @@ jobs:
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} repo
           cd repo
 
-          git checkout main
+          # 🔥 PUXA A DEPLOY REAL
+          git checkout deploy || git checkout -b deploy
+          git pull origin deploy || true
 
-          git checkout -B deploy
-
-          git rm -rf . > /dev/null 2>&1 || true
-
+          # 🔥 sincroniza com dist
           rsync -av --delete ../dist/ .
 
           git add .
           git commit -m "Deploy build $(date +'%Y-%m-%d %H:%M:%S')" --allow-empty
 
-          git push origin HEAD:deploy
+          git push origin deploy
