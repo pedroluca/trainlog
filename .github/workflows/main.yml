@@ -16,12 +16,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install deps
         run: |
           rm -rf node_modules package-lock.json
-          npm install
+          npm install --include=optional --force
 
       - name: Build project
         run: npm run build
