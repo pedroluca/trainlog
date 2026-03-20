@@ -27,7 +27,7 @@ export function ShareWorkoutModal({ workoutId, onClose }: ShareWorkoutModalProps
           {shareCode}
         </div>
         {copied && (
-          <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[70] bg-green-500 dark:bg-green-600 text-white text-sm px-6 py-3 rounded-lg shadow-lg">
+          <div className="fixed bottom-32 left-1/2 transform -translate-x-1/2 z-[70] bg-green-500 dark:bg-green-600 text-white text-sm px-6 py-3 rounded-lg shadow-lg">
             Copiado para a área de transferência!
           </div>
         )}
