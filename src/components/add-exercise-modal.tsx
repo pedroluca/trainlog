@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, addDoc } from 'firebase/firestore'
+import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
 import { exerciseLibrary } from '../data/exercise-library'
@@ -105,7 +105,19 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
         exerciseData.progressiveSets = progressiveSets
       }
       
-      await addDoc(exercisesRef, exerciseData)
+      const newExercise = await addDoc(exercisesRef, exerciseData)
+
+      // Get current workout to append to exerciseOrder
+      const workoutRef = doc(db, 'treinos', workoutId)
+      const workoutSnap = await getDoc(workoutRef)
+      if (workoutSnap.exists()) {
+        const workoutData = workoutSnap.data()
+        const currentOrder = workoutData.exerciseOrder || []
+        await updateDoc(workoutRef, {
+          exerciseOrder: [...currentOrder, newExercise.id]
+        })
+      }
+
       onClose()
     } catch (err) {
       console.error('Erro ao adicionar exercício:', err)

@@ -7,6 +7,7 @@ export interface Treino {
   musculo: string
   usuarioID: string
   isTemplate?: boolean // Optional flag to mark template workouts
+  exerciseOrder?: string[] // Ordem customizada dos IDs dos exercícios
 }
 
 export async function getUserWorkouts(usuarioID: string): Promise<Treino[]> {

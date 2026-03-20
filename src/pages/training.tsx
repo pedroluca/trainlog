@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { TrainingCard, TrainingCardSkeleton } from '../components/training-card'
-import { ChevronLeft, ChevronRight, IterationCw, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Settings2 } from 'lucide-react'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
 import { getWorkoutExercises, Exercicio } from '../data/get-workout-exercises'
 import { Button } from '../components/button'
 import { AddWorkoutModal } from '../components/add-workout-modal'
 import { AddExerciseModal } from '../components/add-exercise-modal'
+import { WorkoutSettingsModal } from '../components/workout-settings-modal'
 import { WorkoutCompleteModal } from '../components/workout-complete-modal'
 import { useNavigate } from 'react-router-dom'
 import { collection, doc, getDocs, updateDoc } from 'firebase/firestore'
@@ -24,6 +25,7 @@ export function Training() {
   const [loading, setLoading] = useState(true)
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false)
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
@@ -61,7 +63,7 @@ export function Training() {
 
     if (workoutForDay) {
       try {
-        const exercisesData = await getWorkoutExercises(workoutForDay.id)
+        const exercisesData = await getWorkoutExercises(workoutForDay.id, workoutForDay.exerciseOrder)
         setExercises(exercisesData)
         if (!preserveIndex) {
           setCurrentExerciseIndex(0) // Reset to first exercise only when changing days
@@ -213,27 +215,21 @@ export function Training() {
         ) : (
           selectedWorkout ? (
             <>
-              <h3 className="text-2xl w-full self-start border-b border-gray-400 font-semibold pb-2 dark:text-gray-300">Dia de: {selectedWorkout.musculo}</h3>
-              <h3 className="text-xl mt-4 w-full font-semibold flex justify-between items-center">
+              <div className="flex justify-between items-center w-full border-b border-gray-400 pb-2">
+                <h3 className="text-2xl font-semibold dark:text-gray-300">
+                  Dia de: {selectedWorkout.musculo}
+                </h3>
+                <button
+                  onClick={() => setIsSettingsModalOpen(true)}
+                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#404040] text-gray-600 dark:text-gray-300 transition-colors"
+                  title="Ajustes do Treino"
+                >
+                  <Settings2 size={24} />
+                </button>
+              </div>
+              {/* <h3 className="text-xl mt-4 w-full font-semibold flex justify-between items-center">
                 <span className='dark:text-gray-300'>Exercícios</span>
-    
-                <section className="flex gap-2">
-                  <Button
-                    className="bg-red-500 border-1 border-gray-500 hover:bg-red-600 text-white font-bold flex gap-2 items-center"
-                    onClick={() => setIsResetModalOpen(true)} // Abre o modal de confirmação
-                  >
-                    <IterationCw />
-                  </Button>
-    
-                  <Button
-                    className="bg-gray-200 border-1 border-gray-400 hover:bg-gray-400 flex gap-2 items-center"
-                    buttonTextColor="text-gray-500 hover:text-white"
-                    onClick={() => setIsExerciseModalOpen(true)}
-                  >
-                    <Plus />
-                  </Button>
-                </section>
-              </h3>
+              </h3> */}
               {exercises.length > 0 ? (
                 <div className='w-full lg:w-1/2 flex flex-col items-center'>
                   {/* Navigation arrows */}
@@ -346,6 +342,20 @@ export function Training() {
             fetchExercisesForDay(true)
           }}
           workoutId={selectedWorkout.id}
+        />
+      )}
+
+      {isSettingsModalOpen && selectedWorkout && (
+        <WorkoutSettingsModal
+          workout={selectedWorkout}
+          exercises={exercises}
+          onClose={() => setIsSettingsModalOpen(false)}
+          onSave={() => {
+            setIsSettingsModalOpen(false)
+            fetchWorkouts()
+          }}
+          onResetExercises={() => setIsResetModalOpen(true)}
+          onAddExercise={() => setIsExerciseModalOpen(true)}
         />
       )}
 
