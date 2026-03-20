@@ -297,7 +297,7 @@ export function Progress() {
                         padding: '10px'
                       }}
                       labelStyle={{ color: '#333', fontWeight: 'bold' }}
-                      formatter={(value: number) => [`${value}kg`, 'Peso']}
+                      formatter={(value: any) => [`${value}kg`, 'Peso']}
                     />
                     <Area 
                       type="monotone" 
