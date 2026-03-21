@@ -434,6 +434,12 @@ export function Profile() {
           <div className="col-span-full py-1">
             <h1 className="text-2xl lg:text-3xl text-center md:text-left font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
           </div>
+          <div className="col-span-2 md:col-span-full bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Email</p>
+            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
+              {email ? email : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>}
+            </p>
+          </div>
           <div className="col-span-2 md:col-span-1 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Nascimento</p>
             <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
@@ -577,7 +583,7 @@ export function Profile() {
         </div>
 
         {/* Workout Streak Section */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner">
+        <div className="md:col-span-3 lg:col-span-5 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm md:text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 uppercase tracking-wide">
               <Flame className="text-orange-500" size={20} />
@@ -604,7 +610,7 @@ export function Profile() {
           </div>
         </div>
         
-        <div className="lg:col-span-4 flex flex-col md:flex-row lg:flex-col gap-3">
+        <div className="lg:col-span-4 md:order-2 flex flex-col lg:flex-col gap-3">
           <button
             onClick={() => navigate('/profile/settings')}
             className="flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
