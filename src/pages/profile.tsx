@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays, Minus } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
@@ -377,7 +377,7 @@ export function Profile() {
           <Pencil size={16} />
         </button>
         {/* Avatar */}
-        <div className="md:col-span-1 lg:col-span-3 flex flex-col items-center relative">
+        <div className="md:col-span-1 lg:col-span-4 flex flex-col items-center relative">
           {/* Plan Badge */}
           {isPremium ? (
             <div className="absolute -top-6 md:-top-2 lg:top-0 left-1/2 -translate-x-1/2 md:-translate-x-0 md:left-0 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center z-10 w-max">
@@ -430,7 +430,7 @@ export function Profile() {
         </div>
         
         {/* Personal Info Fields */}
-        <div className="md:col-span-3 lg:col-span-9 grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="md:col-span-3 lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-3">
           <div className="col-span-full py-1">
             <h1 className="text-2xl lg:text-3xl text-center md:text-left font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
           </div>
@@ -515,9 +515,9 @@ export function Profile() {
                     <button
                       type="button"
                       onClick={() => setEditedAltura((prev) => Math.max(0.5, parseFloat(prev || '0') - 0.01).toFixed(2))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
                     >
-                      -
+                      <Minus size={16} />
                     </button>
                     <input
                       type="number"
@@ -530,9 +530,9 @@ export function Profile() {
                     <button
                       type="button"
                       onClick={() => setEditedAltura((prev) => Math.min(3, parseFloat(prev || '0') + 0.01).toFixed(2))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
                     >
-                      +
+                      <Plus size={16} />
                     </button>
                   </div>
                 </div>
@@ -542,9 +542,9 @@ export function Profile() {
                     <button
                       type="button"
                       onClick={() => setEditedPeso((prev) => Math.max(20, parseFloat(prev || '0') - 0.1).toFixed(1))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
                     >
-                      -
+                      <Minus size={16} />
                     </button>
                     <input
                       type="number"
@@ -557,9 +557,9 @@ export function Profile() {
                     <button
                       type="button"
                       onClick={() => setEditedPeso((prev) => Math.min(500, parseFloat(prev || '0') + 0.1).toFixed(1))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
                     >
-                      +
+                      <Plus size={16} />
                     </button>
                   </div>
                 </div>
@@ -583,7 +583,7 @@ export function Profile() {
         </div>
 
         {/* Workout Streak Section */}
-        <div className="md:col-span-3 lg:col-span-5 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner">
+        <div className="md:col-span-4 lg:col-span-8 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm md:text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 uppercase tracking-wide">
               <Flame className="text-orange-500" size={20} />
@@ -610,7 +610,7 @@ export function Profile() {
           </div>
         </div>
         
-        <div className="lg:col-span-4 md:order-2 flex flex-col lg:flex-col gap-3">
+        <div className="md:col-span-4 md:order-2 flex flex-col md:flex-row lg:flex-col gap-3">
           <button
             onClick={() => navigate('/profile/settings')}
             className="flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
