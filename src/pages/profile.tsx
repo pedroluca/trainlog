@@ -371,7 +371,7 @@ export function Profile() {
         {/* Edit Profile Button */}
         <button
           onClick={handleOpenEditProfile}
-          className="absolute top-4 right-4 p-2 rounded-full bg-gray-50 dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-300 transition-colors shadow-sm"
+          className="cursor-pointer absolute top-4 right-4 p-2 rounded-full bg-gray-50 dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-300 transition-colors shadow-sm"
           title="Editar perfil"
         >
           <Pencil size={16} />
@@ -492,7 +492,7 @@ export function Profile() {
               <>
                 <button
                   onClick={() => setIsEditingMetrics(true)}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                  className="cursor-pointer flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                 >
                   <Plus size={16} />
                   {altura > 0 && peso > 0 ? 'Nova Medição' : 'Adicionar Métricas'}
@@ -500,7 +500,7 @@ export function Profile() {
                 {isPremium && altura > 0 && peso > 0 && (
                   <button
                     onClick={() => navigate('/profile/body-metrics')}
-                    className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                    className="cursor-pointer flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                   >
                     <Activity size={16} />
                     Ver Histórico
@@ -592,7 +592,7 @@ export function Profile() {
             {isPremium && (
             <button
               onClick={() => navigate('/profile/streak-calendar')}
-              className="bg-white/50 dark:bg-black/20 hover:bg-white dark:hover:bg-black/40 text-orange-600 dark:text-orange-400 font-bold py-1.5 px-3 rounded-lg text-xs md:text-sm flex items-center gap-1.5 transition-all outline outline-orange-500/20"
+              className="cursor-pointer bg-white/50 dark:bg-black/20 hover:bg-white dark:hover:bg-black/40 text-orange-600 dark:text-orange-400 font-bold py-1.5 px-3 rounded-lg text-xs md:text-sm flex items-center gap-1.5 transition-all outline outline-orange-500/20"
             >
               <CalendarDays size={14} /> Calendário
             </button>
@@ -613,7 +613,7 @@ export function Profile() {
         <div className="md:col-span-4 md:order-2 flex flex-col md:flex-row lg:flex-col gap-3">
           <button
             onClick={() => navigate('/profile/settings')}
-            className="flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
+            className="cursor-pointer flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
           >
             <Settings size={20} className="text-gray-500 group-hover:rotate-45 transition-transform" />
             Configurações
@@ -621,7 +621,7 @@ export function Profile() {
           
           <button
             onClick={() => navigate('/profile/log')}
-            className="flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
+            className="cursor-pointer flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
           >
             <FileText size={20} className="text-gray-500 group-hover:-rotate-12 transition-transform" />
             Log atividades
@@ -706,7 +706,7 @@ export function Profile() {
       <div className="flex justify-center w-full max-w-lg md:max-w-3xl lg:max-w-5xl mt-6 mb-2">
         <button
           onClick={handleLogout}
-          className="w-full md:w-auto md:min-w-[250px] bg-white dark:bg-[#1e1e1e] hover:bg-red-50 dark:hover:bg-red-900/10 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-900/30 font-bold py-3.5 px-6 rounded-xl transition-all shadow-sm hover:shadow text-lg tracking-wide flex justify-center items-center gap-2"
+          className="cursor-pointer w-full md:w-auto md:min-w-[250px] bg-white dark:bg-[#1e1e1e] hover:bg-red-50 dark:hover:bg-red-900/10 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-900/30 font-bold py-3.5 px-6 rounded-xl transition-all shadow-sm hover:shadow text-lg tracking-wide flex justify-center items-center gap-2"
         >
           Sair da Conta
         </button>
@@ -864,7 +864,7 @@ export function Profile() {
       )}
 
       {/* Footer Info Section */}
-      <div className="mt-12 text-center space-y-2 pb-8">
+      <div className="mt-12 text-center space-y-2 pb-8 lg:pb-30">
         <p className="text-xs text-gray-500 dark:text-gray-400">
           © {new Date().getFullYear()} TrainLog. All rights reserved.
         </p>

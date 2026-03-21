@@ -68,7 +68,7 @@ export function Header() {
 
   return (
     <header className='bg-gradient-to-r from-[#27AE60] to-[#229954] text-white shadow-lg'>
-      <main className={`py-4 md:py-6 px-4 flex items-center justify-between border-b border-white/10`}>
+      <main className={`py-4 md:py-6 lg:py-2 px-4 flex items-center justify-between border-b border-white/10`}>
         <Link 
           to='/' 
           className='text-3xl md:text-4xl font-bold tracking-tight hover:scale-105 transition-transform duration-200'
