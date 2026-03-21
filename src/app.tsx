@@ -13,7 +13,11 @@ import { Progress } from './pages/progress'
 import { BodyMetrics } from './pages/body-metrics'
 import { ResetPassword } from './pages/reset-password'
 import { AdminLogin } from './pages/admin-login'
-import { AdminDashboard } from './pages/admin-dashboard'
+import { AdminLayout } from './layouts/admin-layout'
+import { AdminOverview } from './pages/admin/overview'
+import { AdminUsers } from './pages/admin/users'
+import { AdminActivities } from './pages/admin/activities'
+import { AdminBugs } from './pages/admin/bugs'
 import { StreakCalendar } from './pages/streak-calendar'
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
@@ -36,27 +40,21 @@ export function App() {
       if (!usuarioID) return
       
       try {
-        // Obter a última versão do sistema (real source of truth)
         const sistemaDoc = await getDoc(doc(db, 'sistema', 'info'))
         const lastVersion = sistemaDoc.data()?.lastVersion
         if (!lastVersion) return
         
-        // Obter a última versão que este usuário viu
         const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
         const firestoreVersion = userDoc.data()?.lastSeenVersion
         
         if (firestoreVersion !== lastVersion) {
-          // O usuário ainda não viu a versão mais recente registrada no banco
           if (getVersion() === lastVersion || currentRelease.version === lastVersion) {
-            // Se o bundle atual já é a versão nova (ou se currentRelease bate), mostra normal
             setShowWhatsNew(true)
             setForceUpdateVersion(null)
           } else {
-            // Se o bundle atual está velho, pede pra atualizar
             setForceUpdateVersion(lastVersion)
           }
         } else {
-          // Já viu. Manter o localStorage em sync pra fallback seguro
           if (localStorage.getItem('lastSeenVersion') !== lastVersion) {
             localStorage.setItem('lastSeenVersion', lastVersion)
           }
@@ -79,8 +77,6 @@ export function App() {
         await resetPreviousDaysExercises(usuarioID)
         
         await checkAndResetStreakIfMissed(usuarioID)
-        
-        console.log('✅ Streak checks completed')
       } catch (error) {
         console.error('❌ Error in streak initialization:', error)
       }
@@ -124,7 +120,12 @@ export function App() {
           </Route>
 
           <Route path='/admin' element={<AdminLogin />} />
-          <Route path='/admin/dashboard' element={<AdminDashboard />} />
+          <Route path='/admin/dashboard' element={<AdminLayout />}>
+            <Route index element={<AdminOverview />} />
+            <Route path='users' element={<AdminUsers />} />
+            <Route path='activities' element={<AdminActivities />} />
+            <Route path='bugs' element={<AdminBugs />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
