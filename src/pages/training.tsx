@@ -155,7 +155,7 @@ export function Training() {
           updateStreak(usuarioID).then(async (newStreak) => {
             try {
               const userDocRef = doc(db, 'usuarios', usuarioID)
-              const todayStr = new Date().toISOString().slice(0, 10)
+              const todayStr = new Date().toLocaleDateString('en-CA')
               await updateDoc(userDocRef, { lastWorkoutDate: todayStr })
               const event = new CustomEvent('streakUpdated', { 
                 detail: { newStreak, lastWorkoutDate: todayStr } 
@@ -192,12 +192,12 @@ export function Training() {
   const currentExercise = exercises[currentExerciseIndex]
 
   return (
-    <main className="flex flex-col items-center h-[calc(100dvh-74px)] md:h-[calc(100dvh-89px)] overflow-hidden bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64">
-      <div className="flex items-center justify-center w-full max-w-md mb-2 flex-shrink-0">
+    <main className="flex flex-col items-center h-[calc(100dvh-74px)] md:h-[calc(100dvh-89px)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
+      <div className="flex items-center justify-center w-full max-w-3xl mb-2 flex-shrink-0">
         <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handlePreviousDay}>
           <ChevronLeft />
         </button>
-        <h2 className="text-xl w-[60%] text-center font-bold capitalize text-gray-800 dark:text-gray-100">{daysOfWeek[currentDayIndex]}</h2>
+        <h2 className="text-xl w-full max-w-[60%] text-center font-bold capitalize text-gray-800 dark:text-gray-100">{daysOfWeek[currentDayIndex]}</h2>
         <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handleNextDay}>
           <ChevronRight />
         </button>
@@ -213,24 +213,21 @@ export function Training() {
           </>
         ) : (
           selectedWorkout ? (
-            <>
-              <div className="flex justify-between items-center w-full border-b border-gray-400 pb-2 mb-2 flex-shrink-0">
-                <h3 className="text-2xl font-semibold dark:text-gray-300">
-                  Dia de: {selectedWorkout.musculo}
+            <div className="w-full max-w-3xl flex flex-col flex-1 overflow-hidden">
+              <div className="flex justify-between items-center w-full border-b border-gray-300 dark:border-gray-700 pb-3 mb-4 flex-shrink-0">
+                <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100">
+                  Dia de: <span className="text-emerald-600 dark:text-emerald-400">{selectedWorkout.musculo}</span>
                 </h3>
                 <button
                   onClick={() => setIsSettingsModalOpen(true)}
-                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#404040] text-gray-600 dark:text-gray-300 transition-colors"
+                  className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-[#1e1e1e] text-gray-600 dark:text-gray-300 transition-colors shadow-sm border border-transparent hover:border-gray-200 dark:hover:border-[#333]"
                   title="Ajustes do Treino"
                 >
                   <Settings2 size={24} />
                 </button>
               </div>
-              {/* <h3 className="text-xl mt-4 w-full font-semibold flex justify-between items-center">
-                <span className='dark:text-gray-300'>Exercícios</span>
-              </h3> */}
               {exercises.length > 0 ? (
-                <div className='w-full lg:w-1/2 pb-24 flex flex-col items-center flex-1 overflow-hidden'>
+                <div className='w-full pb-24 flex flex-col items-center flex-1 overflow-hidden'>
                   {/* Navigation arrows & Progress */}
                   <div className="flex items-center justify-between w-full mb-3 flex-shrink-0">
                     <button
@@ -307,18 +304,18 @@ export function Training() {
                   <p className="text-gray-700 dark:text-gray-300 mt-4 text-center">Desculpe, você ainda não tem exercícios registrados para este treino!</p>
                 </>
               )}
-            </>
+            </div>
           ) : (
-            <>
-              <p className="text-gray-700 dark:text-gray-300">Desculpe, você não tem treinos registrados para este dia!</p>
+            <div className="w-full max-w-3xl flex flex-col items-center justify-center flex-1">
+              <p className="text-gray-700 dark:text-gray-300 text-lg">Desculpe, você não tem treinos registrados para este dia!</p>
               <Button
-                className="bg-gray-200 dark:bg-gray-700 border-1 border-gray-400 dark:border-gray-600 hover:bg-gray-400 dark:hover:bg-gray-600 mt-4"
-                buttonTextColor="text-gray-500 dark:text-gray-300 hover:text-white"
+                className="bg-white dark:bg-[#1e1e1e] shadow-sm border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#252525] mt-6 px-8 py-3 rounded-xl transition-all"
+                buttonTextColor="text-gray-800 dark:text-white font-bold"
                 onClick={() => setIsWorkoutModalOpen(true)}
               >
                 Adicionar treino
               </Button>
-            </>
+            </div>
           )
         )
       }

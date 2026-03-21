@@ -187,19 +187,22 @@ export async function resetPreviousDaysExercises(usuarioID: string): Promise<voi
       
       if (workoutDay === todayName) continue
       
-      const exercises = workoutData.exercises || []
-      const hasCheckedExercises = exercises.some((ex: { checked?: boolean }) => ex.checked === true)
+      const exercisesRef = collection(db, 'treinos', docSnap.id, 'exercicios')
+      const exercisesSnap = await getDocs(exercisesRef)
       
-      if (hasCheckedExercises) {
-        const resetExercises = exercises.map((ex: { checked?: boolean }) => ({
-          ...ex,
-          checked: false
-        }))
-        
-        await updateDoc(doc(db, 'treinos', docSnap.id), {
-          exercises: resetExercises
-        })
-        
+      let hasUpdates = false
+      const updatePromises: Promise<void>[] = []
+      
+      for (const exDoc of exercisesSnap.docs) {
+        const exData = exDoc.data()
+        if (exData.isFeito === true) {
+          hasUpdates = true
+          updatePromises.push(updateDoc(exDoc.ref, { isFeito: false }))
+        }
+      }
+      
+      if (hasUpdates) {
+        await Promise.all(updatePromises)
         resetCount++
       }
     }

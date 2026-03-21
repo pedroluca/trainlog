@@ -271,8 +271,10 @@ export function TrainingCard(props: TrainingCardProps) {
 
   return (
     <div
-      className={`shadow-md md:w-xl relative rounded-lg overflow-hidden p-6 mx-2 transition-all min-h-[375px] max-h-[500px] md:min-h-[700px] flex flex-col ${
-        isFinished ? 'bg-[#27AE60] border-green-400' : 'bg-white dark:bg-[#2d2d2d] border-gray-200 dark:border-[#404040]'
+      className={`shadow-lg lg:shadow-xl w-full max-w-sm md:max-w-xl lg:max-w-2xl relative rounded-2xl overflow-hidden p-6 md:p-8 mx-auto transition-all duration-300 min-h-[375px] max-h-[500px] md:max-h-[600px] flex flex-col ${
+        isFinished 
+          ? 'bg-gradient-to-br from-[#27AE60] to-[#1E8449] border-green-500 shadow-green-900/20' 
+          : 'bg-white dark:bg-[#1e1e1e] border border-gray-100 dark:border-[#2a2a2a] shadow-black/5 dark:shadow-black/20'
       }`}
     >
       <button

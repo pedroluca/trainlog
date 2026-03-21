@@ -365,34 +365,34 @@ export function Profile() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
+    <main className="flex flex-col items-center justify-start min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-24 md:py-8">
       {/* Profile Card */}
-      <div className="relative grid grid-cols-1 md:grid-cols-3 gap-2 bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 pt-8 md:pt-4 w-full max-w-lg md:max-w-2xl border border-gray-200 dark:border-[#404040]">
+      <div className="relative grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-4 bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 pt-10 md:pt-6 w-full max-w-lg md:max-w-3xl lg:max-w-5xl border border-gray-100 dark:border-[#2a2a2a] transition-all">
         {/* Edit Profile Button */}
         <button
           onClick={handleOpenEditProfile}
-          className="absolute top-3 right-3 p-1.5 rounded-full bg-gray-100 dark:bg-[#404040] hover:bg-gray-200 dark:hover:bg-[#505050] text-gray-500 dark:text-gray-300 transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full bg-gray-50 dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-300 transition-colors shadow-sm"
           title="Editar perfil"
         >
-          <Pencil size={15} />
+          <Pencil size={16} />
         </button>
         {/* Avatar */}
-        <div className="flex flex-col items-center relative">
+        <div className="md:col-span-1 lg:col-span-3 flex flex-col items-center relative">
           {/* Plan Badge */}
           {isPremium ? (
-            <div className="absolute -top-4 md:top-0 left-0 bg-gradient-to-br from-amber-400 to-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center">
-              <span className="w-full text-center">PREMIUM</span>
+            <div className="absolute -top-6 md:-top-2 lg:top-0 left-1/2 -translate-x-1/2 md:-translate-x-0 md:left-0 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center z-10 w-max">
+              <span>PREMIUM</span>
             </div>
           ) : (
-            <div className="absolute -top-4 md:top-0 left-0 bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center" onClick={() => handleOpenUpgradeModal()}>
-              <span className="w-full text-center">FREE</span>
+            <div className="absolute -top-6 md:-top-2 lg:top-0 left-1/2 -translate-x-1/2 md:-translate-x-0 md:left-0 bg-gradient-to-r from-gray-400 to-gray-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg flex items-center z-10 w-max cursor-pointer hover:scale-105 transition-transform" onClick={() => handleOpenUpgradeModal()}>
+              <span>FREE</span>
             </div>
           )}
 
           {/* Avatar Circle with Image Upload */}
-          <div className="relative mb-4 md:mt-10">
-            <div className={`w-20 md:w-36 h-20 md:h-36 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full md:rounded-2xl flex items-center justify-center text-white text-3xl font-bold overflow-hidden ${
-              isPremium ? 'ring-4 ring-amber-400 dark:ring-amber-500 shadow-lg shadow-amber-400/50' : ''
+          <div className="relative mb-3 md:mt-6 w-max mx-auto">
+            <div className={`w-24 md:w-32 lg:w-40 h-24 md:h-32 lg:h-40 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl lg:text-5xl font-bold overflow-hidden shadow-inner ${
+              isPremium ? 'ring-4 ring-amber-400 dark:ring-amber-500 shadow-lg shadow-amber-400/40 relative z-0' : 'ring-4 ring-white dark:ring-[#1e1e1e] relative z-0'
             }`}>
               {photoURL ? (
                 <img 
@@ -408,13 +408,13 @@ export function Profile() {
             {/* Edit Icon Button */}
             <label 
               htmlFor="profile-image-upload"
-              className="absolute bottom-1 -right-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-1.5 cursor-pointer shadow-lg transition-colors"
+              className="absolute bottom-0 right-0 lg:bottom-2 lg:right-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 cursor-pointer shadow-lg shadow-blue-500/30 hover:scale-110 transition-all z-10"
               title="Alterar foto de perfil"
             >
               {uploadingImage ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <Camera size={16} />
+                <Camera size={18} />
               )}
             </label>
             <input
@@ -426,25 +426,25 @@ export function Profile() {
               disabled={uploadingImage}
             />
           </div>
-          <h1 className="text-base md:text-lg -mb-4 md:-mb-0 font-bold text-gray-800 dark:text-gray-100">{username ? '@' + username : ''}</h1>
+          <h1 className="text-sm md:text-base lg:text-lg font-bold text-gray-800 dark:text-gray-100">{username ? '@' + username : ''}</h1>
         </div>
         
         {/* Personal Info Fields */}
-        <div className="md:col-span-2 grid grid-cols-2 gap-2">
-          <div className="col-span-full py-2">
-            <h1 className="text-2xl text-center md:text-left font-bold text-gray-800 dark:text-gray-100">{nome || 'Carregando...'}</h1>
+        <div className="md:col-span-3 lg:col-span-9 grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="col-span-full py-1">
+            <h1 className="text-2xl lg:text-3xl text-center md:text-left font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
           </div>
-          <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Data de Nascimento</p>
+          <div className="col-span-2 md:col-span-1 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Nascimento</p>
             <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
               {dataNascimento ? new Date(dataNascimento + 'T00:00:00').toLocaleDateString('pt-BR') : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>}
             </p>
           </div>
-          <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Instagram</p>
+          <div className="col-span-2 md:col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Instagram</p>
             <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
               {instagram ? (
-                <span className="text-[#27AE60]">@{instagram.replace(/^@/, '')}</span>
+                <span className="text-blue-500 dark:text-blue-400 hover:underline cursor-pointer">@{instagram.replace(/^@/, '')}</span>
               ) : (
                 <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>
               )}
@@ -452,30 +452,30 @@ export function Profile() {
           </div>
 
           {/* Body Metrics as info fields */}
-          <div className="col-span-full grid grid-cols-2 md:grid-cols-3 gap-2">
-            <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Altura</p>
-              <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
-                {altura > 0 ? `${(altura / 100).toFixed(2)}m` : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">—</span>}
+          <div className="col-span-full grid grid-cols-3 gap-3 mt-1">
+            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wide font-bold">Altura</p>
+              <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300">
+                {altura > 0 ? `${(altura / 100).toFixed(2)}m` : <span className="text-emerald-400/50 font-normal text-sm">—</span>}
               </p>
             </div>
-            <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Peso</p>
-              <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
-                {peso > 0 ? `${peso.toFixed(1)}kg` : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">—</span>}
+            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wide font-bold">Peso</p>
+              <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300">
+                {peso > 0 ? `${peso.toFixed(1)}kg` : <span className="text-emerald-400/50 font-normal text-sm">—</span>}
               </p>
             </div>
-            <div className="col-span-2 md:col-span-1 flex md:flex-col gap-4 md:gap-1 items-center md:items-start justify-between bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-4 py-2 border border-gray-200 dark:border-[#404040]">
-              <p className="text-xs text-gray-500 dark:text-gray-400">IMC</p>
+            <div className="flex flex-col justify-between bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 uppercase tracking-wide font-bold">IMC</p>
               {altura > 0 && peso > 0 ? (
-                <div className='flex md:w-full justify-between items-center flex-1'>
-                  <p className="text-base font-semibold text-gray-800 dark:text-gray-100">{calculateIMC(peso, altura).toFixed(1)}</p>
-                  <p className={`text-xs font-medium mt-0.5 ${getIMCStatus(calculateIMC(peso, altura)).color}`}>
+                <div className='flex flex-col items-start'>
+                  <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300 leading-tight">{calculateIMC(peso, altura).toFixed(1)}</p>
+                  <p className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${getIMCStatus(calculateIMC(peso, altura)).color}`}>
                     {getIMCStatus(calculateIMC(peso, altura)).label}
                   </p>
                 </div>
               ) : (
-                <p className="text-gray-400 dark:text-gray-500 font-normal text-sm">—</p>
+                <p className="text-emerald-400/50 font-normal text-sm mt-auto">—</p>
               )}
             </div>
           </div>
@@ -577,57 +577,57 @@ export function Profile() {
         </div>
 
         {/* Workout Streak Section */}
-        <div className="md:col-span-2 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/20 dark:to-red-500/20 rounded-lg p-2 border border-orange-500/30 dark:border-orange-500/40">
-          <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 flex items-center justify-between gap-2 mb-2">
-            <div className='flex gap-2 items-center'>
-              <Flame className="text-orange-500" size={18} />
-              Sequência de Treinos
-            </div>
+        <div className="lg:col-span-5 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm md:text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 uppercase tracking-wide">
+              <Flame className="text-orange-500" size={20} />
+              Sequência
+            </h3>
             {isPremium && (
             <button
               onClick={() => navigate('/profile/streak-calendar')}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium py-1.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-all"
+              className="bg-white/50 dark:bg-black/20 hover:bg-white dark:hover:bg-black/40 text-orange-600 dark:text-orange-400 font-bold py-1.5 px-3 rounded-lg text-xs md:text-sm flex items-center gap-1.5 transition-all outline outline-orange-500/20"
             >
-              <CalendarDays size={16} /> Calendário
+              <CalendarDays size={14} /> Calendário
             </button>
           )}
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-1.5 border border-gray-200 dark:border-[#404040]">
-              <p className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-0.5">Atual</p>
-              <p className="text-xl font-bold text-orange-600 dark:text-orange-400">{currentStreak}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">
+              <p className="text-xs uppercase tracking-wider font-bold text-orange-800/60 dark:text-orange-200/50 mb-1">Atual</p>
+              <p className="text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400">{currentStreak}</p>
             </div>
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-1.5 border border-gray-200 dark:border-[#404040]">
-              <p className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-0.5">Recorde</p>
-              <p className="text-xl font-bold text-gray-800 dark:text-gray-100">{longestStreak}</p>
+            <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">
+              <p className="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 mb-1">Recorde</p>
+              <p className="text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100">{longestStreak}</p>
             </div>
           </div>
         </div>
         
-        <div className="md:col-span-1 md:order-2 flex flex-col gap-2">
+        <div className="lg:col-span-4 flex flex-col md:flex-row lg:flex-col gap-3">
           <button
             onClick={() => navigate('/profile/settings')}
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md flex items-center justify-center gap-2"
+            className="flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
           >
-            <Settings size={20} />
+            <Settings size={20} className="text-gray-500 group-hover:rotate-45 transition-transform" />
             Configurações
           </button>
           
           <button
             onClick={() => navigate('/profile/log')}
-            className="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md flex items-center justify-center gap-2"
+            className="flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
           >
-            <FileText size={20} />
-            Log de atividades
+            <FileText size={20} className="text-gray-500 group-hover:-rotate-12 transition-transform" />
+            Log atividades
           </button>
         </div>
       </div>
 
       {/* Workouts Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 w-full max-w-lg md:max-w-2xl mt-4 border border-gray-200 dark:border-[#404040]">
-        <div className="flex items-center justify-between mb-6 px-2">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Seus Treinos</h2>
-          <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#1a1a1a] px-3 py-1 rounded-full">
+      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-5xl mt-6 border border-gray-100 dark:border-[#2a2a2a]">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Meus Treinos</h2>
+          <span className="text-sm font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#2a2a2a] px-4 py-1.5 rounded-full border border-gray-200 dark:border-[#333]">
             {workouts.length} {workouts.length === 1 ? 'treino' : 'treinos'}
           </span>
         </div>
@@ -649,15 +649,15 @@ export function Profile() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workouts.map((workout) => (
               <div
                 key={workout.id}
-                className="bg-gray-50 dark:bg-[#1a1a1a] hover:bg-gray-100 dark:hover:bg-[#252525] border border-gray-200 dark:border-[#404040] rounded-lg p-4 transition-colors"
+                className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] hover:border-blue-500 dark:hover:border-blue-500 rounded-xl p-5 transition-all shadow-sm hover:shadow-md flex flex-col justify-between"
               >
                 {/* Info Section */}
-                <div className="mb-3">
-                  <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-1">
+                <div className="mb-4">
+                  <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">
                     {workout.dia}
                   </h3>
                   <p className="text-base text-gray-600 dark:text-gray-400">
@@ -697,10 +697,10 @@ export function Profile() {
       </div>
 
       {/* Logout Section */}
-      <div className="flex justify-center bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 w-full max-w-lg md:max-w-2xl mt-4 border border-gray-200 dark:border-[#404040]">
+      <div className="flex justify-center w-full max-w-lg md:max-w-3xl lg:max-w-5xl mt-6 mb-2">
         <button
           onClick={handleLogout}
-          className="w-full md:max-w-sm bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
+          className="w-full md:w-auto md:min-w-[250px] bg-white dark:bg-[#1e1e1e] hover:bg-red-50 dark:hover:bg-red-900/10 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-900/30 font-bold py-3.5 px-6 rounded-xl transition-all shadow-sm hover:shadow text-lg tracking-wide flex justify-center items-center gap-2"
         >
           Sair da Conta
         </button>

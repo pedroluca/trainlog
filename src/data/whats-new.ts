@@ -21,48 +21,34 @@ export type WhatsNewRelease = {
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
-  version: '1.15.0',
-  date: '2025-11-03',
-  title: 'Novidades da Versão 1.15.0',
+  version: '1.15.5',
+  date: '2026-03-21',
+  title: 'Novidades da Versão 1.15.5',
   items: [
     {
-      id: 'progressive-weight',
-      icon: '📈',
-      title: 'Peso Progressivo (Séries Piramidais)',
-      description: 'Configure cada série com peso e repetições diferentes! Perfeito para treinos piramidais (ex: Série 1: 15 reps × 15kg, Série 2: 13 reps × 17kg, Série 3: 10 reps × 20kg)',
+      id: 'ui-improvements',
+      icon: '✨',
+      title: 'Novidade Visual',
+      description: 'Aprimoramos o design do aplicativo nas telas de Perfil e Treino. Agora os grids foram refinados para dispositivos tablet e a experiência está ainda mais fluída e adaptável!',
       action: {
-        label: 'Adicionar Exercício',
-        route: '/training'
-      }
-    },
-    {
-      id: 'exercise-notes',
-      icon: '📝',
-      title: 'Notas nos Exercícios',
-      description: 'Adicione notas personalizadas em cada exercício! Anote lembretes sobre forma, técnica ou qualquer observação importante',
-      action: {
-        label: 'Ver Treinos',
-        route: '/training'
-      }
-    },
-    {
-      id: 'workout-streak',
-      icon: '🔥',
-      title: 'Sequência de Treinos (Streak)',
-      description: 'Mantenha sua motivação! Acompanhe sua sequência de dias consecutivos de treino',
-      action: {
-        label: 'Ver no Perfil',
+        label: 'Ver Perfil',
         route: '/profile'
       }
     },
     {
-      id: 'premium-calendar',
-      icon: '📅',
-      title: 'Calendário de Treinos Premium',
-      description: 'Visualize todo seu histórico de treinos em um calendário mensal interativo (exclusivo para usuários premium)',
+      id: 'streak-bugfix',
+      icon: '🛠️',
+      title: 'Correção no Contador de Sequência',
+      description: 'Corrigimos um erro onde noites de virada ou a adição de novos exercícios no mesmo dia faziam você "perder" sua sequência diária (streak). Seu progresso agora está blindado contra fuso-horários independentemente de edições no final do dia!'
+    },
+    {
+      id: 'progressive-weight',
+      icon: '📈',
+      title: 'Peso Progressivo (Lembrete)',
+      description: 'Lembrando que na versão anterior trouxemos treinos piramidais para configurar cada série com peso diferente!',
       action: {
-        label: 'Ver Calendário',
-        route: '/profile/streak-calendar'
+        label: 'Adicionar Caminho',
+        route: '/training'
       }
     }
   ]
