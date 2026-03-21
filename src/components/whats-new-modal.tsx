@@ -8,9 +8,11 @@ import { db } from '../firebaseConfig'
 type WhatsNewModalProps = {
   isOpen: boolean
   onClose: () => void
+  forceUpdateVersion?: string | null
+  systemVersion?: string | null
 }
 
-export function WhatsNewModal({ isOpen, onClose }: WhatsNewModalProps) {
+export function WhatsNewModal({ isOpen, onClose, forceUpdateVersion, systemVersion }: WhatsNewModalProps) {
   const navigate = useNavigate()
   const [show, setShow] = useState(false)
 
@@ -29,17 +31,20 @@ export function WhatsNewModal({ isOpen, onClose }: WhatsNewModalProps) {
   }, [isOpen])
 
   const handleClose = async () => {
+    if (forceUpdateVersion) return // Don't let them close naturally if forced update
+
     const usuarioID = localStorage.getItem('usuarioId')
+    const finalVersion = systemVersion || currentRelease.version
     
     // Save dismissed version to localStorage (immediate)
-    localStorage.setItem('lastSeenVersion', currentRelease.version)
+    localStorage.setItem('lastSeenVersion', finalVersion)
     
     // Save to Firestore (persistent across devices)
     if (usuarioID) {
       try {
         await setDoc(
           doc(db, 'usuarios', usuarioID),
-          { lastSeenVersion: currentRelease.version },
+          { lastSeenVersion: finalVersion },
           { merge: true }
         )
       } catch (error) {
@@ -50,8 +55,19 @@ export function WhatsNewModal({ isOpen, onClose }: WhatsNewModalProps) {
     onClose()
   }
 
+  const handleForceUpdate = async () => {
+    console.log('🔄 Forcing app update/reload...')
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations()
+      for (const reg of regs) {
+        await reg.unregister()
+      }
+    }
+    window.location.href = window.location.href // Bypass cache reload
+  }
+
   const handleItemClick = (route?: string) => {
-    if (route) {
+    if (route && !forceUpdateVersion) {
       handleClose()
       navigate(route)
     }
@@ -70,67 +86,87 @@ export function WhatsNewModal({ isOpen, onClose }: WhatsNewModalProps) {
         <div className="flex items-start justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-3xl">🎉</span>
+              <span className="text-3xl">{forceUpdateVersion ? '🔄' : '🎉'}</span>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                {currentRelease.title}
+                {forceUpdateVersion ? 'Atualização Necessária' : currentRelease.title}
               </h2>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Versão {currentRelease.version} • {formatDate(currentRelease.date)}
+              {forceUpdateVersion 
+                ? `Nova versão disponível: ${forceUpdateVersion}`
+                : `Versão ${currentRelease.version} • ${formatDate(currentRelease.date)}`}
             </p>
           </div>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors p-1"
-            aria-label="Fechar"
-          >
-            <X size={24} />
-          </button>
+          {!forceUpdateVersion && (
+            <button
+              onClick={handleClose}
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors p-1"
+              aria-label="Fechar"
+            >
+              <X size={24} />
+            </button>
+          )}
         </div>
 
         {/* Release Items */}
         <div className="space-y-3 mb-6">
-          {currentRelease.items.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => handleItemClick(item.action?.route)}
-              className={`bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] rounded-xl p-4 transition-all ${
-                item.action
-                  ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-[#252525] hover:border-[#27AE60] dark:hover:border-[#27AE60] hover:shadow-md'
-                  : ''
-              }`}
-            >
+          {forceUpdateVersion ? (
+            <div className="bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] rounded-xl p-4 transition-all">
               <div className="flex items-start gap-3">
-                <div className="text-3xl flex-shrink-0">{item.icon}</div>
+                <div className="text-3xl flex-shrink-0">🆕</div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">
-                    {item.title}
+                    Novidades aguardando!
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {item.description}
+                    Nós lançamos a versão <strong>{forceUpdateVersion}</strong> com melhorias para o aplicativo. Atualize agora para carregar as novas funcionalidades e ver o recado completo na próxima tela!
                   </p>
-                  {item.action && (
-                    <div className="flex items-center gap-1 mt-2 text-[#27AE60] dark:text-[#2ecc71] text-sm font-medium">
-                      <span>{item.action.label}</span>
-                      <ChevronRight size={16} />
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
-          ))}
+          ) : (
+            currentRelease.items.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => handleItemClick(item.action?.route)}
+                className={`bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] rounded-xl p-4 transition-all ${
+                  item.action
+                    ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-[#252525] hover:border-[#27AE60] dark:hover:border-[#27AE60] hover:shadow-md'
+                    : ''
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="text-3xl flex-shrink-0">{item.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      {item.description}
+                    </p>
+                    {item.action && (
+                      <div className="flex items-center gap-1 mt-2 text-[#27AE60] dark:text-[#2ecc71] text-sm font-medium">
+                        <span>{item.action.label}</span>
+                        <ChevronRight size={16} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-[#404040]">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Esta mensagem não será exibida novamente
+            {forceUpdateVersion ? "Seu aplicativo será recarregado" : "Esta mensagem não será exibida novamente"}
           </p>
           <button
-            onClick={handleClose}
+            onClick={forceUpdateVersion ? handleForceUpdate : handleClose}
             className="bg-[#27AE60] hover:bg-[#229954] text-white font-bold px-6 py-2.5 rounded-lg transition-colors shadow-md"
           >
-            Entendido
+            {forceUpdateVersion ? "Atualizar Aplicativo" : "Entendido"}
           </button>
         </div>
       </div>

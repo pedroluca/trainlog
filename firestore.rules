@@ -9,6 +9,12 @@ service cloud.firestore {
              get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.isAdmin == true;
     }
     
+    // sistema collection (for app version tracking)
+    match /sistema/{documentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
     // usuarios collection
     match /usuarios/{userId} {
       allow read: if request.auth.uid == userId || isAdmin();

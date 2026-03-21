@@ -19,6 +19,7 @@ import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
 import { WhatsNewModal } from './components/whats-new-modal'
 import { ThemeProvider } from './contexts/theme-context'
+import { getVersion } from './version'
 import { currentRelease } from './data/whats-new'
 import { checkAndResetStreakIfMissed, resetPreviousDaysExercises } from './data/streak-utils'
 import { doc, getDoc } from 'firebase/firestore'
@@ -27,28 +28,41 @@ import { db } from './firebaseConfig'
 
 export function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false)
+  const [forceUpdateVersion, setForceUpdateVersion] = useState<string | null>(null)
 
   useEffect(() => {
     const checkVersion = async () => {
       const usuarioID = localStorage.getItem('usuarioId')
       if (!usuarioID) return
-
-      const lastSeenVersion = localStorage.getItem('lastSeenVersion')
       
-      if (lastSeenVersion !== currentRelease.version) {
-        try {
-          const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
-          const firestoreVersion = userDoc.data()?.lastSeenVersion
-          
-          if (firestoreVersion !== currentRelease.version) {
+      try {
+        // Obter a última versão do sistema (real source of truth)
+        const sistemaDoc = await getDoc(doc(db, 'sistema', 'info'))
+        const lastVersion = sistemaDoc.data()?.lastVersion
+        if (!lastVersion) return
+        
+        // Obter a última versão que este usuário viu
+        const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
+        const firestoreVersion = userDoc.data()?.lastSeenVersion
+        
+        if (firestoreVersion !== lastVersion) {
+          // O usuário ainda não viu a versão mais recente registrada no banco
+          if (getVersion() === lastVersion || currentRelease.version === lastVersion) {
+            // Se o bundle atual já é a versão nova (ou se currentRelease bate), mostra normal
             setShowWhatsNew(true)
+            setForceUpdateVersion(null)
           } else {
-            localStorage.setItem('lastSeenVersion', currentRelease.version)
+            // Se o bundle atual está velho, pede pra atualizar
+            setForceUpdateVersion(lastVersion)
           }
-        } catch (error) {
-          console.error('Error checking version:', error)
-          setShowWhatsNew(true)
+        } else {
+          // Já viu. Manter o localStorage em sync pra fallback seguro
+          if (localStorage.getItem('lastSeenVersion') !== lastVersion) {
+            localStorage.setItem('lastSeenVersion', lastVersion)
+          }
         }
+      } catch (error) {
+        console.error('Error checking version:', error)
       }
     }
 
@@ -81,7 +95,12 @@ export function App() {
       <BrowserRouter>
         <PWAUpdateNotification />
         <PWAInstallPrompt />
-        <WhatsNewModal isOpen={showWhatsNew} onClose={() => setShowWhatsNew(false)} />
+        <WhatsNewModal 
+          isOpen={showWhatsNew || !!forceUpdateVersion} 
+          onClose={() => setShowWhatsNew(false)} 
+          forceUpdateVersion={forceUpdateVersion}
+          systemVersion={forceUpdateVersion || getVersion()}
+        />
         <Routes>
           <Route element={<LayoutWithoutBottomBar />}>
             <Route path='/' element={<Home />} />
