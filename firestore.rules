@@ -17,8 +17,9 @@ service cloud.firestore {
     
     // usuarios collection
     match /usuarios/{userId} {
-      allow read: if request.auth.uid == userId || isAdmin();
-      allow write: if request.auth.uid == userId || isAdmin();
+      // Allow any authenticated user to read profiles (needed for friends search)
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
     
     // registrationRequests collection
@@ -77,7 +78,8 @@ service cloud.firestore {
     
     // logs collection
     match /logs/{logId} {
-      allow read: if request.auth.uid == resource.data.usuarioID || isAdmin();
+      // Allow any authenticated user to read logs (needed for friend's activities tab)
+      allow read: if request.auth != null;
       allow write: if request.auth.uid == resource.data.usuarioID;
       allow create: if request.auth.uid == request.resource.data.usuarioID;
     }
@@ -88,6 +90,25 @@ service cloud.firestore {
       allow write: if request.auth.uid == resource.data.usuarioID || isAdmin();
       allow create: if request.auth.uid == request.resource.data.usuarioID;
       allow delete: if request.auth.uid == resource.data.usuarioID || isAdmin();
+    }
+    
+    // amizades collection
+    match /amizades/{amizadeId} {
+      // Anyone authenticated can read friendships to accurately count friend stats
+      allow read: if request.auth != null;
+      
+      // Only the requester can create a new friendship request
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.solicitanteID &&
+        request.resource.data.status == 'pendente' &&
+        request.resource.data.participantes.hasAll([request.resource.data.solicitanteID, request.resource.data.receptorID]);
+        
+      // Both participants can update or delete
+      allow update, delete: if request.auth != null && (
+        request.auth.uid in resource.data.participantes ||
+        request.auth.uid == resource.data.solicitanteID ||
+        request.auth.uid == resource.data.receptorID
+      );
     }
   }
 }

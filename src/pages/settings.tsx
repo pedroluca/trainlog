@@ -4,7 +4,7 @@ import { auth, db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { Button } from '../components/button'
-import { ArrowLeft, Volume2, VolumeX, Lock, Eye, EyeOff, Moon, Sun } from 'lucide-react'
+import { ArrowLeft, Volume2, VolumeX, Lock, Eye, EyeOff, Moon, Sun, Shield } from 'lucide-react'
 import { useTheme } from '../contexts/theme-context'
 import { Toast, ToastState } from '../components/toast'
 
@@ -16,6 +16,21 @@ export function Settings() {
   // Audio settings
   const [audioEnabled, setAudioEnabled] = useState(false)
   const [loadingAudio, setLoadingAudio] = useState(false)
+
+  // Privacy Settings
+  const [privacidade, setPrivacidade] = useState({
+    ocultarEmail: false,
+    ocultarNascimento: false,
+    ocultarAtividades: false,
+    ocultarTreinos: false,
+    ocultarAmigos: false,
+    ocultarStreak: false,
+    ocultarPeso: false,
+    ocultarAltura: false,
+    ocultarInstagram: false
+  })
+  const [loadingPrivacy, setLoadingPrivacy] = useState(false)
+  const [showPrivacySection, setShowPrivacySection] = useState(false)
 
   // Password change
   const [showPasswordSection, setShowPasswordSection] = useState(false)
@@ -51,6 +66,19 @@ export function Settings() {
           const userData = userDoc.data()
           // Audio is disabled by default
           setAudioEnabled(userData.audioEnabled === true)
+          if (userData.privacidade) {
+            setPrivacidade({
+              ocultarEmail: userData.privacidade.ocultarEmail || false,
+              ocultarNascimento: userData.privacidade.ocultarNascimento || false,
+              ocultarAtividades: userData.privacidade.ocultarAtividades || false,
+              ocultarTreinos: userData.privacidade.ocultarTreinos || false,
+              ocultarAmigos: userData.privacidade.ocultarAmigos || false,
+              ocultarStreak: userData.privacidade.ocultarStreak || false,
+              ocultarPeso: userData.privacidade.ocultarPeso || false,
+              ocultarAltura: userData.privacidade.ocultarAltura || false,
+              ocultarInstagram: userData.privacidade.ocultarInstagram || false,
+            })
+          }
         }
       } catch (err) {
         console.error('Erro ao buscar configurações:', err)
@@ -59,6 +87,27 @@ export function Settings() {
 
     fetchSettings()
   }, [usuarioID, navigate])
+
+  const handlePrivacyToggle = async (key: keyof typeof privacidade) => {
+    if (!usuarioID) return
+    try {
+      setLoadingPrivacy(true)
+      const newPrivacy = {
+        ...privacidade,
+        [key]: !privacidade[key]
+      }
+      const userDocRef = doc(db, 'usuarios', usuarioID)
+      await updateDoc(userDocRef, {
+        privacidade: newPrivacy
+      })
+      setPrivacidade(newPrivacy)
+    } catch (err) {
+      console.error('Erro ao atualizar privacidade:', err)
+      setToast({ show: true, message: 'Erro ao atualizar preferências de privacidade.', type: 'error' })
+    } finally {
+      setLoadingPrivacy(false)
+    }
+  }
 
   const handleAudioToggle = async () => {
     if (!usuarioID) return
@@ -198,6 +247,67 @@ export function Settings() {
             />
           </button>
         </div>
+      </div>
+
+      {/* Privacy Settings Section */}
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
+        <div 
+          className="flex items-center justify-between cursor-pointer"
+          onClick={() => setShowPrivacySection(!showPrivacySection)}
+        >
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 m-0 flex items-center gap-2">
+            <Shield className="text-[#2980B9]" />
+            Privacidade do Perfil
+          </h2>
+          <Button
+            type="button"
+            className="bg-gray-100 hover:bg-gray-200 dark:bg-[#404040] dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 px-4 py-1.5 text-sm"
+          >
+            {showPrivacySection ? 'Ocultar' : 'Configurar'}
+          </Button>
+        </div>
+
+        {showPrivacySection && (
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#404040] animate-in fade-in slide-in-from-top-4 duration-300">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 pb-4 border-b border-gray-100 dark:border-[#404040]">
+              Controle o que seus amigos podem ver quando acessarem o seu perfil. Ative as opções abaixo para ocultar a informação correspondente.
+            </p>
+            
+            <div className="space-y-4">
+          {[
+            { key: 'ocultarEmail', label: 'Email', desc: 'Oculta seu endereço de email' },
+            { key: 'ocultarNascimento', label: 'Data de Nascimento', desc: 'Oculta sua data e idade' },
+            { key: 'ocultarInstagram', label: 'Instagram', desc: 'Oculta o link do seu perfil' },
+            { key: 'ocultarPeso', label: 'Peso Corporal', desc: 'Oculta sua medição de peso' },
+            { key: 'ocultarAltura', label: 'Altura', desc: 'Oculta sua medição de altura' },
+            { key: 'ocultarAmigos', label: 'Lista de Amigos', desc: 'Impede verem quem você adicionou' },
+            { key: 'ocultarStreak', label: 'Sequência (Streak)', desc: 'Oculta seus dias seguidos treinando' },
+            { key: 'ocultarAtividades', label: 'Atividades (Logs)', desc: 'Oculta o feed de atividades recentes' },
+            { key: 'ocultarTreinos', label: 'Meus Treinos', desc: 'Oculta suas rotinas de exercícios' },
+          ].map(item => (
+            <div key={item.key} className="flex items-center justify-between">
+              <div className="flex-1 pr-4">
+                <p className="text-gray-700 dark:text-gray-300 font-medium">Ocultar {item.label}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{item.desc}</p>
+              </div>
+              <button
+                onClick={() => handlePrivacyToggle(item.key as keyof typeof privacidade)}
+                disabled={loadingPrivacy}
+                className={`cursor-pointer relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#2980B9] focus:ring-offset-2 ${
+                  privacidade[item.key as keyof typeof privacidade] ? 'bg-[#2980B9]' : 'bg-gray-300 dark:bg-gray-600'
+                } ${loadingPrivacy ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                    privacidade[item.key as keyof typeof privacidade] ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Audio Settings Section */}

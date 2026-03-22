@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays, Minus, UsersRound } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
@@ -40,6 +40,7 @@ export function Profile() {
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
+  const [friendsCount, setFriendsCount] = useState(0)
   const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false)
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [editedNome, setEditedNome] = useState('')
@@ -129,8 +130,23 @@ export function Profile() {
         }
       }
 
+      const fetchFriendsCount = async () => {
+        try {
+          const q = query(
+            collection(db, 'amizades'),
+            where('participantes', 'array-contains', usuarioID),
+            where('status', '==', 'aceito')
+          )
+          const snap = await getDocs(q)
+          setFriendsCount(snap.size)
+        } catch (err) {
+          console.error('Erro ao buscar quantidade de amigos:', err)
+        }
+      }
+
       fetchUserData()
       fetchWorkouts()
+      fetchFriendsCount()
       
       // Listen for streak updates
       const handleStreakUpdate = (event: CustomEvent) => {
@@ -371,13 +387,13 @@ export function Profile() {
         {/* Edit Profile Button */}
         <button
           onClick={handleOpenEditProfile}
-          className="absolute top-4 right-4 p-2 rounded-full bg-gray-50 dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-300 transition-colors shadow-sm"
+          className="cursor-pointer absolute top-4 right-4 p-2 rounded-full bg-gray-50 dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-300 transition-colors shadow-sm"
           title="Editar perfil"
         >
           <Pencil size={16} />
         </button>
         {/* Avatar */}
-        <div className="md:col-span-1 lg:col-span-3 flex flex-col items-center relative">
+        <div className="md:col-span-1 lg:col-span-4 flex flex-col items-center relative">
           {/* Plan Badge */}
           {isPremium ? (
             <div className="absolute -top-6 md:-top-2 lg:top-0 left-1/2 -translate-x-1/2 md:-translate-x-0 md:left-0 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center z-10 w-max">
@@ -430,7 +446,7 @@ export function Profile() {
         </div>
         
         {/* Personal Info Fields */}
-        <div className="md:col-span-3 lg:col-span-9 grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="md:col-span-3 lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-3">
           <div className="col-span-full py-1">
             <h1 className="text-2xl lg:text-3xl text-center md:text-left font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
           </div>
@@ -492,7 +508,7 @@ export function Profile() {
               <>
                 <button
                   onClick={() => setIsEditingMetrics(true)}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                  className="cursor-pointer flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                 >
                   <Plus size={16} />
                   {altura > 0 && peso > 0 ? 'Nova Medição' : 'Adicionar Métricas'}
@@ -500,7 +516,7 @@ export function Profile() {
                 {isPremium && altura > 0 && peso > 0 && (
                   <button
                     onClick={() => navigate('/profile/body-metrics')}
-                    className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                    className="cursor-pointer flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                   >
                     <Activity size={16} />
                     Ver Histórico
@@ -515,9 +531,9 @@ export function Profile() {
                     <button
                       type="button"
                       onClick={() => setEditedAltura((prev) => Math.max(0.5, parseFloat(prev || '0') - 0.01).toFixed(2))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
                     >
-                      -
+                      <Minus size={16} />
                     </button>
                     <input
                       type="number"
@@ -530,9 +546,9 @@ export function Profile() {
                     <button
                       type="button"
                       onClick={() => setEditedAltura((prev) => Math.min(3, parseFloat(prev || '0') + 0.01).toFixed(2))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
                     >
-                      +
+                      <Plus size={16} />
                     </button>
                   </div>
                 </div>
@@ -542,9 +558,9 @@ export function Profile() {
                     <button
                       type="button"
                       onClick={() => setEditedPeso((prev) => Math.max(20, parseFloat(prev || '0') - 0.1).toFixed(1))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
                     >
-                      -
+                      <Minus size={16} />
                     </button>
                     <input
                       type="number"
@@ -557,9 +573,9 @@ export function Profile() {
                     <button
                       type="button"
                       onClick={() => setEditedPeso((prev) => Math.min(500, parseFloat(prev || '0') + 0.1).toFixed(1))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
                     >
-                      +
+                      <Plus size={16} />
                     </button>
                   </div>
                 </div>
@@ -582,38 +598,47 @@ export function Profile() {
           </div>
         </div>
 
-        {/* Workout Streak Section */}
-        <div className="md:col-span-3 lg:col-span-5 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner">
+        {/* Stats Section */}
+        <div className="md:col-span-4 lg:col-span-8 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner flex flex-col justify-center">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm md:text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 uppercase tracking-wide">
               <Flame className="text-orange-500" size={20} />
-              Sequência
+              Estatísticas
             </h3>
             {isPremium && (
             <button
               onClick={() => navigate('/profile/streak-calendar')}
-              className="bg-white/50 dark:bg-black/20 hover:bg-white dark:hover:bg-black/40 text-orange-600 dark:text-orange-400 font-bold py-1.5 px-3 rounded-lg text-xs md:text-sm flex items-center gap-1.5 transition-all outline outline-orange-500/20"
+              className="cursor-pointer bg-white/50 dark:bg-black/20 hover:bg-white dark:hover:bg-black/40 text-orange-600 dark:text-orange-400 font-bold py-1.5 px-3 rounded-lg text-xs md:text-sm flex items-center gap-1.5 transition-all outline outline-orange-500/20"
             >
               <CalendarDays size={14} /> Calendário
             </button>
           )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-wider font-bold text-orange-800/60 dark:text-orange-200/50 mb-1">Atual</p>
-              <p className="text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400">{currentStreak}</p>
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-orange-800/60 dark:text-orange-200/50 mb-1">Sequência</p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400 truncate">{currentStreak}</p>
             </div>
             <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 mb-1">Recorde</p>
-              <p className="text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100">{longestStreak}</p>
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 mb-1">Recorde</p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 truncate">{longestStreak}</p>
+            </div>
+            <div 
+              onClick={() => navigate('/friends')}
+              className="cursor-pointer bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm hover:bg-white/80 dark:hover:bg-[#252525] transition-colors"
+            >
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-[#2980B9] dark:text-[#3498DB] mb-1 flex items-center gap-1">
+                <UsersRound size={12} className="hidden sm:inline" /> Amigos
+              </p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 truncate">{friendsCount}</p>
             </div>
           </div>
         </div>
         
-        <div className="lg:col-span-4 md:order-2 flex flex-col lg:flex-col gap-3">
+        <div className="md:col-span-4 md:order-2 flex flex-col md:flex-row lg:flex-col gap-3">
           <button
             onClick={() => navigate('/profile/settings')}
-            className="flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
+            className="cursor-pointer flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
           >
             <Settings size={20} className="text-gray-500 group-hover:rotate-45 transition-transform" />
             Configurações
@@ -621,7 +646,7 @@ export function Profile() {
           
           <button
             onClick={() => navigate('/profile/log')}
-            className="flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
+            className="cursor-pointer flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
           >
             <FileText size={20} className="text-gray-500 group-hover:-rotate-12 transition-transform" />
             Log atividades
@@ -706,7 +731,7 @@ export function Profile() {
       <div className="flex justify-center w-full max-w-lg md:max-w-3xl lg:max-w-5xl mt-6 mb-2">
         <button
           onClick={handleLogout}
-          className="w-full md:w-auto md:min-w-[250px] bg-white dark:bg-[#1e1e1e] hover:bg-red-50 dark:hover:bg-red-900/10 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-900/30 font-bold py-3.5 px-6 rounded-xl transition-all shadow-sm hover:shadow text-lg tracking-wide flex justify-center items-center gap-2"
+          className="cursor-pointer w-full md:w-auto md:min-w-[250px] bg-white dark:bg-[#1e1e1e] hover:bg-red-50 dark:hover:bg-red-900/10 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-900/30 font-bold py-3.5 px-6 rounded-xl transition-all shadow-sm hover:shadow text-lg tracking-wide flex justify-center items-center gap-2"
         >
           Sair da Conta
         </button>
@@ -864,7 +889,7 @@ export function Profile() {
       )}
 
       {/* Footer Info Section */}
-      <div className="mt-12 text-center space-y-2 pb-8">
+      <div className="mt-12 text-center space-y-2 pb-8 lg:pb-30">
         <p className="text-xs text-gray-500 dark:text-gray-400">
           © {new Date().getFullYear()} TrainLog. All rights reserved.
         </p>
