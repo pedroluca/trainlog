@@ -94,12 +94,8 @@ service cloud.firestore {
     
     // amizades collection
     match /amizades/{amizadeId} {
-      // Users can only read/modify amizades they are part of
-      allow read: if request.auth != null && (
-        request.auth.uid in resource.data.participantes ||
-        request.auth.uid == resource.data.solicitanteID ||
-        request.auth.uid == resource.data.receptorID
-      );
+      // Anyone authenticated can read friendships to accurately count friend stats
+      allow read: if request.auth != null;
       
       // Only the requester can create a new friendship request
       allow create: if request.auth != null && 
