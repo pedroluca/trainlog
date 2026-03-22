@@ -30,6 +30,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import { db } from './firebaseConfig'
 import { Friends } from './pages/friends'
 import { FriendProfile } from './pages/friend-profile'
+import { FriendFriends } from './pages/friend-friends'
 // import { Teste } from './pages/teste'
 
 export function App() {
@@ -114,6 +115,7 @@ export function App() {
             {/* Rotas de Amigos */}
             <Route path="/friends" element={<Friends />} />
             <Route path="/friend/:id" element={<FriendProfile />} />
+            <Route path="/friend/:id/friends" element={<FriendFriends />} />
             <Route path='/progress' element={<Progress />} />
             <Route path='/profile'>
               <Route index element={<Profile />} />

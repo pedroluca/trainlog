@@ -169,6 +169,21 @@ export function FriendProfile() {
           exercicios: exerciciosBasicos
         })
       }
+      const diasMap: Record<string, number> = {
+        'domingo': 0, 'segunda': 1, 'segunda-feira': 1, 'terça': 2, 'terça-feira': 2,
+        'quarta': 3, 'quarta-feira': 3, 'quinta': 4, 'quinta-feira': 4, 'sexta': 5, 'sexta-feira': 5,
+        'sábado': 6, 'sabado': 6
+      }
+      
+      list.sort((a, b) => {
+        const diaA = (a.dia || '').toLowerCase()
+        const diaB = (b.dia || '').toLowerCase()
+        const valA = diasMap[diaA] ?? 99
+        const valB = diasMap[diaB] ?? 99
+        if (valA !== valB) return valA - valB
+        return a.nome.localeCompare(b.nome)
+      })
+
       setTreinos(list)
     } catch (err) {
       console.error('Erro ao buscar treinos do amigo:', err)
@@ -276,7 +291,10 @@ export function FriendProfile() {
           )}
           
           {!priv.ocultarAmigos && (
-             <div className="col-span-1 border border-gray-100 dark:border-[#333] bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3">
+             <div 
+               onClick={() => navigate(`/friend/${profile.id}/friends`)}
+               className="col-span-1 border border-gray-100 dark:border-[#333] bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors"
+             >
                <p className="text-xs uppercase font-medium text-blue-600 dark:text-blue-400">Amigos</p>
                <p className="text-sm font-bold text-blue-900 dark:text-blue-300">{friendsCount}</p>
              </div>
@@ -317,7 +335,7 @@ export function FriendProfile() {
         </div>
         
         {/* Tab Content */}
-        <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 md:p-6 mb-6 w-full rounded-2xl border border-gray-100 dark:border-[#2a2a2a] min-h-[300px]">
+        <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 md:p-6 mb-6 md:mb-32 lg:mb-0 w-full rounded-2xl border border-gray-100 dark:border-[#2a2a2a] min-h-[300px]">
           {/* ATIVIDADES */}
           {activeTab === 'atividades' && (
             <div className="p-4 md:p-0">
@@ -332,37 +350,40 @@ export function FriendProfile() {
                 <div className="text-center py-12 text-gray-500">Nenhuma atividade recente encontrada.</div>
               ) : (
                 <div className="space-y-4">
-                  {logs.map((log) => {
-                    const isRecente = isDentroDosSeteDias(log.data)
-                    const diaFim = new Date(log.data).toLocaleDateString('pt-BR')
-                    const horaFim = new Date(log.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                    
-                    if (!isRecente && !isPremiumObserver) {
-                      // Freemium só vê dentro dos 7 dias, se for mais velho, ele vê que parou
-                      return (
-                        <div key={log.id} className="p-4 rounded-xl bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] text-center text-gray-500">
-                          <p>O usuário logou sua última atividade em {diaFim}</p>
-                        </div>
-                      )
-                    }
+                  {(() => {
+                    const visibleLogs = isPremiumObserver ? logs : logs.filter(log => isDentroDosSeteDias(log.data))
+                    const firstOldLog = !isPremiumObserver ? logs.find(log => !isDentroDosSeteDias(log.data)) : null
                     
                     return (
-                      <div key={log.id} className="bg-white dark:bg-[#2d2d2d] rounded-lg p-4 shadow-sm border border-gray-100 dark:border-[#404040]">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h4 className="font-bold text-gray-800 dark:text-gray-100">{log.titulo || 'Exercício Concluído'}</h4>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-                              {log.series} séries × {log.repeticoes} repetições
-                            </p>
+                      <>
+                        {visibleLogs.map(log => {
+                          const diaFim = new Date(log.data).toLocaleDateString('pt-BR')
+                          const horaFim = new Date(log.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                          return (
+                            <div key={log.id} className="bg-white dark:bg-[#2d2d2d] rounded-lg p-4 shadow-sm border border-gray-100 dark:border-[#404040]">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <h4 className="font-bold text-gray-800 dark:text-gray-100">{log.titulo || 'Exercício Concluído'}</h4>
+                                  <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                                    {log.series} séries × {log.repeticoes} repetições
+                                  </p>
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#333] px-2 py-1 rounded-md">{diaFim}</span>
+                                  <span className="text-xs text-gray-400 dark:text-gray-500">{horaFim}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                        {firstOldLog && (
+                          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] text-center text-gray-500">
+                            <p>O usuário logou sua última atividade em {new Date(firstOldLog.data).toLocaleDateString('pt-BR')}</p>
                           </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#333] px-2 py-1 rounded-md">{diaFim}</span>
-                            <span className="text-xs text-gray-400 dark:text-gray-500">{horaFim}</span>
-                          </div>
-                        </div>
-                      </div>
+                        )}
+                      </>
                     )
-                  })}
+                  })()}
                   
                   {isPremiumObserver && logs.length >= logsLimit && (
                     <button 
