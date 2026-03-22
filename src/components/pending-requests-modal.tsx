@@ -9,6 +9,8 @@ interface Usuario {
   nome: string
   username?: string
   photoURL?: string
+  isFounder?: boolean
+  isPremium?: boolean
 }
 
 interface Solicitacao {
@@ -128,6 +130,8 @@ export function PendingRequestsModal({ onClose, currentUserId }: PendingRequests
                   nome={req.solicitante.nome}
                   username={req.solicitante.username}
                   photoURL={req.solicitante.photoURL}
+                  isFounder={req.solicitante.isFounder}
+                  isPremium={req.solicitante.isPremium}
                 >
                   <div className="flex items-center gap-2">
                     {actionLoading === req.id ? (

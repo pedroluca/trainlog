@@ -10,6 +10,8 @@ interface Usuario {
   nome: string
   username?: string
   photoURL?: string
+  isFounder?: boolean
+  isPremium?: boolean
 }
 
 interface Amizade {
@@ -159,6 +161,8 @@ export function AddFriendModal({ onClose, currentUserId }: AddFriendModalProps) 
                     nome={user.nome}
                     username={user.username}
                     photoURL={user.photoURL}
+                    isFounder={user.isFounder}
+                    isPremium={user.isPremium}
                   >
                     {status === 'none' && (
                       <Button

@@ -11,6 +11,8 @@ interface Usuario {
   username?: string
   photoURL?: string
   lastWorkoutDate?: string
+  isFounder?: boolean
+  isPremium?: boolean
 }
 
 interface Amigo {
@@ -170,6 +172,8 @@ export function FriendFriends() {
                       nome={amigo.usuario.nome}
                       username={amigo.usuario.username}
                       photoURL={amigo.usuario.photoURL}
+                      isFounder={amigo.usuario.isFounder}
+                      isPremium={amigo.usuario.isPremium}
                       onClick={() => handleUserClick(amigo.usuario.id)}
                     >
                       {isAtivoRecentemente(amigo.usuario.lastWorkoutDate) ? (
