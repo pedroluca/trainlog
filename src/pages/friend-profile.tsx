@@ -34,12 +34,12 @@ interface UsuarioProfile {
 
 interface LogEntry {
   id: string
-  treinoId: string
-  treinoNome?: string
-  dataInicio: string
-  dataFim: string
-  duracaoSegundos: number
-  volumeTotal: number
+  usuarioID: string
+  titulo: string
+  series: number
+  repeticoes: number
+  peso: number
+  data: string
 }
 
 interface ExercicioBasico {
@@ -131,7 +131,7 @@ export function FriendProfile() {
       const q = query(
         logsRef,
         where('usuarioID', '==', id),
-        orderBy('dataFim', 'desc'),
+        orderBy('data', 'desc'),
         limit(logsLimit)
       )
       const snap = await getDocs(q)
@@ -317,7 +317,7 @@ export function FriendProfile() {
         </div>
         
         {/* Tab Content */}
-        <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 md:p-6 w-full rounded-2xl border border-gray-100 dark:border-[#2a2a2a] min-h-[300px]">
+        <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 md:p-6 mb-6 w-full rounded-2xl border border-gray-100 dark:border-[#2a2a2a] min-h-[300px]">
           {/* ATIVIDADES */}
           {activeTab === 'atividades' && (
             <div className="p-4 md:p-0">
@@ -333,8 +333,9 @@ export function FriendProfile() {
               ) : (
                 <div className="space-y-4">
                   {logs.map((log) => {
-                    const isRecente = isDentroDosSeteDias(log.dataFim)
-                    const diaFim = new Date(log.dataFim).toLocaleDateString('pt-BR')
+                    const isRecente = isDentroDosSeteDias(log.data)
+                    const diaFim = new Date(log.data).toLocaleDateString('pt-BR')
+                    const horaFim = new Date(log.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
                     
                     if (!isRecente && !isPremiumObserver) {
                       // Freemium só vê dentro dos 7 dias, se for mais velho, ele vê que parou
@@ -346,14 +347,18 @@ export function FriendProfile() {
                     }
                     
                     return (
-                      <div key={log.id} className="p-4 rounded-xl border border-gray-100 dark:border-[#333] bg-gray-50 dark:bg-[#252525]">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-bold text-gray-900 dark:text-white text-lg">{log.treinoNome || 'Treino Concluído'}</h4>
-                          <span className="text-xs font-semibold text-gray-500 bg-gray-200 dark:bg-[#333] px-2 py-1 rounded-md">{diaFim}</span>
-                        </div>
-                        <div className="flex gap-4 text-sm text-gray-600 dark:text-gray-400">
-                          <p><strong>Duração:</strong> {Math.floor(log.duracaoSegundos / 60)} min</p>
-                          <p><strong>Volume T.:</strong> {log.volumeTotal} kg</p>
+                      <div key={log.id} className="bg-white dark:bg-[#2d2d2d] rounded-lg p-4 shadow-sm border border-gray-100 dark:border-[#404040]">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h4 className="font-bold text-gray-800 dark:text-gray-100">{log.titulo || 'Exercício Concluído'}</h4>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                              {log.series} séries × {log.repeticoes} repetições
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#333] px-2 py-1 rounded-md">{diaFim}</span>
+                            <span className="text-xs text-gray-400 dark:text-gray-500">{horaFim}</span>
+                          </div>
                         </div>
                       </div>
                     )
@@ -362,7 +367,7 @@ export function FriendProfile() {
                   {isPremiumObserver && logs.length >= logsLimit && (
                     <button 
                       onClick={handleLoadMoreLogs}
-                      className="w-full mt-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl font-bold border border-blue-100 dark:border-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/40"
+                      className="cursor-pointer w-full mt-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl font-bold border border-blue-100 dark:border-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                     >
                       Veja mais atividades
                     </button>
