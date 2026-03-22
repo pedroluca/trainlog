@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { collection, query, where, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { UserPill } from '../components/user-pill'
@@ -20,6 +21,7 @@ interface Amigo {
 }
 
 export function Friends() {
+  const navigate = useNavigate()
   const currentUserId = localStorage.getItem('usuarioId') || ''
   const [searchTerm, setSearchTerm] = useState('')
   const [amigos, setAmigos] = useState<Amigo[]>([])
@@ -178,6 +180,7 @@ export function Friends() {
                   nome={amigo.usuario.nome}
                   username={amigo.usuario.username}
                   photoURL={amigo.usuario.photoURL}
+                  onClick={() => navigate(`/friend/${amigo.usuario.id}`)}
                 >
                   {isAtivoRecentemente(amigo.usuario.lastWorkoutDate) ? (
                     <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/10 text-orange-500 border border-orange-200 dark:border-orange-800/30 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider">

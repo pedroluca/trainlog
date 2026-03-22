@@ -1,18 +1,20 @@
 import React from 'react'
 
 interface UserPillProps {
-  photoURL?: string | null
   nome: string
+  photoURL?: string | null
   username?: string | null
   children?: React.ReactNode
   onClick?: () => void
 }
 
-export function UserPill({ photoURL, nome, username, children, onClick }: UserPillProps) {
+export function UserPill({ nome, photoURL, username, children, onClick }: UserPillProps) {
   return (
     <div 
-      className={`flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#252525] border border-gray-100 dark:border-[#333] shadow-sm transition-all ${onClick ? 'cursor-pointer hover:border-gray-300 dark:hover:border-gray-500' : ''}`}
       onClick={onClick}
+      className={`flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#333] bg-white dark:bg-[#252525] transition-all shadow-sm ${
+        onClick ? 'cursor-pointer hover:shadow-md hover:border-[#27AE60]/50 dark:hover:border-[#27AE60]/50' : ''
+      }`}
     >
       <div className="flex items-center gap-3 overflow-hidden">
         {/* Avatar */}

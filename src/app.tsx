@@ -29,6 +29,7 @@ import { checkAndResetStreakIfMissed, resetPreviousDaysExercises } from './data/
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from './firebaseConfig'
 import { Friends } from './pages/friends'
+import { FriendProfile } from './pages/friend-profile'
 // import { Teste } from './pages/teste'
 
 export function App() {
@@ -110,7 +111,9 @@ export function App() {
           <Route element={<LayoutWithBottomBar />}>
             {/* <Route path='/teste' element={<Teste />} /> */}
             <Route path='/train' element={<Training />} />
-            <Route path='/friends' element={<Friends />} />
+            {/* Rotas de Amigos */}
+            <Route path="/friends" element={<Friends />} />
+            <Route path="/friend/:id" element={<FriendProfile />} />
             <Route path='/progress' element={<Progress />} />
             <Route path='/profile'>
               <Route index element={<Profile />} />

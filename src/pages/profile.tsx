@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays, Minus } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays, Minus, UsersRound } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
@@ -40,6 +40,7 @@ export function Profile() {
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
+  const [friendsCount, setFriendsCount] = useState(0)
   const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false)
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [editedNome, setEditedNome] = useState('')
@@ -129,8 +130,23 @@ export function Profile() {
         }
       }
 
+      const fetchFriendsCount = async () => {
+        try {
+          const q = query(
+            collection(db, 'amizades'),
+            where('participantes', 'array-contains', usuarioID),
+            where('status', '==', 'aceito')
+          )
+          const snap = await getDocs(q)
+          setFriendsCount(snap.size)
+        } catch (err) {
+          console.error('Erro ao buscar quantidade de amigos:', err)
+        }
+      }
+
       fetchUserData()
       fetchWorkouts()
+      fetchFriendsCount()
       
       // Listen for streak updates
       const handleStreakUpdate = (event: CustomEvent) => {
@@ -582,12 +598,12 @@ export function Profile() {
           </div>
         </div>
 
-        {/* Workout Streak Section */}
-        <div className="md:col-span-4 lg:col-span-8 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner">
+        {/* Stats Section */}
+        <div className="md:col-span-4 lg:col-span-8 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner flex flex-col justify-center">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm md:text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 uppercase tracking-wide">
               <Flame className="text-orange-500" size={20} />
-              Sequência
+              Estatísticas
             </h3>
             {isPremium && (
             <button
@@ -598,14 +614,23 @@ export function Profile() {
             </button>
           )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-wider font-bold text-orange-800/60 dark:text-orange-200/50 mb-1">Atual</p>
-              <p className="text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400">{currentStreak}</p>
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-orange-800/60 dark:text-orange-200/50 mb-1">Sequência</p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400 truncate">{currentStreak}</p>
             </div>
             <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 mb-1">Recorde</p>
-              <p className="text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100">{longestStreak}</p>
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 mb-1">Recorde</p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 truncate">{longestStreak}</p>
+            </div>
+            <div 
+              onClick={() => navigate('/friends')}
+              className="cursor-pointer bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm hover:bg-white/80 dark:hover:bg-[#252525] transition-colors"
+            >
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-[#2980B9] dark:text-[#3498DB] mb-1 flex items-center gap-1">
+                <UsersRound size={12} className="hidden sm:inline" /> Amigos
+              </p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 truncate">{friendsCount}</p>
             </div>
           </div>
         </div>
