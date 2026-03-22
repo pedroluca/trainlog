@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
-import { Dumbbell, UserRound, TrendingUp } from 'lucide-react'
+import { Dumbbell, UserRound, TrendingUp, Users } from 'lucide-react'
 
 export function Header() {
   const [streak, setStreak] = useState(0)
@@ -79,12 +79,15 @@ export function Header() {
         </Link>
 
         {usuarioID && (
-          <nav className='hidden lg:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2'>
+          <nav className='hidden lg:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2'>
             <Link to='/progress' className={`flex items-center gap-2 transition-colors font-semibold text-lg ${location.pathname.startsWith('/progress') ? 'text-white' : 'text-white/60 hover:text-white/80'}`}>
               <TrendingUp size={24} /> Progresso
             </Link>
             <Link to='/train' className={`flex items-center gap-2 transition-colors font-semibold text-lg ${location.pathname.startsWith('/train') ? 'text-white' : 'text-white/60 hover:text-white/80'}`}>
               <Dumbbell size={24} /> Treino
+            </Link>
+            <Link to='/friends' className={`flex items-center gap-2 transition-colors font-semibold text-lg ${location.pathname.startsWith('/friends') ? 'text-white' : 'text-white/60 hover:text-white/80'}`}>
+              <Users size={24} /> Amigos
             </Link>
             <Link to='/profile' className={`flex items-center gap-2 transition-colors font-semibold text-lg ${location.pathname.startsWith('/profile') ? 'text-white' : 'text-white/60 hover:text-white/80'}`}>
               <UserRound size={24} /> Perfil
