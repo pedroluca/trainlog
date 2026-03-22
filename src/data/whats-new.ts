@@ -21,35 +21,35 @@ export type WhatsNewRelease = {
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
-  version: '1.15.5',
-  date: '2026-03-21',
-  title: 'Novidades da Versão 1.15.5',
+  version: '1.16.0',
+  date: '2026-03-22',
+  title: 'Novidades da Versão 1.16.0',
   items: [
     {
-      id: 'ui-improvements',
-      icon: '✨',
-      title: 'Novidade Visual',
-      description: 'Aprimoramos o design do aplicativo nas telas de Perfil e Treino. Agora os grids foram refinados para dispositivos tablet e a experiência está ainda mais fluída e adaptável!',
+      id: 'friendships',
+      icon: '🤝',
+      title: 'Sistema de Amizades',
+      description: 'Agora você pode adicionar amigos, ver as atividades e os treinos deles! Acompanhe o progresso de quem treina com você e mantenham a motivação juntos.',
       action: {
-        label: 'Ver Perfil',
-        route: '/profile'
+        label: 'Ver Amigos',
+        route: '/friends'
       }
     },
     {
-      id: 'streak-bugfix',
-      icon: '🛠️',
-      title: 'Correção no Contador de Sequência',
-      description: 'Corrigimos um erro onde noites de virada ou a adição de novos exercícios no mesmo dia faziam você "perder" sua sequência diária (streak). Seu progresso agora está blindado contra fuso-horários independentemente de edições no final do dia!'
+      id: 'friend-privacy',
+      icon: '🔒',
+      title: 'Sua Privacidade Importa',
+      description: 'Você tem controle total sobre o que seus amigos podem ver. Acesse as Configurações para ocultar seu peso, altura, treinos ou atividades.',
+      action: {
+        label: 'Ver Configurações',
+        route: '/profile/settings'
+      }
     },
     {
-      id: 'progressive-weight',
-      icon: '📈',
-      title: 'Peso Progressivo (Lembrete)',
-      description: 'Lembrando que na versão anterior trouxemos treinos piramidais para configurar cada série com peso diferente!',
-      action: {
-        label: 'Adicionar Caminho',
-        route: '/training'
-      }
+      id: 'ui-scrollbars',
+      icon: '🎨',
+      title: 'Refinamentos na Interface',
+      description: 'Melhoramos o design de vários componentes, como as barras de rolagem nos modais, para deixar o app cada vez mais bonito e fluido no seu uso diário.'
     }
   ]
 }
@@ -57,6 +57,39 @@ export const currentRelease: WhatsNewRelease = {
 // Historical releases (for reference)
 export const releaseHistory: WhatsNewRelease[] = [
   currentRelease,
+  {
+    version: '1.15.5',
+    date: '2026-03-21',
+    title: 'Novidades da Versão 1.15.5',
+    items: [
+      {
+        id: 'ui-improvements',
+        icon: '✨',
+        title: 'Novidade Visual',
+        description: 'Aprimoramos o design do aplicativo nas telas de Perfil e Treino. Agora os grids foram refinados para dispositivos tablet e a experiência está ainda mais fluída e adaptável!',
+        action: {
+          label: 'Ver Perfil',
+          route: '/profile'
+        }
+      },
+      {
+        id: 'streak-bugfix',
+        icon: '🛠️',
+        title: 'Correção no Contador de Sequência',
+        description: 'Corrigimos um erro onde noites de virada ou a adição de novos exercícios no mesmo dia faziam você "perder" sua sequência diária (streak). Seu progresso agora está blindado contra fuso-horários independentemente de edições no final do dia!'
+      },
+      {
+        id: 'progressive-weight',
+        icon: '📈',
+        title: 'Peso Progressivo (Lembrete)',
+        description: 'Lembrando que na versão anterior trouxemos treinos piramidais para configurar cada série com peso diferente!',
+        action: {
+          label: 'Adicionar Caminho',
+          route: '/training'
+        }
+      }
+    ]
+  },
   {
     version: '1.12.1',
     date: '2025-10-08',
