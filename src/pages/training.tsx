@@ -192,7 +192,7 @@ export function Training() {
   const currentExercise = exercises[currentExerciseIndex]
 
   return (
-    <main className="flex flex-col items-center h-[calc(100dvh-74px)] md:h-[calc(100dvh-89px)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
+    <main className="flex flex-col items-center h-[calc(100dvh-74px)] md:h-[calc(100dvh-89px)] lg:h-[calc(100dvh-69px)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
       <div className="flex items-center justify-center w-full max-w-3xl mb-2 flex-shrink-0">
         <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handlePreviousDay}>
           <ChevronLeft />
