@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { TrainingCard, TrainingCardSkeleton } from '../components/training-card'
-import { ChevronLeft, ChevronRight, IterationCw, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Settings2 } from 'lucide-react'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
 import { getWorkoutExercises, Exercicio } from '../data/get-workout-exercises'
 import { Button } from '../components/button'
 import { AddWorkoutModal } from '../components/add-workout-modal'
 import { AddExerciseModal } from '../components/add-exercise-modal'
+import { WorkoutSettingsModal } from '../components/workout-settings-modal'
 import { WorkoutCompleteModal } from '../components/workout-complete-modal'
 import { useNavigate } from 'react-router-dom'
 import { collection, doc, getDocs, updateDoc } from 'firebase/firestore'
@@ -24,6 +25,7 @@ export function Training() {
   const [loading, setLoading] = useState(true)
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false)
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
@@ -61,7 +63,7 @@ export function Training() {
 
     if (workoutForDay) {
       try {
-        const exercisesData = await getWorkoutExercises(workoutForDay.id)
+        const exercisesData = await getWorkoutExercises(workoutForDay.id, workoutForDay.exerciseOrder)
         setExercises(exercisesData)
         if (!preserveIndex) {
           setCurrentExerciseIndex(0) // Reset to first exercise only when changing days
@@ -153,7 +155,7 @@ export function Training() {
           updateStreak(usuarioID).then(async (newStreak) => {
             try {
               const userDocRef = doc(db, 'usuarios', usuarioID)
-              const todayStr = new Date().toISOString().slice(0, 10)
+              const todayStr = new Date().toLocaleDateString('en-CA')
               await updateDoc(userDocRef, { lastWorkoutDate: todayStr })
               const event = new CustomEvent('streakUpdated', { 
                 detail: { newStreak, lastWorkoutDate: todayStr } 
@@ -190,12 +192,12 @@ export function Training() {
   const currentExercise = exercises[currentExerciseIndex]
 
   return (
-    <main className="flex flex-col items-center min-h-screen bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64 pb-32">
-      <div className="flex items-center justify-center w-full max-w-md mb-4">
+    <main className="flex flex-col items-center h-[calc(100dvh-74px)] md:h-[calc(100dvh-89px)] lg:h-[calc(100dvh-69px)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
+      <div className="flex items-center justify-center w-full max-w-3xl mb-2 flex-shrink-0">
         <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handlePreviousDay}>
           <ChevronLeft />
         </button>
-        <h2 className="text-xl w-[60%] text-center font-bold capitalize text-gray-800 dark:text-gray-100">{daysOfWeek[currentDayIndex]}</h2>
+        <h2 className="text-xl w-full max-w-[60%] text-center font-bold capitalize text-gray-800 dark:text-gray-100">{daysOfWeek[currentDayIndex]}</h2>
         <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handleNextDay}>
           <ChevronRight />
         </button>
@@ -207,37 +209,27 @@ export function Training() {
             <WorkoutHeaderSkeleton />
             <div className='w-full grid grid-cols-1'>
               <TrainingCardSkeleton />
-              <TrainingCardSkeleton />
             </div>
           </>
         ) : (
           selectedWorkout ? (
-            <>
-              <h3 className="text-2xl w-full self-start border-b border-gray-400 font-semibold pb-2 dark:text-gray-300">Dia de: {selectedWorkout.musculo}</h3>
-              <h3 className="text-xl mt-4 w-full font-semibold flex justify-between items-center">
-                <span className='dark:text-gray-300'>Exercícios</span>
-    
-                <section className="flex gap-2">
-                  <Button
-                    className="bg-red-500 border-1 border-gray-500 hover:bg-red-600 text-white font-bold flex gap-2 items-center"
-                    onClick={() => setIsResetModalOpen(true)} // Abre o modal de confirmação
-                  >
-                    <IterationCw />
-                  </Button>
-    
-                  <Button
-                    className="bg-gray-200 border-1 border-gray-400 hover:bg-gray-400 flex gap-2 items-center"
-                    buttonTextColor="text-gray-500 hover:text-white"
-                    onClick={() => setIsExerciseModalOpen(true)}
-                  >
-                    <Plus />
-                  </Button>
-                </section>
-              </h3>
+            <div className="w-full max-w-3xl flex flex-col flex-1 overflow-hidden">
+              <div className="flex justify-between items-center w-full border-b border-gray-300 dark:border-gray-700 pb-3 mb-4 flex-shrink-0">
+                <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100">
+                  Dia de: <span className="text-emerald-600 dark:text-emerald-400">{selectedWorkout.musculo}</span>
+                </h3>
+                <button
+                  onClick={() => setIsSettingsModalOpen(true)}
+                  className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-[#1e1e1e] text-gray-600 dark:text-gray-300 transition-colors shadow-sm border border-transparent hover:border-gray-200 dark:hover:border-[#333]"
+                  title="Ajustes do Treino"
+                >
+                  <Settings2 size={24} />
+                </button>
+              </div>
               {exercises.length > 0 ? (
-                <div className='w-full lg:w-1/2 flex flex-col items-center'>
-                  {/* Navigation arrows */}
-                  <div className="flex items-center justify-between w-full mt-6">
+                <div className='w-full pb-24 flex flex-col items-center flex-1 overflow-hidden'>
+                  {/* Navigation arrows & Progress */}
+                  <div className="flex items-center justify-between w-full mb-3 flex-shrink-0">
                     <button
                       className={`cursor-pointer p-2 rounded-full transition-colors ${
                         currentExerciseIndex === 0
@@ -250,9 +242,26 @@ export function Training() {
                       <ChevronLeft size={32} />
                     </button>
                     
-                    <span className="text-gray-600 dark:text-gray-400 font-medium">
-                      {currentExerciseIndex + 1} de {exercises.length}
-                    </span>
+                    <div className="flex flex-col items-center gap-1.5">
+                      <span className="text-gray-600 dark:text-gray-400 font-medium text-sm">
+                        {currentExerciseIndex + 1} de {exercises.length}
+                      </span>
+                      <div className="flex gap-1.5 justify-center">
+                        {exercises.map((_, index) => (
+                          <button
+                            key={index}
+                            className={`h-2 rounded-full transition-all ${
+                              index === currentExerciseIndex
+                                ? 'bg-[#27AE60] w-6'
+                                : exercises[index].isFeito
+                                ? 'bg-green-300 dark:bg-green-600 w-2'
+                                : 'bg-gray-300 dark:bg-gray-600 w-2'
+                            }`}
+                            onClick={() => setCurrentExerciseIndex(index)}
+                          />
+                        ))}
+                      </div>
+                    </div>
                     
                     <button
                       className={`cursor-pointer p-2 rounded-full transition-colors ${
@@ -269,61 +278,44 @@ export function Training() {
 
                   {/* Current exercise card */}
                   {currentExercise && (
-                    <div className="w-full">
-                      <TrainingCard
-                        key={currentExercise.id}
-                        id={currentExercise.id}
-                        workoutId={selectedWorkout.id}
-                        title={currentExercise.titulo}
-                        sets={currentExercise.series}
-                        reps={currentExercise.repeticoes}
-                        weight={currentExercise.peso}
-                        breakTime={currentExercise.tempoIntervalo}
-                        isFeito={currentExercise.isFeito}
-                        reset={reset}
-                        onEdit={() => fetchExercisesForDay(true)}
-                        onComplete={handleExerciseComplete}
-                        nota={currentExercise.nota}
-                        usesProgressiveWeight={currentExercise.usesProgressiveWeight}
-                        progressiveSets={currentExercise.progressiveSets}
-                      />
+                    <div className="w-full md:flex md:justify-center">
+                        <TrainingCard
+                          key={currentExercise.id}
+                          id={currentExercise.id}
+                          workoutId={selectedWorkout.id}
+                          title={currentExercise.titulo}
+                          sets={currentExercise.series}
+                          reps={currentExercise.repeticoes}
+                          weight={currentExercise.peso}
+                          breakTime={currentExercise.tempoIntervalo}
+                          isFeito={currentExercise.isFeito}
+                          reset={reset}
+                          onEdit={() => fetchExercisesForDay(true)}
+                          onComplete={handleExerciseComplete}
+                          nota={currentExercise.nota}
+                          usesProgressiveWeight={currentExercise.usesProgressiveWeight}
+                          progressiveSets={currentExercise.progressiveSets}
+                        />
                     </div>
                   )}
-
-                  {/* Progress dots */}
-                  <div className="flex gap-2 mt-4">
-                    {exercises.map((_, index) => (
-                      <button
-                        key={index}
-                        className={`w-3 h-3 rounded-full transition-all ${
-                          index === currentExerciseIndex
-                            ? 'bg-[#27AE60] w-8'
-                            : exercises[index].isFeito
-                            ? 'bg-green-300 dark:bg-green-600'
-                            : 'bg-gray-300 dark:bg-gray-600'
-                        }`}
-                        onClick={() => setCurrentExerciseIndex(index)}
-                      />
-                    ))}
-                  </div>
                 </div>
               ) : (
                 <>
                   <p className="text-gray-700 dark:text-gray-300 mt-4 text-center">Desculpe, você ainda não tem exercícios registrados para este treino!</p>
                 </>
               )}
-            </>
+            </div>
           ) : (
-            <>
-              <p className="text-gray-700 dark:text-gray-300">Desculpe, você não tem treinos registrados para este dia!</p>
+            <div className="w-full max-w-3xl flex flex-col items-center justify-center flex-1">
+              <p className="text-gray-700 dark:text-gray-300 text-lg">Desculpe, você não tem treinos registrados para este dia!</p>
               <Button
-                className="bg-gray-200 dark:bg-gray-700 border-1 border-gray-400 dark:border-gray-600 hover:bg-gray-400 dark:hover:bg-gray-600 mt-4"
-                buttonTextColor="text-gray-500 dark:text-gray-300 hover:text-white"
+                className="bg-white dark:bg-[#1e1e1e] shadow-sm border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#252525] mt-6 px-8 py-3 rounded-xl transition-all"
+                buttonTextColor="text-gray-800 dark:text-white font-bold"
                 onClick={() => setIsWorkoutModalOpen(true)}
               >
                 Adicionar treino
               </Button>
-            </>
+            </div>
           )
         )
       }
@@ -346,6 +338,20 @@ export function Training() {
             fetchExercisesForDay(true)
           }}
           workoutId={selectedWorkout.id}
+        />
+      )}
+
+      {isSettingsModalOpen && selectedWorkout && (
+        <WorkoutSettingsModal
+          workout={selectedWorkout}
+          exercises={exercises}
+          onClose={() => setIsSettingsModalOpen(false)}
+          onSave={() => {
+            setIsSettingsModalOpen(false)
+            fetchWorkouts()
+          }}
+          onResetExercises={() => setIsResetModalOpen(true)}
+          onAddExercise={() => setIsExerciseModalOpen(true)}
         />
       )}
 

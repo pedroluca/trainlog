@@ -24,7 +24,7 @@ export function BottomBar() {
     <nav
       className={`${
         isLogged ? 'fixed' : 'hidden'
-      } bottom-6 left-0 right-0 flex items-center justify-center px-6 z-10`}
+      } bottom-6 md:bottom-12 left-0 right-0 flex items-center justify-center px-6 z-10 lg:hidden`}
     >
       <div className='bg-[#1a4d2e]/80 backdrop-blur-2xl rounded-full p-1 shadow-[0_8px_32px_rgba(26,77,46,0.4)] border border-white/20 flex items-center justify-center gap-12 relative overflow-hidden'>
         <div className='absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-full'></div>

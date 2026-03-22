@@ -13,12 +13,17 @@ import { Progress } from './pages/progress'
 import { BodyMetrics } from './pages/body-metrics'
 import { ResetPassword } from './pages/reset-password'
 import { AdminLogin } from './pages/admin-login'
-import { AdminDashboard } from './pages/admin-dashboard'
+import { AdminLayout } from './layouts/admin-layout'
+import { AdminOverview } from './pages/admin/overview'
+import { AdminUsers } from './pages/admin/users'
+import { AdminActivities } from './pages/admin/activities'
+import { AdminBugs } from './pages/admin/bugs'
 import { StreakCalendar } from './pages/streak-calendar'
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
 import { WhatsNewModal } from './components/whats-new-modal'
 import { ThemeProvider } from './contexts/theme-context'
+import { getVersion } from './version'
 import { currentRelease } from './data/whats-new'
 import { checkAndResetStreakIfMissed, resetPreviousDaysExercises } from './data/streak-utils'
 import { doc, getDoc } from 'firebase/firestore'
@@ -28,28 +33,35 @@ import { Friends } from './pages/friends'
 
 export function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false)
+  const [forceUpdateVersion, setForceUpdateVersion] = useState<string | null>(null)
 
   useEffect(() => {
     const checkVersion = async () => {
       const usuarioID = localStorage.getItem('usuarioId')
       if (!usuarioID) return
-
-      const lastSeenVersion = localStorage.getItem('lastSeenVersion')
       
-      if (lastSeenVersion !== currentRelease.version) {
-        try {
-          const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
-          const firestoreVersion = userDoc.data()?.lastSeenVersion
-          
-          if (firestoreVersion !== currentRelease.version) {
+      try {
+        const sistemaDoc = await getDoc(doc(db, 'sistema', 'info'))
+        const lastVersion = sistemaDoc.data()?.lastVersion
+        if (!lastVersion) return
+        
+        const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
+        const firestoreVersion = userDoc.data()?.lastSeenVersion
+        
+        if (firestoreVersion !== lastVersion) {
+          if (getVersion() === lastVersion || currentRelease.version === lastVersion) {
             setShowWhatsNew(true)
+            setForceUpdateVersion(null)
           } else {
-            localStorage.setItem('lastSeenVersion', currentRelease.version)
+            setForceUpdateVersion(lastVersion)
           }
-        } catch (error) {
-          console.error('Error checking version:', error)
-          setShowWhatsNew(true)
+        } else {
+          if (localStorage.getItem('lastSeenVersion') !== lastVersion) {
+            localStorage.setItem('lastSeenVersion', lastVersion)
+          }
         }
+      } catch (error) {
+        console.error('Error checking version:', error)
       }
     }
 
@@ -66,8 +78,6 @@ export function App() {
         await resetPreviousDaysExercises(usuarioID)
         
         await checkAndResetStreakIfMissed(usuarioID)
-        
-        console.log('✅ Streak checks completed')
       } catch (error) {
         console.error('❌ Error in streak initialization:', error)
       }
@@ -82,7 +92,12 @@ export function App() {
       <BrowserRouter>
         <PWAUpdateNotification />
         <PWAInstallPrompt />
-        <WhatsNewModal isOpen={showWhatsNew} onClose={() => setShowWhatsNew(false)} />
+        <WhatsNewModal 
+          isOpen={showWhatsNew || !!forceUpdateVersion} 
+          onClose={() => setShowWhatsNew(false)} 
+          forceUpdateVersion={forceUpdateVersion}
+          systemVersion={forceUpdateVersion || getVersion()}
+        />
         <Routes>
           <Route element={<LayoutWithoutBottomBar />}>
             <Route path='/' element={<Home />} />
@@ -107,7 +122,12 @@ export function App() {
           </Route>
 
           <Route path='/admin' element={<AdminLogin />} />
-          <Route path='/admin/dashboard' element={<AdminDashboard />} />
+          <Route path='/admin/dashboard' element={<AdminLayout />}>
+            <Route index element={<AdminOverview />} />
+            <Route path='users' element={<AdminUsers />} />
+            <Route path='activities' element={<AdminActivities />} />
+            <Route path='bugs' element={<AdminBugs />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

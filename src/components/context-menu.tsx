@@ -44,7 +44,7 @@ export function ContextMenu({ isOpen, onClose, onEdit, onAddNote, position }: Co
           onEdit()
           onClose()
         }}
-        className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-700 dark:text-gray-300 transition-colors"
+        className="w-full md:text-lg px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-700 dark:text-gray-300 transition-colors"
       >
         <Edit size={18} />
         <span>Editar Exercício</span>
@@ -55,7 +55,7 @@ export function ContextMenu({ isOpen, onClose, onEdit, onAddNote, position }: Co
           onAddNote()
           onClose()
         }}
-        className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-700 dark:text-gray-300 transition-colors"
+        className="w-full md:text-lg px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-gray-700 dark:text-gray-300 transition-colors"
       >
         <FileText size={18} />
         <span>Anotação</span>

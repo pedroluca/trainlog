@@ -103,6 +103,7 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
     const userData = userDoc.data()
     const scheduledDays = userData.scheduledDays || []
     const lastCompletedDate = userData.lastCompletedDate
+    const lastWorkoutDate = userData.lastWorkoutDate // YYYY-MM-DD — saved on first full completion
     const currentStreak = userData.currentStreak || 0
     
     if (scheduledDays.length === 0 || currentStreak === 0) return
@@ -126,8 +127,14 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
       const checkDayOfWeek = checkDate.getDay()
       
       if (scheduledDays.includes(checkDayOfWeek)) {
+        // Primary check: logs collection
         const wasCompleted = await wasWorkoutCompletedOnDate(usuarioID, checkDate)
-        if (!wasCompleted) {
+        
+        // Secondary check: lastWorkoutDate (protects against "added exercises after completion" scenario)
+        const checkDateStr = checkDate.toLocaleDateString('en-CA') // YYYY-MM-DD
+        const wasCompletedViaLastWorkout = lastWorkoutDate === checkDateStr
+
+        if (!wasCompleted && !wasCompletedViaLastWorkout) {
           missedScheduledDay = true
           break
         }
@@ -180,19 +187,22 @@ export async function resetPreviousDaysExercises(usuarioID: string): Promise<voi
       
       if (workoutDay === todayName) continue
       
-      const exercises = workoutData.exercises || []
-      const hasCheckedExercises = exercises.some((ex: { checked?: boolean }) => ex.checked === true)
+      const exercisesRef = collection(db, 'treinos', docSnap.id, 'exercicios')
+      const exercisesSnap = await getDocs(exercisesRef)
       
-      if (hasCheckedExercises) {
-        const resetExercises = exercises.map((ex: { checked?: boolean }) => ({
-          ...ex,
-          checked: false
-        }))
-        
-        await updateDoc(doc(db, 'treinos', docSnap.id), {
-          exercises: resetExercises
-        })
-        
+      let hasUpdates = false
+      const updatePromises: Promise<void>[] = []
+      
+      for (const exDoc of exercisesSnap.docs) {
+        const exData = exDoc.data()
+        if (exData.isFeito === true) {
+          hasUpdates = true
+          updatePromises.push(updateDoc(exDoc.ref, { isFeito: false }))
+        }
+      }
+      
+      if (hasUpdates) {
+        await Promise.all(updatePromises)
         resetCount++
       }
     }

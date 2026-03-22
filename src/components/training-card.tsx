@@ -271,8 +271,10 @@ export function TrainingCard(props: TrainingCardProps) {
 
   return (
     <div
-      className={`shadow-md relative rounded-lg overflow-hidden p-6 my-4 mx-2 transition-all min-h-[500px] flex flex-col ${
-        isFinished ? 'bg-[#27AE60] border-green-400' : 'bg-white dark:bg-[#2d2d2d] border-gray-200 dark:border-[#404040]'
+      className={`shadow-lg lg:shadow-xl w-full max-w-sm md:max-w-xl lg:max-w-2xl relative rounded-2xl overflow-hidden p-6 md:p-8 mx-auto transition-all duration-300 min-h-[375px] max-h-[500px] md:max-h-[600px] lg:max-h-[450px] flex flex-col ${
+        isFinished 
+          ? 'bg-gradient-to-br from-[#27AE60] to-[#1E8449] border-green-500 shadow-green-900/20' 
+          : 'bg-white dark:bg-[#1e1e1e] border border-gray-100 dark:border-[#2a2a2a] shadow-black/5 dark:shadow-black/20'
       }`}
     >
       <button
@@ -289,7 +291,7 @@ export function TrainingCard(props: TrainingCardProps) {
         onAddNote={() => setIsNoteModalOpen(true)}
       />
 
-      <h2 className={`text-3xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h2>
+      <h2 className={`text-3xl md:text-4xl lg:text-2xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h2>
       
       {!isBreakTime ? (
         <>
@@ -297,7 +299,7 @@ export function TrainingCard(props: TrainingCardProps) {
             {usesProgressiveWeight && progressiveSets ? (
               // Progressive weight display
               <>
-                <p className={`text-lg mb-3 font-bold ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-lg md:text-2xl lg:text-xl mb-3 font-bold ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   Peso Progressivo:
                 </p>
                 {progressiveSets.map((set, index) => {
@@ -307,7 +309,7 @@ export function TrainingCard(props: TrainingCardProps) {
                   return (
                     <p 
                       key={index} 
-                      className={`text-base mb-2 transition-all ${
+                      className={`text-base md:text-xl lg:text-lg mb-2 transition-all ${
                         isFinished 
                           ? 'text-[#f4f4f4]' 
                           : isCurrentSet
@@ -323,25 +325,25 @@ export function TrainingCard(props: TrainingCardProps) {
                     </p>
                   )
                 })}
-                <p className={`text-lg mb-3 mt-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-lg md:text-2xl lg:text-xl mb-3 mt-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   <strong>Descanso:</strong> {formatTime(breakTime)} min
                 </p>
               </>
             ) : (
               // Normal display
               <>
-                <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   <strong>Repetição:</strong> {sets} x {reps}
                 </p>
-                <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   <strong>Carga:</strong> {weight} kg
                 </p>
-                <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   <strong>Descanso:</strong> {formatTime(breakTime)} min
                 </p>
               </>
             )}
-            <p className={`text-lg mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+            <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
               <strong>Você fez:</strong> {isFinished ? sets : setsDone} séries de {sets}
             </p>
             {nota && (
@@ -356,7 +358,7 @@ export function TrainingCard(props: TrainingCardProps) {
             onClick={handleStartSet} 
             disabled={isFinished} 
             bgColor={'bg-[#27AE60] hover:bg-[#219150] disabled:bg-[#219150]'}
-            className='w-full py-4 text-lg font-bold mt-4'
+            className='w-full py-4 text-lg md:text-2xl lg:text-xl font-bold mt-4'
           >
             {isFinished ? 'Concluído' : ('Finalizar ' + (setsDone + 1) + 'ª série')}
           </Button>
@@ -365,20 +367,20 @@ export function TrainingCard(props: TrainingCardProps) {
         <>
           <div className='mb-auto flex flex-col items-center justify-center flex-1'>
             {usesProgressiveWeight && progressiveSets ? (
-              <p className='text-xl mb-6 text-gray-700 dark:text-gray-300 text-center'>
+              <p className='text-xl md:text-3xl lg:text-2xl mb-6 text-gray-700 dark:text-gray-300 text-center'>
                 <strong>Séries feitas:</strong> {setsDone + 1} de {sets}<br />
                 <span className='text-base'>({progressiveSets[setsDone]?.reps || reps} reps × {progressiveSets[setsDone]?.weight || weight} kg)</span>
               </p>
             ) : (
-              <p className='text-xl mb-6 text-gray-700 dark:text-gray-300 text-center'>
+              <p className='text-xl md:text-3xl lg:text-2xl mb-4 text-gray-700 dark:text-gray-300 text-center'>
                 <strong>Séries feitas:</strong> {setsDone + 1} de {sets} com {reps} repetições cada
               </p>
             )}
-            <h2 className='text-2xl font-bold mb-4 text-gray-500 dark:text-gray-400'>Intervalo de descanso:</h2>
-            <p className='text-gray-700 dark:text-gray-300 text-6xl font-mono mb-8'>{formatTime(timeLeft)}</p>
+            {/* <h2 className='text-2xl md:text-4xl font-bold mb-4 text-gray-500 dark:text-gray-400'>Intervalo de descanso:</h2> */}
+            <p className='text-gray-700 dark:text-gray-300 text-6xl md:text-8xl lg:text-6xl font-mono mb-4'>{formatTime(timeLeft)}</p>
           </div>
           <Button
-            className='w-full bg-red-400 hover:bg-red-500 py-4 text-lg rounded text-white font-bold mt-4'
+            className='w-full bg-red-400 hover:bg-red-500 py-4 text-lg md:text-2xl lg:text-xl rounded text-white font-bold mt-4'
             onClick={() => {
               setIsBreakTime(false)
               setTimeLeft(0)
