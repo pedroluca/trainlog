@@ -134,7 +134,7 @@ export function AddFriendModal({ onClose, currentUserId }: AddFriendModalProps) 
         </div>
 
         {/* Results List */}
-        <div className="p-5 overflow-y-auto flex-1 bg-gray-50/50 dark:bg-[#121212]/50">
+        <div className="p-5 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/50 dark:bg-[#121212]/50">
           {loading ? (
             <div className="flex justify-center py-8">
               <div className="w-8 h-8 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div>
