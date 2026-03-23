@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, disableNetwork, enableNetwork } from 'firebase/firestore'
 import { getAnalytics, logEvent as firebaseLogEvent, isSupported, Analytics } from 'firebase/analytics'
 
 const firebaseConfig = {
@@ -14,7 +14,29 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
-export const db = getFirestore(app)
+
+// Habilita a persistência offline do Firestore (cache no navegador com suporte a múltiplas abas)
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+})
+
+// Gerencia a rede do Firestore dinamicamente para evitar timeouts de 10s quando offline
+if (typeof window !== 'undefined') {
+  window.addEventListener('offline', () => {
+    console.log('App is offline, disabling Firestore network to use cache instantly...')
+    disableNetwork(db).catch(console.error)
+  })
+  window.addEventListener('online', () => {
+    console.log('App is online, enabling Firestore network...')
+    enableNetwork(db).catch(console.error)
+  })
+  // Se já estiver offline na inicialização
+  if (!navigator.onLine) {
+    disableNetwork(db).catch(console.error)
+  }
+}
 
 // Initialize Analytics (only in browser environment)
 let analytics: Analytics | null = null

@@ -146,62 +146,44 @@ export function TrainingCard(props: TrainingCardProps) {
     setTimeLeft(breakTime)
   }
 
-  const handleFinishSet = useCallback(async () => {
-    try {
-      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-      await updateDoc(exerciseRef, { isFeito: true, lastDoneDate: new Date().toISOString() })
-      
-      // Add exercise to log when completed
-      try {
-        const usuarioId = localStorage.getItem('usuarioId')
-        // console.log('User ID from localStorage:', usuarioId)
-        // console.log('Exercise data:', { title, sets, reps, weight })
-        
-        if (usuarioId) {
-          // console.log('Creating log entry for user:', usuarioId)
-          
-          const logsRef = collection(db, 'logs')
-          const logDoc = await addDoc(logsRef, {
-            usuarioID: usuarioId,
-            titulo: title,
-            series: sets,
-            repeticoes: reps,
-            peso: weight,
-            data: new Date().toISOString(),
-          })
-          
-          console.log('Log entry created with ID:', logDoc.id)
-        } else {
-          console.error('No user ID found in localStorage')
-        }
-      } catch (logErr) {
-        console.error('Erro ao adicionar exercício ao log:', logErr)
-        if (logErr instanceof Error) {
-          console.error('Error details:', logErr.message)
-        }
-      }
-      
-      onEdit()
-      
-      // Call onComplete callback to move to next exercise
-      if (onComplete) {
-        onComplete()
-      }
-    } catch (err) {
-      console.error('Erro ao marcar exercício como concluído:', err)
+  const handleFinishSet = useCallback(() => {
+    const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+    updateDoc(exerciseRef, { isFeito: true, lastDoneDate: new Date().toISOString() })
+      .catch(err => console.error('Erro ao marcar exercício como concluído:', err))
+    
+    // Add exercise to log when completed
+    const usuarioId = localStorage.getItem('usuarioId')
+    
+    if (usuarioId) {
+      const logsRef = collection(db, 'logs')
+      addDoc(logsRef, {
+        usuarioID: usuarioId,
+        titulo: title,
+        series: sets,
+        repeticoes: reps,
+        peso: weight,
+        data: new Date().toISOString(),
+      }).catch(logErr => console.error('Erro ao adicionar exercício ao log:', logErr))
+    } else {
+      console.error('No user ID found in localStorage')
+    }
+    
+    onEdit()
+    
+    // Call onComplete callback to move to next exercise
+    if (onComplete) {
+      onComplete()
     }
   }, [workoutId, id, onEdit, onComplete, title, sets, reps, weight])
 
-  const handleDeleteExercise = async () => {
-    try {
-      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-      await deleteDoc(exerciseRef)
-      setIsDeleteModalOpen(false)
-      onEdit()
-    } catch (err) {
+  const handleDeleteExercise = () => {
+    const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+    deleteDoc(exerciseRef).catch(err => {
       console.error('Erro ao excluir exercício:', err)
       setToast({ show: true, message: 'Erro ao excluir exercício.', type: 'error' })
-    }
+    })
+    setIsDeleteModalOpen(false)
+    onEdit()
   }
 
   useEffect(() => {
@@ -229,44 +211,40 @@ export function TrainingCard(props: TrainingCardProps) {
     return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
   }
 
-  const handleSaveChanges = async () => {
-    try {
-      const [minutes, seconds] = editedBreakTime.split(':').map(Number)
-      const totalBreakTime = minutes * 60 + seconds
-  
-      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-      
-      const updateData = {
-        titulo: editedTitle,
-        series: editedSets,
-        repeticoes: editedReps,
-        peso: editedWeight,
-        tempoIntervalo: totalBreakTime,
-        usesProgressiveWeight: editedUsesProgressiveWeight,
-        progressiveSets: editedUsesProgressiveWeight ? editedProgressiveSets : deleteField()
-      }
-      
-      await updateDoc(exerciseRef, updateData)
-      setIsModalOpen(false)
-      onEdit()
-    } catch (err) {
+  const handleSaveChanges = () => {
+    const [minutes, seconds] = editedBreakTime.split(':').map(Number)
+    const totalBreakTime = minutes * 60 + seconds
+
+    const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+    
+    const updateData = {
+      titulo: editedTitle,
+      series: editedSets,
+      repeticoes: editedReps,
+      peso: editedWeight,
+      tempoIntervalo: totalBreakTime,
+      usesProgressiveWeight: editedUsesProgressiveWeight,
+      progressiveSets: editedUsesProgressiveWeight ? editedProgressiveSets : deleteField()
+    }
+    
+    updateDoc(exerciseRef, updateData).catch(err => {
       console.error('Erro ao atualizar exercício:', err)
       setToast({ show: true, message: 'Erro ao atualizar exercício.', type: 'error' })
-    }
+    })
+    setIsModalOpen(false)
+    onEdit()
   }
 
-  const handleSaveNote = async (noteText: string) => {
-    try {
-      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-      await updateDoc(exerciseRef, {
-        nota: noteText
-      })
-      setToast({ show: true, message: 'Nota salva com sucesso!', type: 'success' })
-      onEdit()
-    } catch (err) {
+  const handleSaveNote = (noteText: string) => {
+    const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+    updateDoc(exerciseRef, {
+      nota: noteText
+    }).catch(err => {
       console.error('Erro ao salvar nota:', err)
       setToast({ show: true, message: 'Erro ao salvar nota.', type: 'error' })
-    }
+    })
+    setToast({ show: true, message: 'Nota computada (salva na fila offline ou sincronizada)!', type: 'success' })
+    onEdit()
   }
 
   return (

@@ -29,9 +29,9 @@ export async function updateScheduledDays(usuarioID: string): Promise<number[]> 
     const scheduledDays = Array.from(uniqueDays).sort()
     
     const userDocRef = doc(db, 'usuarios', usuarioID)
-    await updateDoc(userDocRef, {
+    updateDoc(userDocRef, {
       scheduledDays
-    })
+    }).catch(console.error)
     
     return scheduledDays
   } catch (err) {
@@ -144,9 +144,9 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
     }
     
     if (missedScheduledDay) {
-      await updateDoc(userDocRef, {
+      updateDoc(userDocRef, {
         currentStreak: 0
-      })
+      }).catch(console.error)
       
       window.dispatchEvent(new CustomEvent('streakUpdated', { 
         detail: { newStreak: 0 } 
@@ -248,11 +248,11 @@ export async function updateStreak(usuarioID: string): Promise<number> {
       newStreak = 1
     }
     const newLongestStreak = Math.max(longestStreak, newStreak)
-    await updateDoc(userDocRef, {
+    updateDoc(userDocRef, {
       currentStreak: newStreak,
       longestStreak: newLongestStreak,
       lastCompletedDate: todayStr
-    })
+    }).catch(console.error)
     return newStreak
   } catch (err) {
     console.error('❌ Error updating streak:', err)

@@ -156,7 +156,7 @@ export function Training() {
             try {
               const userDocRef = doc(db, 'usuarios', usuarioID)
               const todayStr = new Date().toLocaleDateString('en-CA')
-              await updateDoc(userDocRef, { lastWorkoutDate: todayStr })
+              updateDoc(userDocRef, { lastWorkoutDate: todayStr }).catch(console.error)
               const event = new CustomEvent('streakUpdated', { 
                 detail: { newStreak, lastWorkoutDate: todayStr } 
               })
