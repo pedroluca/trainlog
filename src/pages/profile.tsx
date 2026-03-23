@@ -320,11 +320,13 @@ export function Profile() {
             .filter((workout) => workout.usuarioID === usuarioID)
             .sort((a, b) => daysOrder.indexOf(a.dia) - daysOrder.indexOf(b.dia)) // Ordena os treinos pelo dia
           setWorkouts(userWorkouts)
+          if (usuarioID) await updateScheduledDays(usuarioID)
         } catch (err) {
           console.error('Erro ao buscar treinos:', err)
         }
       }
       fetchWorkouts()
+      fetchDisabledDays()
     } catch (err) {
       console.error('Erro ao excluir treino:', err)
       setToast({ show: true, message: 'Erro ao excluir treino.', type: 'error' })
@@ -759,6 +761,10 @@ export function Profile() {
                   .filter((workout) => workout.usuarioID === usuarioID)
                   .sort((a, b) => daysOrder.indexOf(a.dia) - daysOrder.indexOf(b.dia)) // Ordena os treinos pelo dia
                 setWorkouts(userWorkouts)
+                
+                if (usuarioID) {
+                  await updateScheduledDays(usuarioID)
+                }
               } catch (err) {
                 console.error('Erro ao buscar treinos:', err)
               }

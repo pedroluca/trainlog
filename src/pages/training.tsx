@@ -11,7 +11,7 @@ import { WorkoutCompleteModal } from '../components/workout-complete-modal'
 import { useNavigate } from 'react-router-dom'
 import { collection, doc, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
-import { updateStreak } from '../data/streak-utils'
+import { updateStreak, updateScheduledDays } from '../data/streak-utils'
 import { trackPageView, trackWorkoutCompleted } from '../utils/analytics'
 
 const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
@@ -325,6 +325,7 @@ export function Training() {
           onClose={() => {
             setIsWorkoutModalOpen(false)
             fetchWorkouts()
+            if (usuarioID) updateScheduledDays(usuarioID)
           }}
           currentDay={daysOfWeek[currentDayIndex]}
           usuarioID={usuarioID}
@@ -349,6 +350,7 @@ export function Training() {
           onSave={() => {
             setIsSettingsModalOpen(false)
             fetchWorkouts()
+            if (usuarioID) updateScheduledDays(usuarioID)
           }}
           onResetExercises={() => setIsResetModalOpen(true)}
           onAddExercise={() => setIsExerciseModalOpen(true)}
