@@ -11,7 +11,7 @@ export type UserData = {
   isAdmin?: boolean
   isActive?: boolean
   isPremium?: boolean
-  createdAt?: unknown
+  criadoEm?: unknown
 }
 
 export type WorkoutData = {
@@ -103,7 +103,7 @@ export function AdminLayout() {
           isAdmin: d.data().isAdmin || false,
           isActive: d.data().isActive !== undefined ? d.data().isActive : true,
           isPremium: d.data().isPremium || false,
-          createdAt: d.data().createdAt,
+          criadoEm: d.data().criadoEm,
         }))
         setUsers(usersData)
 
