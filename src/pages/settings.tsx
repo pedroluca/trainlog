@@ -4,7 +4,7 @@ import { auth, db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { Button } from '../components/button'
-import { AlertCircle, ArrowLeft, Eye, EyeOff, Lock, Moon, Shield, Sun, Volume2, VolumeX } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, Headset, Lock, Moon, Shield, Sun, Volume2, VolumeX } from 'lucide-react'
 import { useTheme } from '../contexts/theme-context'
 import { Toast, ToastState } from '../components/toast'
 import { ReportBugModal } from '../components/report-bug-modal'
@@ -486,7 +486,7 @@ export function Settings() {
       {/* Bug Report Section */}
       <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <AlertCircle className="text-blue-500" />
+          <Headset className="text-blue-500" />
           Ajuda e Suporte
         </h2>
         
