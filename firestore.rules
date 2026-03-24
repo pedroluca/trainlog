@@ -92,6 +92,12 @@ service cloud.firestore {
       allow delete: if request.auth.uid == resource.data.usuarioID || isAdmin();
     }
     
+    // bug_reports collection
+    match /bug_reports/{reportId} {
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.usuarioID;
+      allow read, update, delete: if isAdmin();
+    }
+    
     // amizades collection
     match /amizades/{amizadeId} {
       // Anyone authenticated can read friendships to accurately count friend stats

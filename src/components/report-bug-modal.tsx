@@ -126,7 +126,7 @@ export function ReportBugModal({ onClose, usuarioID, nome, email, username }: Re
 
   return (
     <div className="fixed inset-0 z-[100] bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex flex-col lg:flex-row items-end lg:items-center justify-center lg:px-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#1e1e1e] w-full lg:w-[500px] lg:rounded-2xl rounded-t-2xl flex flex-col max-h-[90vh] shadow-2xl animate-in slide-in-from-bottom-full lg:slide-in-from-bottom-8 duration-300 border border-gray-100 dark:border-[#333]">
+      <div className="bg-white dark:bg-[#1e1e1e] w-full lg:w-[500px] lg:rounded-2xl rounded-2xl flex flex-col max-h-[90vh] shadow-2xl animate-in slide-in-from-bottom-full lg:slide-in-from-bottom-8 duration-300 border border-gray-100 dark:border-[#333]">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-[#333]">
           <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
