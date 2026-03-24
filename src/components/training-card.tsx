@@ -586,7 +586,7 @@ export function TrainingCard(props: TrainingCardProps) {
       )}
 
       {isDeleteModalOpen && (
-        <div className='fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4'>
+        <div className='fixed inset-0 z-80 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4'>
           <div className='bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-80'>
             <h2 className='text-xl font-bold mb-4 dark:text-gray-100'>Confirmar Exclusão</h2>
             <p className='text-gray-700 dark:text-gray-300 mb-6'>Tem certeza de que deseja excluir este exercício?</p>
