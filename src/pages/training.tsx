@@ -10,7 +10,7 @@ import { WorkoutSettingsModal } from '../components/workout-settings-modal'
 import { WorkoutCompleteModal } from '../components/workout-complete-modal'
 import { useNavigate } from 'react-router-dom'
 import { collection, doc, getDocs, updateDoc } from 'firebase/firestore'
-import { db } from '../firebaseConfig'
+import { db, requestNotificationPermission } from '../firebaseConfig'
 import { updateStreak, updateScheduledDays } from '../data/streak-utils'
 import { trackPageView, trackWorkoutCompleted } from '../utils/analytics'
 
@@ -84,6 +84,27 @@ export function Training() {
     fetchWorkouts()
     setReset(false)
   }, [fetchWorkouts])
+
+  useEffect(() => {
+    const requestTrainingNotificationPermission = async () => {
+      if (!usuarioID) return
+      if (typeof window === 'undefined' || typeof Notification === 'undefined') return
+
+      // Só solicita automaticamente quando ainda não houve escolha do usuário.
+      if (Notification.permission !== 'default') return
+
+      const result = await requestNotificationPermission()
+      if (result.success && result.token) {
+        try {
+          await updateDoc(doc(db, 'usuarios', usuarioID), { fcmToken: result.token })
+        } catch (error) {
+          console.error('Erro ao salvar token FCM na tela de treino:', error)
+        }
+      }
+    }
+
+    requestTrainingNotificationPermission().then(() => {})
+  }, [usuarioID])
 
   useEffect(() => {
     if (workouts.length > 0) {
