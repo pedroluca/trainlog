@@ -1,21 +1,25 @@
-import Logo from '../assets/full-logo.png'
 import { getVersionWithPrefix } from '../version'
 
 export function Footer() {
-  const currentYear = new Date().getFullYear()
-
   return (
-    <footer className='h-56 pb-16 bg-[#1A252F] text-white flex flex-col items-center justify-center'>
-      <main className='h-[60%] w-full flex flex-col items-center justify-center'>
-        <img src={Logo} alt='Logo' className='w-32 h-16' />
-      </main>
-      <section className='h-[40%] w-full flex flex-col items-center justify-center'>
-        <p>© {currentYear} TrainLog. All rights reserved.</p>
-        <p className='text-sm text-[#BDC3C7]'>
-          Desenvolvido por <a href='https://pedroluca.dev.br' target='_blank' rel='noopener noreferrer' className='text-[#F1C40F] hover:underline'>Pedro Luca Prates</a>.
-        </p>
-        <p className='text-xs text-gray-400 mb-2'>{getVersionWithPrefix()}</p>
-      </section>
+    <footer className="mt-6 text-center space-y-2 pb-8 md:pb-30 lg:pb-0">
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        © {new Date().getFullYear()} TrainLog. Todos os direitos reservados.
+      </p>
+      <p className="text-xs text-gray-600 dark:text-gray-300">
+        Desenvolvido por{' '}
+        <a 
+          href='https://pedroluca.dev.br' 
+          target='_blank' 
+          rel='noopener noreferrer' 
+          className='text-[#27AE60] hover:text-[#219150] font-medium transition-colors'
+        >
+          Pedro Luca Prates
+        </a>
+      </p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 hover:text-[#27AE60] dark:hover:text-[#27AE60] transition-colors cursor-pointer underline">
+        {getVersionWithPrefix()}
+      </p>
     </footer>
   )
 }

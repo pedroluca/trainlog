@@ -901,9 +901,9 @@ export function Profile() {
       )}
 
       {/* Footer Info Section */}
-      <div className="mt-12 text-center space-y-2 pb-8 lg:pb-30">
+      <div className="mt-6 text-center space-y-2 pb-8 md:pb-30 lg:pb-0">
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          © {new Date().getFullYear()} TrainLog. All rights reserved.
+          © {new Date().getFullYear()} TrainLog. Todos os direitos reservados.
         </p>
         <p className="text-xs text-gray-600 dark:text-gray-300">
           Desenvolvido por{' '}

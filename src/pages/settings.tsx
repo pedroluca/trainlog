@@ -4,9 +4,11 @@ import { auth, db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { Button } from '../components/button'
-import { ArrowLeft, Volume2, VolumeX, Lock, Eye, EyeOff, Moon, Sun, Shield } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Eye, EyeOff, Lock, Moon, Shield, Sun, Volume2, VolumeX } from 'lucide-react'
 import { useTheme } from '../contexts/theme-context'
 import { Toast, ToastState } from '../components/toast'
+import { ReportBugModal } from '../components/report-bug-modal'
+import { Footer } from '../components/footer'
 
 export function Settings() {
   const navigate = useNavigate()
@@ -16,6 +18,12 @@ export function Settings() {
   // Audio settings
   const [audioEnabled, setAudioEnabled] = useState(false)
   const [loadingAudio, setLoadingAudio] = useState(false)
+
+  // User Info & Modals
+  const [nome, setNome] = useState<string | null>(null)
+  const [email, setEmail] = useState<string | null>(null)
+  const [username, setUsername] = useState<string | null>(null)
+  const [isBugModalOpen, setIsBugModalOpen] = useState(false)
 
   // Privacy Settings
   const [privacidade, setPrivacidade] = useState({
@@ -64,6 +72,11 @@ export function Settings() {
 
         if (userDoc.exists()) {
           const userData = userDoc.data()
+          // User info for bug reports
+          setNome(userData.nome || null)
+          setEmail(userData.email || null)
+          setUsername(userData.username || null)
+          
           // Audio is disabled by default
           setAudioEnabled(userData.audioEnabled === true)
           if (userData.privacidade) {
@@ -344,7 +357,7 @@ export function Settings() {
       </div>
 
       {/* Password Change Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl border border-gray-200 dark:border-[#404040]">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
           <Lock className="text-gray-700 dark:text-gray-300" />
           Alterar Senha
@@ -470,8 +483,34 @@ export function Settings() {
         )}
       </div>
 
+      {/* Bug Report Section */}
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <AlertCircle className="text-blue-500" />
+          Ajuda e Suporte
+        </h2>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <p className="text-gray-700 dark:text-gray-300 mb-1 font-medium">
+              Encontrou um problema ou tem uma sugestão?
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Ajude-nos a melhorar o aplicativo relatando bugs ou enviando ideias.
+            </p>
+          </div>
+          
+          <Button
+            onClick={() => setIsBugModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 shrink-0 ml-4"
+          >
+            Reportar
+          </Button>
+        </div>
+      </div>
+
       {/* Future Settings Placeholder */}
-      <div className="bg-gray-50 dark:bg-[#2d2d2d] shadow rounded-xl p-6 w-full max-w-2xl mt-4 border border-gray-200 dark:border-[#404040]">
+      <div className="bg-gray-50 dark:bg-[#2d2d2d] shadow rounded-xl p-6 mb-4 w-full max-w-2xl border border-gray-200 dark:border-[#404040]">
         <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
           Mais configurações em breve...
         </h3>
@@ -481,12 +520,24 @@ export function Settings() {
           • E muito mais!
         </p>
       </div>
+
+      <Footer />
       
       {toast.show && (
         <Toast
           message={toast.message}
           type={toast.type}
           onClose={() => setToast({ ...toast, show: false })}
+        />
+      )}
+
+      {isBugModalOpen && usuarioID && (
+        <ReportBugModal
+          onClose={() => setIsBugModalOpen(false)}
+          usuarioID={usuarioID}
+          nome={nome}
+          email={email}
+          username={username}
         />
       )}
     </main>
