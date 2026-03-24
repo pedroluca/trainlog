@@ -29,7 +29,6 @@ export function Settings() {
   // Push Notifications
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default')
   const [notifLoading, setNotifLoading] = useState(false)
-  const [fcmToken, setFcmToken] = useState<string | null>(null)
 
   // Privacy Settings
   const [privacidade, setPrivacidade] = useState({
@@ -82,7 +81,6 @@ export function Settings() {
           setNome(userData.nome || null)
           setEmail(userData.email || null)
           setUsername(userData.username || null)
-          setFcmToken(userData.fcmToken || null)
           
           // Audio is disabled by default
           setAudioEnabled(userData.audioEnabled === true)
@@ -119,7 +117,6 @@ export function Settings() {
     try {
       const result = await requestNotificationPermission()
       if (result.success && result.token) {
-        setFcmToken(result.token)
         setNotifPermission('granted')
         await updateDoc(doc(db, 'usuarios', usuarioID), { fcmToken: result.token })
         setToast({ show: true, message: 'Notificações ativadas com sucesso! 🔔', type: 'success' })
@@ -141,18 +138,6 @@ export function Settings() {
       setToast({ show: true, message: 'Erro ao ativar notificações.', type: 'error' })
     } finally {
       setNotifLoading(false)
-    }
-  }
-
-  const handleCopyFcmToken = async () => {
-    if (!fcmToken) return
-
-    try {
-      await navigator.clipboard.writeText(fcmToken)
-      setToast({ show: true, message: 'FCM token copiado! Use no teste manual.', type: 'success' })
-    } catch (err) {
-      console.error('Erro ao copiar FCM token:', err)
-      setToast({ show: true, message: 'Não foi possível copiar o token.', type: 'error' })
     }
   }
 
@@ -369,19 +354,6 @@ export function Settings() {
           )}
         </div>
 
-        {notifPermission === 'granted' && fcmToken && (
-          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#404040]">
-            <p className="text-xs text-gray-500 dark:text-gray-400 break-all mb-2">
-              Token atual: {fcmToken}
-            </p>
-            <Button
-              onClick={handleCopyFcmToken}
-              className="bg-gray-200 hover:bg-gray-300 dark:bg-[#404040] dark:hover:bg-[#505050] text-gray-800 dark:text-gray-200 px-3 py-1.5 text-sm"
-            >
-              Copiar token para teste
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Privacy Settings Section */}
