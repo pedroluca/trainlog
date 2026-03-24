@@ -111,6 +111,25 @@ export function Settings() {
     }
   }, [usuarioID, navigate])
 
+  useEffect(() => {
+    const syncFcmTokenForCurrentUser = async () => {
+      if (!usuarioID) return
+      if (typeof window === 'undefined' || typeof Notification === 'undefined') return
+      if (Notification.permission !== 'granted') return
+
+      try {
+        const result = await requestNotificationPermission()
+        if (result.success && result.token) {
+          await updateDoc(doc(db, 'usuarios', usuarioID), { fcmToken: result.token })
+        }
+      } catch (err) {
+        console.error('Erro ao sincronizar token FCM no settings:', err)
+      }
+    }
+
+    syncFcmTokenForCurrentUser().then(() => {})
+  }, [usuarioID])
+
   const handleEnableNotifications = async () => {
     if (!usuarioID) return
     setNotifLoading(true)

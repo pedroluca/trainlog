@@ -90,8 +90,8 @@ export function Training() {
       if (!usuarioID) return
       if (typeof window === 'undefined' || typeof Notification === 'undefined') return
 
-      // Só solicita automaticamente quando ainda não houve escolha do usuário.
-      if (Notification.permission !== 'default') return
+      // Se estiver negado, não há o que fazer automaticamente.
+      if (Notification.permission === 'denied') return
 
       const result = await requestNotificationPermission()
       if (result.success && result.token) {
