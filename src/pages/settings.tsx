@@ -4,11 +4,12 @@ import { auth, db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { Button } from '../components/button'
-import { ArrowLeft, Eye, EyeOff, Headset, Lock, Moon, Shield, Sun, Volume2, VolumeX } from 'lucide-react'
+import { ArrowLeft, Bell, BellOff, Eye, EyeOff, Headset, Lock, Moon, Shield, Sun, Volume2, VolumeX } from 'lucide-react'
 import { useTheme } from '../contexts/theme-context'
 import { Toast, ToastState } from '../components/toast'
 import { ReportBugModal } from '../components/report-bug-modal'
 import { Footer } from '../components/footer'
+import { requestNotificationPermission } from '../firebaseConfig'
 
 export function Settings() {
   const navigate = useNavigate()
@@ -24,6 +25,11 @@ export function Settings() {
   const [email, setEmail] = useState<string | null>(null)
   const [username, setUsername] = useState<string | null>(null)
   const [isBugModalOpen, setIsBugModalOpen] = useState(false)
+
+  // Push Notifications
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default')
+  const [notifLoading, setNotifLoading] = useState(false)
+  const [fcmToken, setFcmToken] = useState<string | null>(null)
 
   // Privacy Settings
   const [privacidade, setPrivacidade] = useState({
@@ -76,6 +82,7 @@ export function Settings() {
           setNome(userData.nome || null)
           setEmail(userData.email || null)
           setUsername(userData.username || null)
+          setFcmToken(userData.fcmToken || null)
           
           // Audio is disabled by default
           setAudioEnabled(userData.audioEnabled === true)
@@ -99,7 +106,55 @@ export function Settings() {
     }
 
     fetchSettings()
+    
+    // Check current notification permission state
+    if ('Notification' in window) {
+      setNotifPermission(Notification.permission)
+    }
   }, [usuarioID, navigate])
+
+  const handleEnableNotifications = async () => {
+    if (!usuarioID) return
+    setNotifLoading(true)
+    try {
+      const result = await requestNotificationPermission()
+      if (result.success && result.token) {
+        setFcmToken(result.token)
+        setNotifPermission('granted')
+        await updateDoc(doc(db, 'usuarios', usuarioID), { fcmToken: result.token })
+        setToast({ show: true, message: 'Notificações ativadas com sucesso! 🔔', type: 'success' })
+      } else {
+        setNotifPermission(result.permission === 'unsupported' ? 'default' : result.permission)
+        const message = result.errorCode === 'permission-denied'
+          ? 'Permissão de notificação negada.'
+          : result.errorCode === 'missing-vapid'
+            ? 'VAPID key ausente na produção. Verifique o .env e o build.'
+            : result.errorCode === 'insecure-context'
+              ? 'Notificações exigem HTTPS.'
+              : result.errorCode === 'unsupported'
+                ? 'Este navegador/ambiente não suporta notificações web.'
+                : `Permissão concedida, mas falhou ao gerar token FCM. ${result.errorMessage || ''}`
+        setToast({ show: true, message, type: 'error' })
+      }
+    } catch (err) {
+      console.error('Erro ao ativar notificações:', err)
+      setToast({ show: true, message: 'Erro ao ativar notificações.', type: 'error' })
+    } finally {
+      setNotifLoading(false)
+    }
+  }
+
+  const handleCopyFcmToken = async () => {
+    if (!fcmToken) return
+
+    try {
+      await navigator.clipboard.writeText(fcmToken)
+      setToast({ show: true, message: 'FCM token copiado! Use no teste manual.', type: 'success' })
+    } catch (err) {
+      console.error('Erro ao copiar FCM token:', err)
+      setToast({ show: true, message: 'Não foi possível copiar o token.', type: 'error' })
+    }
+  }
 
   const handlePrivacyToggle = async (key: keyof typeof privacidade) => {
     if (!usuarioID) return
@@ -260,6 +315,73 @@ export function Settings() {
             />
           </button>
         </div>
+      </div>
+
+      {/* Push Notifications Section */}
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          {notifPermission === 'granted' ? <Bell className="text-[#27AE60]" /> : <BellOff className="text-gray-400" />}
+          Notificações Push
+        </h2>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex-1 pr-4">
+            {notifPermission === 'granted' ? (
+              <>
+                <p className="text-[#27AE60] font-semibold mb-1">Notificações ativas ✓</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Você receberá lembretes de treino e novidades do app.
+                </p>
+              </>
+            ) : notifPermission === 'denied' ? (
+              <>
+                <p className="text-red-500 font-semibold mb-1">Notificações bloqueadas</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Para ativar, vá até as configurações do seu navegador e permita notificações para este site.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-700 dark:text-gray-300 mb-1 font-medium">
+                  Receber lembretes de treino
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Ative para receber avisos quando esquecer de treinar.
+                </p>
+              </>
+            )}
+          </div>
+          
+          {notifPermission !== 'denied' && notifPermission !== 'granted' && (
+            <Button
+              onClick={handleEnableNotifications}
+              className="bg-[#27AE60] hover:bg-[#219150] text-white px-4 py-2 shrink-0 ml-2"
+              disabled={notifLoading}
+            >
+              {notifLoading ? 'Aguarde...' : 'Ativar'}
+            </Button>
+          )}
+          
+          {notifPermission === 'granted' && (
+            <div className="shrink-0 ml-4 w-10 h-10 rounded-full bg-[#27AE60]/10 flex items-center justify-center border border-[#27AE60]/30">
+              <Bell size={20} className="text-[#27AE60]" />
+            </div>
+          )}
+        </div>
+
+        {notifPermission === 'granted' && fcmToken && (
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#404040]">
+            <p className="text-xs text-gray-500 dark:text-gray-400 break-all mb-2">
+              Token atual: {fcmToken}
+            </p>
+            <Button
+              onClick={handleCopyFcmToken}
+              className="bg-gray-200 hover:bg-gray-300 dark:bg-[#404040] dark:hover:bg-[#505050] text-gray-800 dark:text-gray-200 px-3 py-1.5 text-sm"
+            >
+              Copiar token para teste
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Privacy Settings Section */}

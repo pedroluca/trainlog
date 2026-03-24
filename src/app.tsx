@@ -27,7 +27,7 @@ import { getVersion } from './version'
 import { currentRelease } from './data/whats-new'
 import { checkAndResetStreakIfMissed, resetPreviousDaysExercises } from './data/streak-utils'
 import { doc, getDoc } from 'firebase/firestore'
-import { db } from './firebaseConfig'
+import { db, onForegroundMessage } from './firebaseConfig'
 import { Friends } from './pages/friends'
 import { FriendProfile } from './pages/friend-profile'
 import { FriendFriends } from './pages/friend-friends'
@@ -87,6 +87,49 @@ export function App() {
 
     const timer = setTimeout(initializeStreakChecks, 1500)
     return () => clearTimeout(timer)
+  }, [])
+
+  // Initialize foreground notification listener
+  useEffect(() => {
+    const unsubscribe = onForegroundMessage((payload) => {
+      console.log('🔔 Mensagem em foreground recebida:', payload)
+
+      // Em foreground, não cria notificação do sistema para evitar duplicidade.
+      if (document.visibilityState === 'visible') {
+        return
+      }
+      
+      const { title, body, image } = payload.notification || {}
+      const notificationData = payload.data || {}
+      
+      // Criar uma notificação visual no app mesmo quando aberto
+      // Você pode criar um componente Toast ou usar um estado global
+      const notification = new Notification(title || 'TrainLog', {
+        body: body || '',
+        icon: image || '/web-app-manifest-192x192.png',
+        tag: 'trainlog-notification',
+        data: notificationData
+      })
+      
+      // Fechar notificação após 5 segundos
+      setTimeout(() => {
+        notification.close()
+      }, 5000)
+      
+      // Redirecionar se houver lista
+      notification.onclick = () => {
+        window.focus()
+        const link = notificationData.link || notificationData.url || '/'
+        window.location.href = link
+        notification.close()
+      }
+    })
+    
+    return () => {
+      if (unsubscribe) {
+        unsubscribe()
+      }
+    }
   }, [])
 
   return (
