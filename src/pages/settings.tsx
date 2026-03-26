@@ -9,12 +9,24 @@ import { useTheme } from '../contexts/theme-context'
 import { Toast, ToastState } from '../components/toast'
 import { ReportBugModal } from '../components/report-bug-modal'
 import { Footer } from '../components/footer'
-import { requestNotificationPermission } from '../firebaseConfig'
+import { requestOneSignalPermission, syncOneSignalUser } from '../utils/onesignal'
 
 export function Settings() {
   const navigate = useNavigate()
   const usuarioID = localStorage.getItem('usuarioId')
   const { theme, toggleTheme } = useTheme()
+
+  const getEffectiveUserId = () => {
+    const authUid = auth.currentUser?.uid || null
+    const localUid = localStorage.getItem('usuarioId')
+
+    if (authUid && authUid !== localUid) {
+      localStorage.setItem('usuarioId', authUid)
+      return authUid
+    }
+
+    return authUid || localUid
+  }
   
   // Audio settings
   const [audioEnabled, setAudioEnabled] = useState(false)
@@ -65,14 +77,15 @@ export function Settings() {
   })
 
   useEffect(() => {
-    if (!usuarioID) {
+    const effectiveUserId = getEffectiveUserId()
+    if (!effectiveUserId) {
       navigate('/login')
       return
     }
 
     const fetchSettings = async () => {
       try {
-        const userDocRef = doc(db, 'usuarios', usuarioID)
+        const userDocRef = doc(db, 'usuarios', effectiveUserId)
         const userDoc = await getDoc(userDocRef)
 
         if (userDoc.exists()) {
@@ -112,49 +125,56 @@ export function Settings() {
   }, [usuarioID, navigate])
 
   useEffect(() => {
-    const syncFcmTokenForCurrentUser = async () => {
-      if (!usuarioID) return
-      if (typeof window === 'undefined' || typeof Notification === 'undefined') return
-      if (Notification.permission !== 'granted') return
+    const syncOneSignalForCurrentUser = async () => {
+      const effectiveUserId = getEffectiveUserId()
+      if (!effectiveUserId) return
 
-      try {
-        const result = await requestNotificationPermission()
-        if (result.success && result.token) {
-          await updateDoc(doc(db, 'usuarios', usuarioID), { fcmToken: result.token })
-        }
-      } catch (err) {
-        console.error('Erro ao sincronizar token FCM no settings:', err)
+      const result = await syncOneSignalUser(effectiveUserId)
+      if (result.permission !== 'unsupported') {
+        setNotifPermission(result.permission)
+      }
+
+      if (result.success) {
+        await updateDoc(doc(db, 'usuarios', effectiveUserId), {
+          pushProvider: 'onesignal',
+          oneSignalExternalId: effectiveUserId,
+          oneSignalSubscriptionId: result.subscriptionId || ''
+        })
       }
     }
 
-    syncFcmTokenForCurrentUser().then(() => {})
+    syncOneSignalForCurrentUser().catch((error) => {
+      console.error('Erro ao sincronizar OneSignal no settings:', error)
+    })
   }, [usuarioID])
 
   const handleEnableNotifications = async () => {
-    if (!usuarioID) return
+    const effectiveUserId = getEffectiveUserId()
+    if (!effectiveUserId) return
+
     setNotifLoading(true)
     try {
-      const result = await requestNotificationPermission()
-      if (result.success && result.token) {
-        setNotifPermission('granted')
-        await updateDoc(doc(db, 'usuarios', usuarioID), { fcmToken: result.token })
-        setToast({ show: true, message: 'Notificações ativadas com sucesso! 🔔', type: 'success' })
+      const result = await requestOneSignalPermission(effectiveUserId)
+      if (result.permission !== 'unsupported') {
+        setNotifPermission(result.permission)
+      }
+
+      if (result.success) {
+        await updateDoc(doc(db, 'usuarios', effectiveUserId), {
+          pushProvider: 'onesignal',
+          oneSignalExternalId: effectiveUserId,
+          oneSignalSubscriptionId: result.subscriptionId || ''
+        })
+        setToast({ show: true, message: 'Notificações ativadas com OneSignal! 🔔', type: 'success' })
       } else {
-        setNotifPermission(result.permission === 'unsupported' ? 'default' : result.permission)
-        const message = result.errorCode === 'permission-denied'
-          ? 'Permissão de notificação negada.'
-          : result.errorCode === 'missing-vapid'
-            ? 'VAPID key ausente na produção. Verifique o .env e o build.'
-            : result.errorCode === 'insecure-context'
-              ? 'Notificações exigem HTTPS.'
-              : result.errorCode === 'unsupported'
-                ? 'Este navegador/ambiente não suporta notificações web.'
-                : `Permissão concedida, mas falhou ao gerar token FCM. ${result.errorMessage || ''}`
+        const message = result.permission === 'denied'
+          ? 'Permissão negada. Ative nas configurações do navegador/iOS.'
+          : result.errorMessage || 'Não foi possível ativar notificações com OneSignal.'
         setToast({ show: true, message, type: 'error' })
       }
-    } catch (err) {
-      console.error('Erro ao ativar notificações:', err)
-      setToast({ show: true, message: 'Erro ao ativar notificações.', type: 'error' })
+    } catch (error) {
+      console.error('Erro ao ativar OneSignal:', error)
+      setToast({ show: true, message: 'Erro ao ativar OneSignal.', type: 'error' })
     } finally {
       setNotifLoading(false)
     }
@@ -322,7 +342,7 @@ export function Settings() {
       </div>
 
       {/* Push Notifications Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
+      {/* <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
           {notifPermission === 'granted' ? <Bell className="text-[#27AE60]" /> : <BellOff className="text-gray-400" />}
           Notificações Push
@@ -332,7 +352,7 @@ export function Settings() {
           <div className="flex-1 pr-4">
             {notifPermission === 'granted' ? (
               <>
-                <p className="text-[#27AE60] font-semibold mb-1">Notificações ativas ✓</p>
+                <p className="text-[#27AE60] font-semibold mb-1">OneSignal ativo ✓</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Você receberá lembretes de treino e novidades do app.
                 </p>
@@ -341,31 +361,29 @@ export function Settings() {
               <>
                 <p className="text-red-500 font-semibold mb-1">Notificações bloqueadas</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Para ativar, vá até as configurações do seu navegador e permita notificações para este site.
+                  No iPhone: ajuste em Ajustes do iOS/Safari. No desktop: permita notificações para este site.
                 </p>
               </>
             ) : (
               <>
-                <p className="text-gray-700 dark:text-gray-300 mb-1 font-medium">
-                  Receber lembretes de treino
-                </p>
+                <p className="text-amber-600 dark:text-amber-400 font-semibold mb-1">OneSignal pronto para ativar</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Ative para receber avisos quando esquecer de treinar.
+                  Toque em ativar para receber lembretes de treino.
                 </p>
               </>
             )}
           </div>
-          
-          {notifPermission !== 'denied' && notifPermission !== 'granted' && (
+
+          {notifPermission !== 'granted' && (
             <Button
               onClick={handleEnableNotifications}
               className="bg-[#27AE60] hover:bg-[#219150] text-white px-4 py-2 shrink-0 ml-2"
               disabled={notifLoading}
             >
-              {notifLoading ? 'Aguarde...' : 'Ativar'}
+              {notifLoading ? 'Ativando...' : 'Ativar'}
             </Button>
           )}
-          
+
           {notifPermission === 'granted' && (
             <div className="shrink-0 ml-4 w-10 h-10 rounded-full bg-[#27AE60]/10 flex items-center justify-center border border-[#27AE60]/30">
               <Bell size={20} className="text-[#27AE60]" />
@@ -373,7 +391,7 @@ export function Settings() {
           )}
         </div>
 
-      </div>
+      </div> */}
 
       {/* Privacy Settings Section */}
       <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
@@ -647,7 +665,7 @@ export function Settings() {
       {isBugModalOpen && usuarioID && (
         <ReportBugModal
           onClose={() => setIsBugModalOpen(false)}
-          usuarioID={usuarioID}
+          usuarioID={usuarioID || ''}
           nome={nome}
           email={email}
           username={username}
