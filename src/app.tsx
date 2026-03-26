@@ -33,6 +33,7 @@ import { logoutOneSignalUser, syncOneSignalUser } from './utils/onesignal'
 import { Friends } from './pages/friends'
 import { FriendProfile } from './pages/friend-profile'
 import { FriendFriends } from './pages/friend-friends'
+import Favicon from './assets/nova-logo-white.svg'
 // import { Teste } from './pages/teste'
 
 type AndroidBridge = {
@@ -99,6 +100,7 @@ export function App() {
   const [forceUpdateVersion, setForceUpdateVersion] = useState<string | null>(null)
   const [authResolved, setAuthResolved] = useState(false)
   const [appReadyNotified, setAppReadyNotified] = useState(false)
+  const [isAppReady, setIsAppReady] = useState(false)
 
   useEffect(() => {
     const checkVersion = async () => {
@@ -171,13 +173,18 @@ export function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      try {
-        if (user?.uid) {
-          localStorage.setItem('usuarioId', user.uid)
-          notifyAndroidUserLogged(user.uid)
-          await salvarPlayerIdSeLogado()
+      // Resolve auth immediately – OneSignal runs in background so it never blocks the splash
+      if (user?.uid) {
+        localStorage.setItem('usuarioId', user.uid)
+        notifyAndroidUserLogged(user.uid)
+      }
 
-          const result = await syncOneSignalUser(user.uid)
+      setAuthResolved(true)
+
+      // Background tasks – do not await these before marking app ready
+      if (user?.uid) {
+        salvarPlayerIdSeLogado().catch(console.error)
+        syncOneSignalUser(user.uid).then(async (result) => {
           if (result.success) {
             await setDoc(doc(db, 'usuarios', user.uid), {
               pushProvider: 'onesignal',
@@ -185,17 +192,14 @@ export function App() {
               oneSignalSubscriptionId: result.subscriptionId || ''
             }, { merge: true })
           }
-          return
-        }
-
+        }).catch(console.error)
+      } else {
         const localUid = localStorage.getItem('usuarioId')
         if (localUid) {
-          await syncOneSignalUser(localUid)
+          syncOneSignalUser(localUid).catch(console.error)
         } else {
-          await logoutOneSignalUser()
+          logoutOneSignalUser().catch(console.error)
         }
-      } finally {
-        setAuthResolved(true)
       }
     })
 
@@ -216,7 +220,27 @@ export function App() {
     }
 
     setAppReadyNotified(true)
+
+    setTimeout(() => {
+      setIsAppReady(true)
+    }, 500)
   }, [authResolved, appReadyNotified])
+
+  if (!isAppReady) {
+    return (
+      <div style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#27AE60'
+      }}>
+        <img src={Favicon} width={200} alt='TrainLog' />
+        <div className='loader' />
+      </div>
+    )
+  }
 
   return (
     <ThemeProvider>
