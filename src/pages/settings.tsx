@@ -4,12 +4,12 @@ import { auth, db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { Button } from '../components/button'
-import { ArrowLeft, Bell, BellOff, Eye, EyeOff, Headset, Lock, Moon, Shield, Sun, Volume2, VolumeX } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, Headset, Lock, Moon, Shield, Sun, Volume2, VolumeX } from 'lucide-react'
 import { useTheme } from '../contexts/theme-context'
 import { Toast, ToastState } from '../components/toast'
 import { ReportBugModal } from '../components/report-bug-modal'
 import { Footer } from '../components/footer'
-import { requestOneSignalPermission, syncOneSignalUser } from '../utils/onesignal'
+// import { syncOneSignalUser } from '../utils/onesignal'
 
 export function Settings() {
   const navigate = useNavigate()
@@ -39,8 +39,8 @@ export function Settings() {
   const [isBugModalOpen, setIsBugModalOpen] = useState(false)
 
   // Push Notifications
-  const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default')
-  const [notifLoading, setNotifLoading] = useState(false)
+  // const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default')
+  // const [notifLoading, setNotifLoading] = useState(false)
 
   // Privacy Settings
   const [privacidade, setPrivacidade] = useState({
@@ -119,66 +119,66 @@ export function Settings() {
     fetchSettings()
     
     // Check current notification permission state
-    if ('Notification' in window) {
-      setNotifPermission(Notification.permission)
-    }
+    // if ('Notification' in window) {
+    //   setNotifPermission(Notification.permission)
+    // }
   }, [usuarioID, navigate])
 
-  useEffect(() => {
-    const syncOneSignalForCurrentUser = async () => {
-      const effectiveUserId = getEffectiveUserId()
-      if (!effectiveUserId) return
+  // useEffect(() => {
+  //   const syncOneSignalForCurrentUser = async () => {
+  //     const effectiveUserId = getEffectiveUserId()
+  //     if (!effectiveUserId) return
 
-      const result = await syncOneSignalUser(effectiveUserId)
-      if (result.permission !== 'unsupported') {
-        setNotifPermission(result.permission)
-      }
+  //     const result = await syncOneSignalUser(effectiveUserId)
+  //     if (result.permission !== 'unsupported') {
+  //       setNotifPermission(result.permission)
+  //     }
 
-      if (result.success) {
-        await updateDoc(doc(db, 'usuarios', effectiveUserId), {
-          pushProvider: 'onesignal',
-          oneSignalExternalId: effectiveUserId,
-          oneSignalSubscriptionId: result.subscriptionId || ''
-        })
-      }
-    }
+  //     if (result.success) {
+  //       await updateDoc(doc(db, 'usuarios', effectiveUserId), {
+  //         pushProvider: 'onesignal',
+  //         oneSignalExternalId: effectiveUserId,
+  //         oneSignalSubscriptionId: result.subscriptionId || ''
+  //       })
+  //     }
+  //   }
 
-    syncOneSignalForCurrentUser().catch((error) => {
-      console.error('Erro ao sincronizar OneSignal no settings:', error)
-    })
-  }, [usuarioID])
+  //   syncOneSignalForCurrentUser().catch((error) => {
+  //     console.error('Erro ao sincronizar OneSignal no settings:', error)
+  //   })
+  // }, [usuarioID])
 
-  const handleEnableNotifications = async () => {
-    const effectiveUserId = getEffectiveUserId()
-    if (!effectiveUserId) return
+  // const handleEnableNotifications = async () => {
+  //   const effectiveUserId = getEffectiveUserId()
+  //   if (!effectiveUserId) return
 
-    setNotifLoading(true)
-    try {
-      const result = await requestOneSignalPermission(effectiveUserId)
-      if (result.permission !== 'unsupported') {
-        setNotifPermission(result.permission)
-      }
+  //   setNotifLoading(true)
+  //   try {
+  //     const result = await requestOneSignalPermission(effectiveUserId)
+  //     if (result.permission !== 'unsupported') {
+  //       setNotifPermission(result.permission)
+  //     }
 
-      if (result.success) {
-        await updateDoc(doc(db, 'usuarios', effectiveUserId), {
-          pushProvider: 'onesignal',
-          oneSignalExternalId: effectiveUserId,
-          oneSignalSubscriptionId: result.subscriptionId || ''
-        })
-        setToast({ show: true, message: 'Notificações ativadas com OneSignal! 🔔', type: 'success' })
-      } else {
-        const message = result.permission === 'denied'
-          ? 'Permissão negada. Ative nas configurações do navegador/iOS.'
-          : result.errorMessage || 'Não foi possível ativar notificações com OneSignal.'
-        setToast({ show: true, message, type: 'error' })
-      }
-    } catch (error) {
-      console.error('Erro ao ativar OneSignal:', error)
-      setToast({ show: true, message: 'Erro ao ativar OneSignal.', type: 'error' })
-    } finally {
-      setNotifLoading(false)
-    }
-  }
+  //     if (result.success) {
+  //       await updateDoc(doc(db, 'usuarios', effectiveUserId), {
+  //         pushProvider: 'onesignal',
+  //         oneSignalExternalId: effectiveUserId,
+  //         oneSignalSubscriptionId: result.subscriptionId || ''
+  //       })
+  //       setToast({ show: true, message: 'Notificações ativadas com OneSignal! 🔔', type: 'success' })
+  //     } else {
+  //       const message = result.permission === 'denied'
+  //         ? 'Permissão negada. Ative nas configurações do navegador/iOS.'
+  //         : result.errorMessage || 'Não foi possível ativar notificações com OneSignal.'
+  //       setToast({ show: true, message, type: 'error' })
+  //     }
+  //   } catch (error) {
+  //     console.error('Erro ao ativar OneSignal:', error)
+  //     setToast({ show: true, message: 'Erro ao ativar OneSignal.', type: 'error' })
+  //   } finally {
+  //     setNotifLoading(false)
+  //   }
+  // }
 
   const handlePrivacyToggle = async (key: keyof typeof privacidade) => {
     if (!usuarioID) return

@@ -39,6 +39,15 @@ type AndroidBridge = {
   onUserLogged?: (userId: string) => void
 }
 
+declare global {
+  interface Window {
+    __playerId?: string
+    onReceivePlayerId?: (playerId: string) => void
+  }
+}
+
+let lastSaved: { userId: string; playerId: string } | null = null
+
 const notifyAndroidUserLogged = (userId: string) => {
   if (typeof window === 'undefined') return
 
@@ -49,6 +58,35 @@ const notifyAndroidUserLogged = (userId: string) => {
     bridge.onUserLogged(userId)
   } catch (error) {
     console.error('Erro ao chamar window.Android.onUserLogged:', error)
+  }
+}
+
+async function salvarPlayerIdSeLogado() {
+  if (typeof window === 'undefined') return
+
+  const user = auth.currentUser
+  const playerId = window.__playerId
+
+  if (!user || !playerId) return
+
+  if (
+    lastSaved &&
+    lastSaved.playerId === playerId &&
+    lastSaved.userId === user.uid
+  ) return
+
+  lastSaved = { userId: user.uid, playerId }
+
+  try {
+    await setDoc(doc(db, 'usuarios', user.uid), {
+      player_id: playerId,
+      updated_at: Date.now()
+    }, { merge: true })
+  } catch (error) {
+    if (lastSaved && lastSaved.playerId === playerId) {
+      lastSaved = null
+    }
+    throw error
   }
 }
 
@@ -109,10 +147,28 @@ export function App() {
   }, [])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    window.onReceivePlayerId = (playerId: string) => {
+      if (!playerId) return
+
+      window.__playerId = playerId
+      salvarPlayerIdSeLogado().catch((error) => {
+        console.error('Erro ao salvar player_id no Firestore:', error)
+      })
+    }
+
+    return () => {
+      delete window.onReceivePlayerId
+    }
+  }, [])
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user?.uid) {
         localStorage.setItem('usuarioId', user.uid)
         notifyAndroidUserLogged(user.uid)
+        await salvarPlayerIdSeLogado()
 
         const result = await syncOneSignalUser(user.uid)
         if (result.success) {
