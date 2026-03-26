@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .env
+
+api/cron/config.php
+api/
