@@ -5,13 +5,13 @@ Esta pasta agora contem apenas rotinas sem envio por FCM.
 ## Estado atual
 
 - FCM foi removido do fluxo de push.
-- O endpoint `cron-reminders.php` permanece para compatibilidade, mas nao envia notificacoes.
+- O endpoint `cron-reminders.php` envia push via OneSignal para quem ainda nao treinou no dia.
 - `cron-weekly-report.php` continua enviando apenas e-mail.
 - `sync-users.php` sincroniza dados basicos dos usuarios para `users-cache.json`.
 
 ## Scripts
 
-- `cron-reminders.php`: endpoint de compatibilidade (retorna sucesso sem envio).
+- `cron-reminders.php`: valida `lastWorkoutDate` e envia push para usuarios elegiveis.
 - `cron-weekly-report.php`: envio de relatorio semanal por e-mail.
 - `sync-users.php`: sincronizacao de usuarios para cache local.
 - `test-simple-send.php`: trigger manual para teste rapido de push via OneSignal.
@@ -38,6 +38,9 @@ Exemplo por `subscription_id`:
 curl "https://app.trainlog.site/api/cron/test-simple-send.php?secret=SEU_CRON_SECRET&subscription_id=ONESIGNAL_SUBSCRIPTION_ID"
 ```
 
-## Proxima etapa (OneSignal)
+## Regra de envio
 
-A migracao de push deve substituir a logica de `cron-reminders.php` por chamadas REST para OneSignal usando `oneSignalSubscriptionId` ou `external_id`.
+O `cron-reminders.php` segue esta regra:
+
+- se `lastWorkoutDate` for hoje: nao envia;
+- se nao for hoje: envia push OneSignal.

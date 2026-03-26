@@ -13,6 +13,8 @@ define('LOG_FILE', __DIR__ . '/cron-reminders.log');
 
 assert_cron_secret();
 $debug_mode = (($_GET['debug'] ?? '0') === '1');
+$target_user_id = trim((string) ($_GET['user_id'] ?? ''));
+$override_player_id = trim((string) ($_GET['player_id'] ?? ''));
 
 function write_log($message) {
     $timestamp = date('Y-m-d H:i:s');
@@ -112,6 +114,7 @@ function fetch_users_from_firestore($access_token) {
             'uid' => $id,
             'nome' => $doc['fields']['nome']['stringValue'] ?? 'Usuário',
             'lastWorkoutDate' => $doc['fields']['lastWorkoutDate']['stringValue'] ?? null,
+            'player_id' => $doc['fields']['player_id']['stringValue'] ?? null,
             'oneSignalSubscriptionId' => $doc['fields']['oneSignalSubscriptionId']['stringValue'] ?? null,
             'pushProvider' => $doc['fields']['pushProvider']['stringValue'] ?? null
         ];
@@ -120,19 +123,24 @@ function fetch_users_from_firestore($access_token) {
     return $users;
 }
 
-function send_onesignal_notification_by_external_id($external_id, $title, $body, $url, $data = []) {
+function send_onesignal_notification($user_id, $player_id, $title, $body, $url, $data = []) {
     $payload = [
         'app_id' => ONESIGNAL_APP_ID,
         'target_channel' => 'push',
-        'include_aliases' => [
-            'external_id' => [$external_id]
-        ],
         'headings' => ['en' => $title, 'pt' => $title],
         'contents' => ['en' => $body, 'pt' => $body],
-        'url' => $url,
         'web_url' => $url,
         'data' => $data
     ];
+
+    // Prefer direct device target when Android sends player_id.
+    if ($player_id) {
+        $payload['include_subscription_ids'] = [$player_id];
+    } else {
+        $payload['include_aliases'] = [
+            'external_id' => [$user_id]
+        ];
+    }
 
     $ch = curl_init();
     curl_setopt_array($ch, [
@@ -183,8 +191,22 @@ try {
 
     foreach ($users as $user) {
         $user_id = $user['uid'] ?? $user['id'];
+
+        if ($target_user_id !== '' && $user_id !== $target_user_id) {
+            if ($debug_mode) {
+                $debug_entries[] = [
+                    'user_id' => $user_id,
+                    'user_name' => $user['nome'] ?? 'Usuário',
+                    'status' => 'skipped',
+                    'reason' => 'filtered_by_user_id'
+                ];
+            }
+            continue;
+        }
+
         $user_name = $user['nome'] ?? 'Usuário';
         $last_workout_date = $user['lastWorkoutDate'] ?? null;
+        $player_id = $override_player_id !== '' ? $override_player_id : ($user['player_id'] ?? null);
         $provider = $user['pushProvider'] ?? null;
         $subscription_id = $user['oneSignalSubscriptionId'] ?? null;
 
@@ -200,33 +222,22 @@ try {
             continue;
         }
 
-        if ($provider !== 'onesignal') {
+        if ($provider !== 'onesignal' && !$player_id && !$subscription_id) {
             if ($debug_mode) {
                 $debug_entries[] = [
                     'user_id' => $user_id,
                     'user_name' => $user_name,
                     'status' => 'skipped',
-                    'reason' => 'push_provider_not_onesignal'
-                ];
-            }
-            continue;
-        }
-
-        if (!$subscription_id) {
-            if ($debug_mode) {
-                $debug_entries[] = [
-                    'user_id' => $user_id,
-                    'user_name' => $user_name,
-                    'status' => 'skipped',
-                    'reason' => 'missing_onesignal_subscription_id'
+                    'reason' => 'push_not_configured'
                 ];
             }
             continue;
         }
 
         try {
-            $result = send_onesignal_notification_by_external_id(
+            $result = send_onesignal_notification(
                 $user_id,
+                $player_id,
                 'Hora do Treino! 💪',
                 'Ei ' . $user_name . ', não registramos seu treino hoje. Vamos começar?',
                 $train_url,

@@ -39,6 +39,10 @@ type AndroidBridge = {
   onUserLogged?: (userId: string) => void
 }
 
+type AndroidAppBridge = {
+  appReady?: () => void
+}
+
 declare global {
   interface Window {
     __playerId?: string
@@ -93,6 +97,8 @@ async function salvarPlayerIdSeLogado() {
 export function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false)
   const [forceUpdateVersion, setForceUpdateVersion] = useState<string | null>(null)
+  const [authResolved, setAuthResolved] = useState(false)
+  const [appReadyNotified, setAppReadyNotified] = useState(false)
 
   useEffect(() => {
     const checkVersion = async () => {
@@ -165,32 +171,52 @@ export function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user?.uid) {
-        localStorage.setItem('usuarioId', user.uid)
-        notifyAndroidUserLogged(user.uid)
-        await salvarPlayerIdSeLogado()
+      try {
+        if (user?.uid) {
+          localStorage.setItem('usuarioId', user.uid)
+          notifyAndroidUserLogged(user.uid)
+          await salvarPlayerIdSeLogado()
 
-        const result = await syncOneSignalUser(user.uid)
-        if (result.success) {
-          await setDoc(doc(db, 'usuarios', user.uid), {
-            pushProvider: 'onesignal',
-            oneSignalExternalId: user.uid,
-            oneSignalSubscriptionId: result.subscriptionId || ''
-          }, { merge: true })
+          const result = await syncOneSignalUser(user.uid)
+          if (result.success) {
+            await setDoc(doc(db, 'usuarios', user.uid), {
+              pushProvider: 'onesignal',
+              oneSignalExternalId: user.uid,
+              oneSignalSubscriptionId: result.subscriptionId || ''
+            }, { merge: true })
+          }
+          return
         }
-        return
-      }
 
-      const localUid = localStorage.getItem('usuarioId')
-      if (localUid) {
-        await syncOneSignalUser(localUid)
-      } else {
-        await logoutOneSignalUser()
+        const localUid = localStorage.getItem('usuarioId')
+        if (localUid) {
+          await syncOneSignalUser(localUid)
+        } else {
+          await logoutOneSignalUser()
+        }
+      } finally {
+        setAuthResolved(true)
       }
     })
 
     return () => unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (!authResolved || appReadyNotified) return
+    if (typeof window === 'undefined') return
+
+    const androidApp = (window as Window & { AndroidApp?: AndroidAppBridge }).AndroidApp
+    if (androidApp && typeof androidApp.appReady === 'function') {
+      try {
+        androidApp.appReady()
+      } catch (error) {
+        console.error('Erro ao chamar window.AndroidApp.appReady:', error)
+      }
+    }
+
+    setAppReadyNotified(true)
+  }, [authResolved, appReadyNotified])
 
   return (
     <ThemeProvider>

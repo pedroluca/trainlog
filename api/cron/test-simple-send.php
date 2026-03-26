@@ -43,7 +43,6 @@ $onesignal_payload = [
     'target_channel' => 'push',
     'headings' => ['en' => $title, 'pt' => $title],
     'contents' => ['en' => $body, 'pt' => $body],
-    'url' => $url,
     'web_url' => $url,
     'data' => [
         'source' => 'test-simple-send',
