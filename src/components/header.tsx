@@ -69,7 +69,7 @@ export function Header() {
   }, [usuarioID])
 
   return (
-    <header className='bg-gradient-to-r from-[#27AE60] to-[#229954] text-white shadow-lg'>
+    <header className='bg-[#27AE60] text-white shadow-lg'>
       <main className={`relative py-4 md:py-6 lg:py-2 px-4 flex items-center justify-between border-b border-white/10`}>
         <Link 
           to='/' 
