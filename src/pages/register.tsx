@@ -132,7 +132,7 @@ export function Cadastro() {
 
   if (success) {
     return (
-      <main className="flex flex-col items-center py-2 justify-center min-h-[calc(100vh-7rem)] bg-gray-100 dark:bg-[#1a1a1a]">
+      <main className="flex flex-col items-center py-2 justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a]">
         <div className="bg-white dark:bg-[#2d2d2d] shadow-md rounded-lg p-8 w-[90%] max-w-md mx-4 text-center border border-gray-200 dark:border-[#404040]">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +156,7 @@ export function Cadastro() {
   }
 
   return (
-    <main className="flex flex-col items-center py-2 justify-center min-h-[calc(100vh-7rem)] bg-gray-100 dark:bg-[#1a1a1a]">
+    <main className="flex flex-col items-center py-2 justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a]">
       <div className="bg-white dark:bg-[#2d2d2d] shadow-md rounded-lg p-6 pb-4 w-[90%] max-w-md mx-4 border border-gray-200 dark:border-[#404040]">
         <h1 className="text-2xl font-bold text-center mb-2 text-gray-800 dark:text-gray-100">Criar Conta</h1>
         <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
