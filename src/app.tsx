@@ -26,12 +26,31 @@ import { ThemeProvider } from './contexts/theme-context'
 import { getVersion } from './version'
 import { currentRelease } from './data/whats-new'
 import { checkAndResetStreakIfMissed, resetPreviousDaysExercises } from './data/streak-utils'
-import { doc, getDoc } from 'firebase/firestore'
-import { db, onForegroundMessage } from './firebaseConfig'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { db, auth } from './firebaseConfig'
+import { onAuthStateChanged } from 'firebase/auth'
+import { logoutOneSignalUser, syncOneSignalUser } from './utils/onesignal'
 import { Friends } from './pages/friends'
 import { FriendProfile } from './pages/friend-profile'
 import { FriendFriends } from './pages/friend-friends'
 // import { Teste } from './pages/teste'
+
+type AndroidBridge = {
+  onUserLogged?: (userId: string) => void
+}
+
+const notifyAndroidUserLogged = (userId: string) => {
+  if (typeof window === 'undefined') return
+
+  const bridge = (window as Window & { Android?: AndroidBridge }).Android
+  if (!bridge || typeof bridge.onUserLogged !== 'function') return
+
+  try {
+    bridge.onUserLogged(userId)
+  } catch (error) {
+    console.error('Erro ao chamar window.Android.onUserLogged:', error)
+  }
+}
 
 export function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false)
@@ -89,47 +108,32 @@ export function App() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Initialize foreground notification listener
   useEffect(() => {
-    const unsubscribe = onForegroundMessage((payload) => {
-      console.log('🔔 Mensagem em foreground recebida:', payload)
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user?.uid) {
+        localStorage.setItem('usuarioId', user.uid)
+        notifyAndroidUserLogged(user.uid)
 
-      // Em foreground, não cria notificação do sistema para evitar duplicidade.
-      if (document.visibilityState === 'visible') {
+        const result = await syncOneSignalUser(user.uid)
+        if (result.success) {
+          await setDoc(doc(db, 'usuarios', user.uid), {
+            pushProvider: 'onesignal',
+            oneSignalExternalId: user.uid,
+            oneSignalSubscriptionId: result.subscriptionId || ''
+          }, { merge: true })
+        }
         return
       }
-      
-      const { title, body, image } = payload.notification || {}
-      const notificationData = payload.data || {}
-      
-      // Criar uma notificação visual no app mesmo quando aberto
-      // Você pode criar um componente Toast ou usar um estado global
-      const notification = new Notification(title || 'TrainLog', {
-        body: body || '',
-        icon: image || '/web-app-manifest-192x192.png',
-        tag: 'trainlog-notification',
-        data: notificationData
-      })
-      
-      // Fechar notificação após 5 segundos
-      setTimeout(() => {
-        notification.close()
-      }, 5000)
-      
-      // Redirecionar se houver lista
-      notification.onclick = () => {
-        window.focus()
-        const link = notificationData.link || notificationData.url || '/'
-        window.location.href = link
-        notification.close()
+
+      const localUid = localStorage.getItem('usuarioId')
+      if (localUid) {
+        await syncOneSignalUser(localUid)
+      } else {
+        await logoutOneSignalUser()
       }
     })
-    
-    return () => {
-      if (unsubscribe) {
-        unsubscribe()
-      }
-    }
+
+    return () => unsubscribe()
   }, [])
 
   return (

@@ -85,11 +85,12 @@ define(['./workbox-57071a8e'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.f7b0e4e0r8"
+    "revision": "0.k8nr7h189eo"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
-    allowlist: [/^\/$/]
+    allowlist: [/^\/$/],
+    denylist: [/^\/OneSignalSDKWorker\.js$/, /^\/OneSignalSDKUpdaterWorker\.js$/, /^\/firebase-messaging-sw\.js$/, /^\/site\.webmanifest$/, /^\/manifest\.webmanifest$/]
   }));
   workbox.registerRoute(/^https:\/\/fonts\.googleapis\.com\/.*/i, new workbox.CacheFirst({
     "cacheName": "google-fonts-cache",

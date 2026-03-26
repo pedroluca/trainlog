@@ -11,8 +11,6 @@
  * 
  * Requisitos:
  * 1. Configuração SMTP ou mail() habilitado no servidor
- * 2. firebase-credentials.json (mesmo do cron-reminders)
- * 3. Google Cloud Messaging API habilitada
  */
 
 header('Content-Type: application/json');
@@ -23,7 +21,6 @@ require_once __DIR__ . '/config.php';
 // ================================================================
 
 define('LOG_FILE', __DIR__ . '/cron-weekly-report.log');
-define('FIREBASE_CREDENTIALS_PATH', FIREBASE_CREDS_PATH);
 
 assert_cron_secret();
 
@@ -36,60 +33,6 @@ function write_log($message) {
     $log_entry = "[$timestamp] $message\n";
     file_put_contents(LOG_FILE, $log_entry, FILE_APPEND);
     echo $log_entry;
-}
-
-function send_weekly_notification($fcm_token, $weekly_data, $project_id, $access_token) {
-    $total_treinos = $weekly_data['total_workouts'] ?? 0;
-    $total_exercicios = $weekly_data['total_exercises'] ?? 0;
-    $duracao_total = $weekly_data['total_duration'] ?? 0; // em minutos
-    $muscle_groups = $weekly_data['muscle_groups'] ?? [];
-    
-    $title = "📊 Seu Resumo da Semana";
-    $body = "$total_treinos treinos • $total_exercicios exercícios • $duracao_total min";
-    
-    $message = [
-        'token' => $fcm_token,
-        'notification' => [
-            'title' => $title,
-            'body' => $body
-        ],
-        'webpush' => [
-            'fcm_options' => [
-                'link' => '/progress'
-            ],
-            'notification' => [
-                'title' => $title,
-                'body' => $body,
-                'badge' => '/favicon-96x96.png'
-            ]
-        ],
-        'data' => [
-            'workouts' => (string) $total_treinos,
-            'exercises' => (string) $total_exercicios,
-            'duration' => (string) $duracao_total
-        ]
-    ];
-    
-    $url = "https://fcm.googleapis.com/v1/projects/$project_id/messages:send";
-    
-    $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => $url,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode(['message' => $message]),
-        CURLOPT_HTTPHEADER => [
-            'Authorization: Bearer ' . $access_token,
-            'Content-Type: application/json'
-        ],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 30
-    ]);
-    
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    
-    return $http_code === 200;
 }
 
 function generate_html_report($user_name, $weekly_data) {
@@ -245,7 +188,7 @@ function generate_html_report($user_name, $weekly_data) {
                     <div class="label">Exercícios</div>
                 </div>
                 <div class="stat-box">
-                    <div class="number">${duracao_total}min</div>
+                    <div class="number">{$duracao_total}min</div>
                     <div class="label">Duração Total</div>
                 </div>
             </div>
@@ -320,17 +263,7 @@ try {
         exit;
     }
     
-    // 2. Obter token de acesso Firebase
-    write_log("🔐 Obtendo token de acesso Firebase...");
-    $credentials = json_decode(file_get_contents(FIREBASE_CREDENTIALS_PATH), true);
-    $project_id = $credentials['project_id'];
-    
-    // Simplifique: você precisará adaptar a função get_firebase_access_token do cron-reminders.php
-    // Por agora, apenas registre o processo
-    
-    write_log("✅ Credenciais carregadas (Project: $project_id)");
-    
-    // 3. Para cada usuário, buscar dados da semana e enviar
+    // 2. Para cada usuário, buscar dados da semana e enviar
     $sent_count = 0;
     $error_count = 0;
     
@@ -339,7 +272,6 @@ try {
             $user_id = $user_data['uid'] ?? null;
             $user_email = $user_data['email'] ?? null;
             $user_name = $user_data['nome'] ?? 'Usuário';
-            $fcm_token = $user_data['fcmToken'] ?? null;
             
             if (!$user_email) {
                 write_log("⏭️ Usuário sem e-mail: $user_id");
@@ -361,12 +293,6 @@ try {
             // Enviar e-mail
             if (send_email($user_email, $user_name, $html_content)) {
                 write_log("✅ E-mail enviado para $user_name ($user_email)");
-                
-                // Também enviar notificação push se tiver FCM token
-                if ($fcm_token) {
-                    // Você precisaria do access token aqui
-                    write_log("📲 Notificação push agendada para $user_name");
-                }
                 
                 $sent_count++;
             } else {

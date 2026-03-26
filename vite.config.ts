@@ -38,6 +38,13 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+        navigateFallbackDenylist: [
+          /^\/OneSignalSDKWorker\.js$/,
+          /^\/OneSignalSDKUpdaterWorker\.js$/,
+          /^\/firebase-messaging-sw\.js$/,
+          /^\/site\.webmanifest$/,
+          /^\/manifest\.webmanifest$/
+        ],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
