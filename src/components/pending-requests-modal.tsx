@@ -9,6 +9,7 @@ interface Usuario {
   nome: string
   username?: string
   photoURL?: string
+  isTrainer?: boolean
   isFounder?: boolean
   isPremium?: boolean
 }
@@ -130,6 +131,7 @@ export function PendingRequestsModal({ onClose, currentUserId }: PendingRequests
                   nome={req.solicitante.nome}
                   username={req.solicitante.username}
                   photoURL={req.solicitante.photoURL}
+                  isTrainer={req.solicitante.isTrainer}
                   isFounder={req.solicitante.isFounder}
                   isPremium={req.solicitante.isPremium}
                 >

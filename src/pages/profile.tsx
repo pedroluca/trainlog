@@ -25,6 +25,8 @@ export function Profile() {
   const [altura, setAltura] = useState<number>(0) // cm
   const [peso, setPeso] = useState<number>(0) // kg
   const [username, setUsername] = useState<string | null>(null)
+  const [isTrainer, setIsTrainer] = useState(false)
+  const [cref, setCref] = useState('')
   const [isPremium, setIsPremium] = useState<boolean>(false)
   const [isFounder, setIsFounder] = useState<boolean>(false)
   const [isEditingMetrics, setIsEditingMetrics] = useState(false)
@@ -48,6 +50,8 @@ export function Profile() {
   const [editedUsername, setEditedUsername] = useState('')
   const [editedDataNascimento, setEditedDataNascimento] = useState('')
   const [editedInstagram, setEditedInstagram] = useState('')
+  const [editedIsTrainer, setEditedIsTrainer] = useState(false)
+  const [editedCref, setEditedCref] = useState('')
   const [toast, setToast] = useState<ToastState>({
     show: false,
     message: '',
@@ -95,6 +99,8 @@ export function Profile() {
             setAltura(userData.altura || 0)
             setPeso(userData.peso || 0)
             setUsername(userData.username || null)
+            setIsTrainer(userData.isTrainer || false)
+            setCref(userData.cref || '')
             setIsPremium(userData.isPremium || false)
             setIsFounder(userData.isFounder || false)
             setEditedAltura(userData.altura ? (userData.altura / 100).toFixed(2) : '')
@@ -346,6 +352,8 @@ export function Profile() {
     setEditedUsername(username || '')
     setEditedDataNascimento(dataNascimento || '')
     setEditedInstagram(instagram?.replace(/^@/, '') || '')
+    setEditedIsTrainer(isTrainer)
+    setEditedCref(cref || '')
     setIsEditingProfile(true)
   }
 
@@ -371,11 +379,15 @@ export function Profile() {
         username: trimmedUsername,
         dataNascimento: editedDataNascimento,
         instagram: editedInstagram.replace(/^@/, '').trim(),
+        isTrainer: editedIsTrainer,
+        cref: editedIsTrainer ? editedCref.trim().toUpperCase() : '',
       })
       setNome(editedNome.trim())
       setUsername(trimmedUsername)
       setDataNascimento(editedDataNascimento)
       setInstagram(editedInstagram.replace(/^@/, '').trim())
+      setIsTrainer(editedIsTrainer)
+      setCref(editedIsTrainer ? editedCref.trim().toUpperCase() : '')
       setIsEditingProfile(false)
       setToast({ show: true, message: 'Perfil atualizado com sucesso!', type: 'success' })
     } catch (err) {
@@ -480,6 +492,22 @@ export function Profile() {
               )}
             </p>
           </div>
+          {isTrainer && (
+            <div className="col-span-2 md:col-span-full bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-900/30 transition-colors">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">Perfil</p>
+                  <p className="text-base font-semibold text-blue-900 dark:text-blue-200">Treinador</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">CREF</p>
+                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">
+                    {cref ? cref : <span className="text-blue-400/70 font-normal">Nao informado</span>}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Body Metrics as info fields */}
           <div className="col-span-full grid grid-cols-3 gap-3 mt-1">
@@ -879,6 +907,31 @@ export function Profile() {
                   />
                 </div>
               </div>
+              <div>
+                <label className="flex items-center justify-between text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Perfil de Treinador
+                  <input
+                    type="checkbox"
+                    checked={editedIsTrainer}
+                    onChange={(e) => setEditedIsTrainer(e.target.checked)}
+                    className="w-4 h-4 accent-[#27AE60]"
+                  />
+                </label>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500">Ative para exibir seu perfil como treinador.</p>
+              </div>
+              {editedIsTrainer && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">CREF (opcional)</label>
+                  <input
+                    type="text"
+                    value={editedCref}
+                    onChange={(e) => setEditedCref(e.target.value.toUpperCase())}
+                    placeholder="Ex: CREF 123456-G/SP"
+                    maxLength={30}
+                    className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Actions */}

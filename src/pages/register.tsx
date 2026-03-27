@@ -11,6 +11,8 @@ export function Cadastro() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [isTrainer, setIsTrainer] = useState(false)
+  const [cref, setCref] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [success, setSuccess] = useState(false)
@@ -95,6 +97,8 @@ export function Cadastro() {
         nome: name.trim(),
         email: email.trim().toLowerCase(),
         telefone: phone,
+        isTrainer,
+        cref: isTrainer ? cref.trim().toUpperCase() : '',
         isPremium: false, // Start as free user
         isAdmin: false,
         isActive: true,
@@ -202,6 +206,36 @@ export function Cadastro() {
               className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
               placeholder="(11) 99999-9999"
             />
+          </div>
+
+          <div className="rounded-lg border border-gray-200 dark:border-[#404040] bg-gray-50 dark:bg-[#1f1f1f] p-4">
+            <label className="flex items-center justify-between cursor-pointer gap-3">
+              <div>
+                <p className="text-gray-800 dark:text-gray-100 font-bold">Sou treinador</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Ative se quiser usar recursos para treinadores</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={isTrainer}
+                onChange={(e) => setIsTrainer(e.target.checked)}
+                className="w-5 h-5 accent-[#27AE60]"
+              />
+            </label>
+
+            {isTrainer && (
+              <div className="mt-3">
+                <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">CREF (opcional):</label>
+                <input
+                  type="text"
+                  name="cref"
+                  value={cref}
+                  onChange={(e) => setCref(e.target.value.toUpperCase())}
+                  className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
+                  placeholder="Ex: CREF 123456-G/SP"
+                  maxLength={30}
+                />
+              </div>
+            )}
           </div>
           
           <div>

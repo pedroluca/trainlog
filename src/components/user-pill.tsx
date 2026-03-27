@@ -4,13 +4,14 @@ interface UserPillProps {
   nome: string
   photoURL?: string | null
   username?: string | null
+  isTrainer?: boolean
   children?: React.ReactNode
   onClick?: () => void
   isFounder?: boolean
   isPremium?: boolean
 }
 
-export function UserPill({ nome, photoURL, username, children, onClick, isFounder, isPremium }: UserPillProps) {
+export function UserPill({ nome, photoURL, username, isTrainer, children, onClick, isFounder, isPremium }: UserPillProps) {
   return (
     <div 
       onClick={onClick}
@@ -41,11 +42,18 @@ export function UserPill({ nome, photoURL, username, children, onClick, isFounde
           <h3 className="text-base font-bold text-gray-900 dark:text-white truncate">
             {nome}
           </h3>
-          {username && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              @{username}
-            </span>
-          )}
+          <div className="flex items-center gap-2 min-w-0">
+            {username && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                @{username}
+              </span>
+            )}
+            {isTrainer && (
+              <span className="text-[10px] uppercase tracking-wider font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/40 px-1.5 py-0.5 rounded-full shrink-0">
+                Treinador
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

@@ -13,6 +13,7 @@ interface Usuario {
   username?: string
   photoURL?: string
   lastWorkoutDate?: string
+  isTrainer?: boolean
   isFounder?: boolean
   isPremium?: boolean
 }
@@ -182,6 +183,7 @@ export function Friends() {
                   nome={amigo.usuario.nome}
                   username={amigo.usuario.username}
                   photoURL={amigo.usuario.photoURL}
+                  isTrainer={amigo.usuario.isTrainer}
                   isFounder={amigo.usuario.isFounder}
                   isPremium={amigo.usuario.isPremium}
                   onClick={() => navigate(`/friend/${amigo.usuario.id}`)}

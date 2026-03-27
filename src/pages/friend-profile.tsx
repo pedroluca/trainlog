@@ -21,6 +21,8 @@ interface UsuarioProfile {
   id: string
   nome: string
   username?: string
+  isTrainer?: boolean
+  cref?: string
   photoURL?: string
   email?: string
   dataNascimento?: string
@@ -267,6 +269,11 @@ export function FriendProfile() {
           {profile.username && (
             <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">@{profile.username}</p>
           )}
+          {profile.isTrainer && (
+            <p className="mt-2 text-[11px] uppercase tracking-wider font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/40 px-3 py-1 rounded-full">
+              Treinador
+            </p>
+          )}
         </div>
 
         {/* Info Grid */}
@@ -291,6 +298,15 @@ export function FriendProfile() {
             <div className="col-span-1 border border-gray-100 dark:border-[#333] bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3">
               <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Instagram</p>
               <Link to={`https://instagram.com/${profile.instagram}`} target='_blank' className="block text-sm font-semibold text-blue-500 hover:underline max-w-full truncate">@{profile.instagram}</Link>
+            </div>
+          )}
+
+          {profile.isTrainer && (
+            <div className="col-span-2 md:col-span-2 border border-blue-100 dark:border-blue-900/30 bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3">
+              <p className="text-xs uppercase font-medium text-blue-600 dark:text-blue-400">CREF</p>
+              <p className="text-sm font-bold text-blue-900 dark:text-blue-300 truncate">
+                {profile.cref ? profile.cref : 'Nao informado'}
+              </p>
             </div>
           )}
           
