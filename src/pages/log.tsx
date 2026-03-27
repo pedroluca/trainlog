@@ -134,9 +134,12 @@ export function LogPage() {
 
   if (loading && !showPaginated) {
     return (
-      <main className='flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64'>
+      <main className='flex flex-col items-center min-h-screen bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64'>
         <div className="animate-pulse space-y-4 w-full max-w-2xl">
           <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-48"></div>
+          <div className="h-20 bg-gray-300 dark:bg-gray-600 rounded"></div>
+          <div className="h-20 bg-gray-300 dark:bg-gray-600 rounded"></div>
+          <div className="h-20 bg-gray-300 dark:bg-gray-600 rounded"></div>
           <div className="h-20 bg-gray-300 dark:bg-gray-600 rounded"></div>
           <div className="h-20 bg-gray-300 dark:bg-gray-600 rounded"></div>
           <div className="h-20 bg-gray-300 dark:bg-gray-600 rounded"></div>
@@ -146,11 +149,11 @@ export function LogPage() {
   }
 
   return (
-    <main className='flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64 pb-32'>
+    <main className='flex flex-col items-center min-h-screen bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64 pb-32'>
       <div className="w-full max-w-2xl">
         <button
           onClick={() => navigate('/profile')}
-          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 mb-4"
+          className="cursor-pointer text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 mb-4"
         >
           ← Voltar ao Perfil
         </button>
