@@ -320,7 +320,7 @@ export function Training() {
   }, [creatorNames, managedUserId])
 
   return (
-    <main className="flex flex-col items-center h-[calc(100dvh-74px)] md:h-[calc(100dvh-89px)] lg:h-[calc(100dvh-69px)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
+    <main className="flex flex-col items-center h-screen md:h-[calc(100dvh-89px)] lg:h-[calc(100dvh-69px)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
       {isManagingStudent && (
         <div className="w-full max-w-3xl mb-3 bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-900/30 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
