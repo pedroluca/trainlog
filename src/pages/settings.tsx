@@ -301,7 +301,7 @@ export function Settings() {
       <div className="w-full max-w-2xl mb-6">
         <button
           onClick={() => navigate('/profile')}
-          className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
+          className="cursor-pointer flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
         >
           <ArrowLeft size={20} />
           <span>Voltar ao Perfil</span>
@@ -328,8 +328,8 @@ export function Settings() {
           
           <button
             onClick={toggleTheme}
-            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#27AE60] focus:ring-offset-2 ${
-              theme === 'dark' ? 'bg-blue-500' : 'bg-gray-300'
+            className={`cursor-pointer relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${
+              theme === 'dark' ? 'bg-[#27AE60]' : 'bg-gray-300'
             }`}
           >
             <span
@@ -405,7 +405,8 @@ export function Settings() {
           </h2>
           <Button
             type="button"
-            className="bg-gray-100 hover:bg-gray-200 dark:bg-[#404040] dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 px-4 py-1.5 text-sm"
+            buttonTextColor='text-gray-500 dark:text-gray-300'
+            className="bg-gray-100 hover:bg-gray-200 dark:bg-[#404040] dark:hover:bg-[#505050] px-4 py-1.5 text-sm"
           >
             {showPrivacySection ? 'Ocultar' : 'Configurar'}
           </Button>
@@ -437,8 +438,8 @@ export function Settings() {
               <button
                 onClick={() => handlePrivacyToggle(item.key as keyof typeof privacidade)}
                 disabled={loadingPrivacy}
-                className={`cursor-pointer relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#2980B9] focus:ring-offset-2 ${
-                  privacidade[item.key as keyof typeof privacidade] ? 'bg-[#2980B9]' : 'bg-gray-300 dark:bg-gray-600'
+                className={`cursor-pointer relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+                  privacidade[item.key as keyof typeof privacidade] ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
                 } ${loadingPrivacy ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <span
@@ -474,7 +475,7 @@ export function Settings() {
           <button
             onClick={handleAudioToggle}
             disabled={loadingAudio}
-            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#27AE60] focus:ring-offset-2 ${
+            className={`cursor-pointer relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${
               audioEnabled ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
             } ${loadingAudio ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
