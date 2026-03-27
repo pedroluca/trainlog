@@ -885,13 +885,13 @@ export function Profile() {
             <div className="flex gap-2 px-5 pb-5">
               <button
                 onClick={() => setIsEditingProfile(false)}
-                className="flex-1 bg-gray-100 dark:bg-[#404040] hover:bg-gray-200 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-200 font-semibold py-2.5 rounded-lg text-sm transition-colors"
+                className="cursor-pointer flex-1 bg-gray-100 dark:bg-[#404040] hover:bg-gray-200 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-200 font-semibold py-2.5 rounded-lg text-sm transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveProfile}
-                className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 rounded-lg text-sm transition-colors"
+                className="cursor-pointer flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 rounded-lg text-sm transition-colors"
               >
                 Salvar
               </button>
