@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { X, Search, UserPlus, Clock, Check } from 'lucide-react'
-import { collection, getDocs, addDoc, query, where } from 'firebase/firestore'
+import { collection, getDocs, addDoc, query, where, doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { UserPill } from './user-pill'
 import { Button } from './button'
@@ -33,15 +33,23 @@ export function AddFriendModal({ onClose, currentUserId }: AddFriendModalProps) 
   const [amizades, setAmizades] = useState<Amizade[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null) // user id
+  const [currentUserName, setCurrentUserName] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
+
+        // 0. Busca nome do usuário atual
+        const currentUserSnap = await getDoc(doc(db, 'usuarios', currentUserId))
+        if (currentUserSnap.exists()) {
+          setCurrentUserName((currentUserSnap.data().nome as string) || '')
+        }
+
         // 1. Fetch all users
         const usersSnap = await getDocs(collection(db, 'usuarios'))
         const usersList = usersSnap.docs
-          .map(doc => ({ id: doc.id, ...doc.data() } as Usuario))
+          .map(d => ({ id: d.id, ...d.data() } as Usuario))
           .filter(u => u.id !== currentUserId)
         
         setUsuarios(usersList)
@@ -52,7 +60,7 @@ export function AddFriendModal({ onClose, currentUserId }: AddFriendModalProps) 
           where('participantes', 'array-contains', currentUserId)
         )
         const amizadesSnap = await getDocs(q)
-        const amizadesList = amizadesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Amizade))
+        const amizadesList = amizadesSnap.docs.map(d => ({ id: d.id, ...d.data() } as Amizade))
         setAmizades(amizadesList)
 
       } catch (error) {
@@ -97,6 +105,18 @@ export function AddFriendModal({ onClose, currentUserId }: AddFriendModalProps) 
       
       // Update local state
       setAmizades(prev => [...prev, { id: docRef.id, ...novaAmizade } as Amizade])
+
+      // Envia notificação ao receptor (fire-and-forget)
+      fetch('https://trainlog.site/api/send-friend-request-notification.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: 'tlg_2ab6ApP7sc1SE_BKyuem_zag7Z7',
+          sender_name: currentUserName,
+          receptor_id: receptorID,
+        }),
+      }).catch(() => { /* silencia erros de rede */ })
+
     } catch (error) {
       console.error('Erro ao enviar solicitação:', error)
     } finally {
