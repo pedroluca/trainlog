@@ -33,7 +33,6 @@ import { logoutOneSignalUser, syncOneSignalUser } from './utils/onesignal'
 import { Friends } from './pages/friends'
 import { FriendProfile } from './pages/friend-profile'
 import { FriendFriends } from './pages/friend-friends'
-import Favicon from './assets/nova-logo-white.svg'
 // import { Teste } from './pages/teste'
 
 type AndroidBridge = {
@@ -98,9 +97,6 @@ async function salvarPlayerIdSeLogado() {
 export function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false)
   const [forceUpdateVersion, setForceUpdateVersion] = useState<string | null>(null)
-  const [authResolved, setAuthResolved] = useState(false)
-  const [appReadyNotified, setAppReadyNotified] = useState(false)
-  const [isAppReady, setIsAppReady] = useState(false)
 
   useEffect(() => {
     const checkVersion = async () => {
@@ -173,15 +169,25 @@ export function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      // Resolve auth immediately – OneSignal runs in background so it never blocks the splash
       if (user?.uid) {
         localStorage.setItem('usuarioId', user.uid)
         notifyAndroidUserLogged(user.uid)
       }
 
-      setAuthResolved(true)
 
-      // Background tasks – do not await these before marking app ready
+      // Notify Android that the app is ready
+      if (typeof window !== 'undefined') {
+        const androidApp = (window as Window & { AndroidApp?: AndroidAppBridge }).AndroidApp
+        if (androidApp && typeof androidApp.appReady === 'function') {
+          try {
+            androidApp.appReady()
+          } catch (error) {
+            console.error('Erro ao chamar window.AndroidApp.appReady:', error)
+          }
+        }
+      }
+
+      // Background tasks
       if (user?.uid) {
         salvarPlayerIdSeLogado().catch(console.error)
         syncOneSignalUser(user.uid).then(async (result) => {
@@ -206,41 +212,6 @@ export function App() {
     return () => unsubscribe()
   }, [])
 
-  useEffect(() => {
-    if (!authResolved || appReadyNotified) return
-    if (typeof window === 'undefined') return
-
-    const androidApp = (window as Window & { AndroidApp?: AndroidAppBridge }).AndroidApp
-    if (androidApp && typeof androidApp.appReady === 'function') {
-      try {
-        androidApp.appReady()
-      } catch (error) {
-        console.error('Erro ao chamar window.AndroidApp.appReady:', error)
-      }
-    }
-
-    setAppReadyNotified(true)
-
-    setTimeout(() => {
-      setIsAppReady(true)
-    }, 500)
-  }, [authResolved, appReadyNotified])
-
-  if (!isAppReady) {
-    return (
-      <div style={{
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#27AE60'
-      }}>
-        <img src={Favicon} width={200} alt='TrainLog' />
-        <div className='loader' />
-      </div>
-    )
-  }
 
   return (
     <ThemeProvider>
