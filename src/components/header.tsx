@@ -9,6 +9,8 @@ export function Header() {
   const [treinouHoje, setTreinouHoje] = useState(false)
   const [photoURL, setPhotoURL] = useState<string | null>(null)
   const [nome, setNome] = useState<string>('')
+  const [isFounder, setIsFounder] = useState(false)
+  const [isPremium, setIsPremium] = useState(false)
   const usuarioID = localStorage.getItem('usuarioId')
   const location = useLocation()
 
@@ -22,6 +24,8 @@ export function Header() {
           setStreak(data.currentStreak || 0)
           setPhotoURL(data.photoURL || null)
           setNome(data.nome || '')
+          setIsFounder(!!data.isFounder)
+          setIsPremium(!!data.isPremium)
           if (data.lastWorkoutDate) {
             const todayStr = new Date().toISOString().slice(0, 10)
             setTreinouHoje(data.lastWorkoutDate === todayStr)
@@ -44,38 +48,43 @@ export function Header() {
     return () => window.removeEventListener('streakUpdated', handleStreakUpdate as EventListener)
   }, [usuarioID])
 
-  // const initials = nome
-  //   ? nome.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
-  //   : '?'
+  // Borda do avatar: founder > premium > padrão
+  const avatarRing = isFounder
+    ? 'ring-2 ring-offset-1 ring-offset-[#27AE60] ring-purple-400'
+    : isPremium
+      ? 'ring-2 ring-offset-1 ring-offset-[#27AE60] ring-yellow-400'
+      : 'ring-2 ring-offset-1 ring-offset-[#27AE60] ring-white/40'
+
+  const firstName = nome.split(' ')[0]
+  const lastName = nome.split(' ')[1]
 
   return (
     <header className='bg-[#27AE60] text-white shadow-lg'>
-      <main className='relative py-3 md:py-5 lg:py-2 px-4 flex items-center justify-between border-b border-white/10'>
+      <main className='relative py-2.5 px-4 flex items-center justify-between border-b border-white/10'>
 
-        {/* ── Esquerda: avatar (logado) ou logo (deslogado) ── */}
+        {/* ── Esquerda: avatar + nome (logado) ou logo (deslogado) ── */}
         {usuarioID ? (
           <Link
             to='/profile'
-            className='flex items-center gap-2.5 group z-10'
+            className='flex items-center gap-2.5 group z-10 rounded-4xl pr-1'
             title='Meu perfil'
           >
-            <div className='relative'>
-              {photoURL ? (
-                <img
-                  src={photoURL}
-                  alt={nome}
-                  className='w-9 h-9 md:w-10 md:h-10 rounded-full object-cover border-2 border-white/40 group-hover:border-white/80 transition-all shadow-md'
-                />
-              ) : (
-                <div className='w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/20 group-hover:bg-white/30 border-2 border-white/40 group-hover:border-white/80 flex items-center justify-center transition-all shadow-md'>
-                  <UserRound size={18} className='text-white' />
-                </div>
-              )}
-              {/* online dot */}
-              <span className='absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-300 border-2 border-[#27AE60] rounded-full' />
-            </div>
-            <span className='hidden md:block lg:hidden text-sm font-semibold text-white/90 group-hover:text-white transition-colors max-w-[120px] truncate'>
-              {nome.split(' ')[0]}
+            {/* Avatar */}
+            {photoURL ? (
+              <img
+                src={photoURL}
+                alt={nome}
+                className={`w-11 h-11 rounded-full object-cover ${avatarRing} transition-all shadow-md`}
+              />
+            ) : (
+              <div className={`w-11 h-11 rounded-full bg-white/20 group-hover:bg-white/30 ${avatarRing} group-hover:ring-white/80 flex items-center justify-center transition-all shadow-md`}>
+                <UserRound size={20} className='text-white' />
+              </div>
+            )}
+
+            {/* Nome */}
+            <span className='text-sm font-semibold text-white/90 group-hover:text-white transition-colors max-w-[100px] truncate'>
+              {firstName} {lastName}
             </span>
           </Link>
         ) : (
@@ -109,8 +118,8 @@ export function Header() {
             className={`flex items-center gap-2 ${treinouHoje ? 'bg-orange-400/50 hover:bg-orange-500/50' : 'bg-white/10 hover:bg-white/20'} pr-4 pl-3 py-2 rounded-full transition-colors z-10`}
             title='Seu streak de treinos'
           >
-            <span className='text-xl md:text-3xl' style={{ filter: treinouHoje ? 'none' : 'grayscale(1)' }}>🔥</span>
-            <span className='text-xl md:text-3xl font-bold'>{streak}</span>
+            <span className='text-xl md:text-2xl' style={{ filter: treinouHoje ? 'none' : 'grayscale(1)' }}>🔥</span>
+            <span className='text-xl md:text-2xl font-bold'>{streak}</span>
           </Link>
         )}
       </main>
