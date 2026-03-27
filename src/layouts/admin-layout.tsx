@@ -51,6 +51,7 @@ export type AdminContextData = {
   users: UserData[]
   setUsers: React.Dispatch<React.SetStateAction<UserData[]>>
   workouts: WorkoutData[]
+  setWorkouts: React.Dispatch<React.SetStateAction<WorkoutData[]>>
   logs: LogData[]
   upgradeRequests: UpgradeRequest[]
   setUpgradeRequests: React.Dispatch<React.SetStateAction<UpgradeRequest[]>>
@@ -198,6 +199,7 @@ export function AdminLayout() {
     users,
     setUsers,
     workouts,
+    setWorkouts,
     logs,
     upgradeRequests,
     setUpgradeRequests

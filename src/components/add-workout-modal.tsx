@@ -16,6 +16,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
   const [muscleGroup, setMuscleGroup] = useState('')
   const [sharedWorkoutId, setSharedWorkoutId] = useState('')
   const [showTemplates, setShowTemplates] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'push_pull_legs' | 'upper_lower' | 'full_body'>('all')
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
@@ -41,7 +42,9 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
   }
 
   const handleAddWorkout = async () => {
-    if (!usuarioID) return
+    if (!usuarioID || isSubmitting) return
+    let shouldUnlock = true
+    setIsSubmitting(true)
     try {
       const alreadyHasWorkoutOnDay = await hasWorkoutOnCurrentDay()
       if (alreadyHasWorkoutOnDay) {
@@ -57,16 +60,21 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
         musculo: muscleGroup,
       })
       showNotification('Treino criado com sucesso!', 'success')
+      shouldUnlock = false
       setTimeout(() => onClose(), 1500)
     } catch (err) {
       console.error('Erro ao adicionar treino:', err)
       showNotification('Erro ao adicionar treino.', 'error')
+    } finally {
+      if (shouldUnlock) setIsSubmitting(false)
     }
   }
 
   const handleAddSharedWorkout = async (workoutIdCode?: string) => {
     const codeToUse = workoutIdCode || sharedWorkoutId
-    if (!usuarioID || !codeToUse) return
+    if (!usuarioID || !codeToUse || isSubmitting) return
+    let shouldUnlock = true
+    setIsSubmitting(true)
     try {
       const alreadyHasWorkoutOnDay = await hasWorkoutOnCurrentDay()
       if (alreadyHasWorkoutOnDay) {
@@ -117,10 +125,13 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
         workoutIdCode ? 'Treino modelo adicionado!' : 'Treino compartilhado adicionado!',
         'success'
       )
+      shouldUnlock = false
       setTimeout(() => onClose(), 1500)
     } catch (err) {
       console.error('Erro ao adicionar treino compartilhado:', err)
       showNotification('Erro ao adicionar treino compartilhado.', 'error')
+    } finally {
+      if (shouldUnlock) setIsSubmitting(false)
     }
   }
 
@@ -146,6 +157,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
           <div className="flex gap-2 mb-6 flex-wrap">
             <button
               onClick={() => setSelectedCategory('all')}
+              disabled={isSubmitting}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedCategory === 'all'
                   ? 'bg-[#27AE60] text-white'
@@ -158,6 +170,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
               <button
                 key={cat.value}
                 onClick={() => setSelectedCategory(cat.value)}
+                disabled={isSubmitting}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === cat.value
                     ? 'bg-[#27AE60] text-white'
@@ -174,8 +187,10 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
             {filteredTemplates.map((template) => (
               <div
                 key={template.id}
-                className="border-2 border-gray-200 dark:border-[#404040] dark:bg-[#1a1a1a] rounded-lg p-4 hover:border-[#27AE60] transition-all cursor-pointer hover:shadow-md"
-                onClick={() => handleSelectTemplate(template)}
+                className={`border-2 border-gray-200 dark:border-[#404040] dark:bg-[#1a1a1a] rounded-lg p-4 transition-all ${
+                  isSubmitting ? 'opacity-60 cursor-not-allowed' : 'hover:border-[#27AE60] cursor-pointer hover:shadow-md'
+                }`}
+                onClick={() => !isSubmitting && handleSelectTemplate(template)}
               >
                 <div className="flex items-start gap-3">
                   <div className="text-3xl">{template.icon}</div>
@@ -201,6 +216,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
               className="w-full bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500"
               buttonTextColor="text-gray-800 dark:text-gray-300"
               onClick={() => setShowTemplates(false)}
+              disabled={isSubmitting}
             >
               ← Voltar
             </Button>
@@ -211,6 +227,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
             className="bg-transparent hover:bg-transparent absolute top-2 right-2 rounded-full p-1"
             buttonTextColor='text-gray-700 dark:text-gray-300'
             onClick={onClose}
+            disabled={isSubmitting}
           >
             <X />
           </Button>
@@ -231,6 +248,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
           className="w-full text-white mb-6 flex items-center justify-center gap-2"
           bgColor='bg-[#27AE60] hover:bg-[#229954]'
           onClick={() => setShowTemplates(true)}
+          disabled={isSubmitting}
         >
           <BookOpen size={20} />
           Modelos
@@ -252,6 +270,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
             type="text"
             value={muscleGroup}
             onChange={(e) => setMuscleGroup(e.target.value)}
+            disabled={isSubmitting}
             className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
             placeholder='Ex: Costas e Bíceps'
           />
@@ -261,8 +280,9 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
             type="button"
             className="bg-blue-500 hover:bg-blue-600 text-white w-full"
             onClick={handleAddWorkout}
+            disabled={isSubmitting}
             >
-            Criar
+            {isSubmitting ? 'Criando...' : 'Criar'}
           </Button>
         </div>
         
@@ -282,6 +302,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
             type="text"
             value={sharedWorkoutId}
             onChange={(e) => setSharedWorkoutId(e.target.value)}
+            disabled={isSubmitting}
             className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
             placeholder='Ex: 1a2b3c4d5f6g'
           />
@@ -292,8 +313,9 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
             className="text-white w-full"
             bgColor='bg-[#F1C40F] hover:bg-[#D4AC0D]'
             onClick={() => handleAddSharedWorkout()}
+            disabled={isSubmitting}
           >
-            Adicionar
+            {isSubmitting ? 'Adicionando...' : 'Adicionar'}
           </Button>
         </div>
         
@@ -302,6 +324,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
           className="bg-transparent hover:bg-transparent absolute top-2 right-2 rounded-full p-1"
           buttonTextColor='text-gray-700 dark:text-gray-300'
           onClick={onClose}
+          disabled={isSubmitting}
         >
           <X />
         </Button>

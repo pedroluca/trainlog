@@ -56,14 +56,24 @@ export function WhatsNewModal({ isOpen, onClose, forceUpdateVersion, systemVersi
   }
 
   const handleForceUpdate = async () => {
-    console.log('🔄 Forcing app update/reload...')
-    if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations()
-      for (const reg of regs) {
-        await reg.unregister()
+    console.log('Forcing app update/reload...')
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(regs.map((reg) => reg.unregister()))
       }
+
+      if ('caches' in window) {
+        const cacheKeys = await caches.keys()
+        await Promise.all(cacheKeys.map((key) => caches.delete(key)))
+      }
+    } catch (error) {
+      console.error('Error while clearing app caches:', error)
     }
-    window.location.href = window.location.href // Bypass cache reload
+
+    const url = new URL(window.location.href)
+    url.searchParams.set('force-refresh', Date.now().toString())
+    window.location.replace(url.toString())
   }
 
   const handleItemClick = (route?: string) => {

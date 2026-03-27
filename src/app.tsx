@@ -100,6 +100,11 @@ export function App() {
   const [forceUpdateVersion, setForceUpdateVersion] = useState<string | null>(null)
 
   useEffect(() => {
+    const isLocalEnv =
+      import.meta.env.DEV ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
+
     const checkVersion = async () => {
       const usuarioID = localStorage.getItem('usuarioId')
       if (!usuarioID) return
@@ -111,6 +116,12 @@ export function App() {
         
         const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
         const firestoreVersion = userDoc.data()?.lastSeenVersion
+
+        // Do not lock developers/QA in local environment when backend version is ahead.
+        if (isLocalEnv) {
+          setForceUpdateVersion(null)
+          return
+        }
         
         if (firestoreVersion !== lastVersion) {
           if (getVersion() === lastVersion || currentRelease.version === lastVersion) {

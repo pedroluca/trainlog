@@ -21,35 +21,35 @@ export type WhatsNewRelease = {
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
-  version: '1.16.0',
-  date: '2026-03-22',
-  title: 'Novidades da Versão 1.16.0',
+  version: '1.17.0',
+  date: '2026-03-27',
+  title: 'Novidades da Versão 1.17.0',
   items: [
     {
-      id: 'friendships',
+      id: 'trainer-student-flow',
+      icon: '🧑‍🏫',
+      title: 'Novo Fluxo Treinador/Aluno',
+      description: 'Agora você pode se conectar como treinador ou aluno, enviar solicitações com consentimento e gerenciar treinos por vínculo. O aluno pode ter mais de um treinador, com separação por criador.',
+      action: {
+        label: 'Abrir Treinador/Aluno',
+        route: '/profile/connections'
+      }
+    },
+    {
+      id: 'friendships-kept',
       icon: '🤝',
-      title: 'Sistema de Amizades',
-      description: 'Agora você pode adicionar amigos, ver as atividades e os treinos deles! Acompanhe o progresso de quem treina com você e mantenham a motivação juntos.',
+      title: 'Amizades Mantidas',
+      description: 'O sistema de amizade continua ativo com solicitações, perfil de amigos e privacidade. Você segue acompanhando quem treina com você normalmente.',
       action: {
         label: 'Ver Amigos',
         route: '/friends'
       }
     },
     {
-      id: 'friend-privacy',
-      icon: '🔒',
-      title: 'Sua Privacidade Importa',
-      description: 'Você tem controle total sobre o que seus amigos podem ver. Acesse as Configurações para ocultar seu peso, altura, treinos ou atividades.',
-      action: {
-        label: 'Ver Configurações',
-        route: '/profile/settings'
-      }
-    },
-    {
-      id: 'ui-scrollbars',
-      icon: '🎨',
-      title: 'Refinamentos na Interface',
-      description: 'Melhoramos o design de vários componentes, como as barras de rolagem nos modais, para deixar o app cada vez mais bonito e fluido no seu uso diário.'
+      id: 'android-push-kept',
+      icon: '📲',
+      title: 'Push no Android Continua',
+      description: 'As notificações push para Android permanecem ativas no app. Você continua recebendo avisos importantes para não perder nada da sua rotina.'
     }
   ]
 }
@@ -57,6 +57,39 @@ export const currentRelease: WhatsNewRelease = {
 // Historical releases (for reference)
 export const releaseHistory: WhatsNewRelease[] = [
   currentRelease,
+  {
+    version: '1.16.0',
+    date: '2026-03-22',
+    title: 'Novidades da Versão 1.16.0',
+    items: [
+      {
+        id: 'friendships',
+        icon: '🤝',
+        title: 'Sistema de Amizades',
+        description: 'Agora você pode adicionar amigos, ver as atividades e os treinos deles! Acompanhe o progresso de quem treina com você e mantenham a motivação juntos.',
+        action: {
+          label: 'Ver Amigos',
+          route: '/friends'
+        }
+      },
+      {
+        id: 'friend-privacy',
+        icon: '🔒',
+        title: 'Sua Privacidade Importa',
+        description: 'Você tem controle total sobre o que seus amigos podem ver. Acesse as Configurações para ocultar seu peso, altura, treinos ou atividades.',
+        action: {
+          label: 'Ver Configurações',
+          route: '/profile/settings'
+        }
+      },
+      {
+        id: 'ui-scrollbars',
+        icon: '🎨',
+        title: 'Refinamentos na Interface',
+        description: 'Melhoramos o design de vários componentes, como as barras de rolagem nos modais, para deixar o app cada vez mais bonito e fluido no seu uso diário.'
+      }
+    ]
+  },
   {
     version: '1.15.5',
     date: '2026-03-21',

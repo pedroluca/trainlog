@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { Users, ChevronDown, ChevronUp, ChevronRight, Activity, Dumbbell, CalendarDays } from 'lucide-react'
+import { Users, ChevronDown, ChevronUp, ChevronRight, Activity, Dumbbell, CalendarDays, Trash2 } from 'lucide-react'
 import { Button } from '../../components/button'
 import { AdminContextData, WorkoutData } from '../../layouts/admin-layout'
 import { db } from '../../firebaseConfig'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore'
 
 type ExercicioData = {
   id: string
@@ -14,10 +14,11 @@ type ExercicioData = {
   peso: number
 }
 
-function UserWorkoutsDetails({ userWorkouts }: { userWorkouts: WorkoutData[] }) {
+function UserWorkoutsDetails({ userWorkouts, onWorkoutDeleted }: { userWorkouts: WorkoutData[]; onWorkoutDeleted: (workoutId: string) => void }) {
   const [expandedWorkoutId, setExpandedWorkoutId] = useState<string | null>(null)
   const [exercises, setExercises] = useState<ExercicioData[]>([])
   const [loading, setLoading] = useState(false)
+  const [deletingWorkoutId, setDeletingWorkoutId] = useState<string | null>(null)
 
   const handleToggleWorkout = async (workoutId: string) => {
     if (expandedWorkoutId === workoutId) {
@@ -45,6 +46,34 @@ function UserWorkoutsDetails({ userWorkouts }: { userWorkouts: WorkoutData[] }) 
     }
   }
 
+  const handleDeleteWorkout = async (workoutId: string, workoutLabel: string) => {
+    const shouldDelete = window.confirm(`Tem certeza que deseja excluir o treino "${workoutLabel}"? Esta acao nao pode ser desfeita.`)
+    if (!shouldDelete) return
+
+    try {
+      setDeletingWorkoutId(workoutId)
+
+      const exercisesRef = collection(db, 'treinos', workoutId, 'exercicios')
+      const exercisesSnap = await getDocs(exercisesRef)
+      const deleteExercisesPromises = exercisesSnap.docs.map((exerciseDoc) => deleteDoc(exerciseDoc.ref))
+      await Promise.all(deleteExercisesPromises)
+
+      await deleteDoc(doc(db, 'treinos', workoutId))
+
+      if (expandedWorkoutId === workoutId) {
+        setExpandedWorkoutId(null)
+        setExercises([])
+      }
+
+      onWorkoutDeleted(workoutId)
+    } catch (err) {
+      console.error('Erro ao excluir treino no painel admin:', err)
+      window.alert('Erro ao excluir treino. Tente novamente.')
+    } finally {
+      setDeletingWorkoutId(null)
+    }
+  }
+
   if (userWorkouts.length === 0) {
     return <div className="p-6 text-center text-gray-500 text-sm">Este usuário ainda não criou nenhum treino.</div>
   }
@@ -61,18 +90,37 @@ function UserWorkoutsDetails({ userWorkouts }: { userWorkouts: WorkoutData[] }) 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {sortedWorkouts.map(workout => (
           <div key={workout.id} className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-sm transition-all">
-            <button 
-              onClick={(e) => { e.stopPropagation(); handleToggleWorkout(workout.id) }}
-              className="w-full p-4 flex items-center justify-between hover:bg-gray-700/80 transition-colors text-left"
-            >
+            <div className="w-full p-4 flex items-center justify-between hover:bg-gray-700/80 transition-colors text-left">
               <div>
                 <p className="font-bold text-gray-200 text-sm">{workout.dia}</p>
                 <p className="text-xs text-blue-400 flex items-center gap-1.5 mt-1 font-medium bg-blue-500/10 w-max px-2 py-0.5 rounded-md">
                   <Dumbbell size={12} /> {workout.musculo}
                 </p>
               </div>
-              {expandedWorkoutId === workout.id ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
-            </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDeleteWorkout(workout.id, `${workout.dia} - ${workout.musculo}`)
+                  }}
+                  disabled={deletingWorkoutId === workout.id}
+                  className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Excluir treino"
+                >
+                  <Trash2 size={16} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleToggleWorkout(workout.id)
+                  }}
+                  className="p-2 rounded-lg hover:bg-gray-700 text-gray-400 transition-colors"
+                  title={expandedWorkoutId === workout.id ? 'Ocultar exercicios' : 'Ver exercicios'}
+                >
+                  {expandedWorkoutId === workout.id ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+                </button>
+              </div>
+            </div>
             
             {expandedWorkoutId === workout.id && (
               <div className="bg-gray-900/80 p-3 border-t border-gray-700">
@@ -106,7 +154,7 @@ function UserWorkoutsDetails({ userWorkouts }: { userWorkouts: WorkoutData[] }) 
 }
 
 export function AdminUsers() {
-  const { users, workouts, logs } = useOutletContext<AdminContextData>()
+  const { users, workouts, setWorkouts, logs } = useOutletContext<AdminContextData>()
 
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
@@ -358,7 +406,12 @@ export function AdminUsers() {
                     {isExpanded && (
                       <tr className="bg-[#151a23]">
                         <td colSpan={6} className="p-0 border-b border-gray-700">
-                          <UserWorkoutsDetails userWorkouts={userWorkoutsList} />
+                            <UserWorkoutsDetails
+                              userWorkouts={userWorkoutsList}
+                              onWorkoutDeleted={(workoutId) => {
+                                setWorkouts((prev) => prev.filter((w) => w.id !== workoutId))
+                              }}
+                            />
                         </td>
                       </tr>
                     )}
