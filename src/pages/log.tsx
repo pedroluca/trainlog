@@ -149,7 +149,7 @@ export function LogPage() {
   }
 
   return (
-    <main className='flex flex-col items-center min-h-screen bg-gray-100 dark:bg-[#1a1a1a] p-4 lg:px-64 pb-32'>
+    <main className='flex flex-col items-center min-h-screen bg-gray-100 dark:bg-[#121212] p-4 lg:px-64 pb-32'>
       <div className="w-full max-w-2xl">
         <button
           onClick={() => navigate('/profile')}

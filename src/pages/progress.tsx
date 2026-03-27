@@ -177,7 +177,7 @@ export function Progress() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 dark:bg-[#1a1a1a] pb-24">
+    <main className="min-h-screen bg-gray-100 dark:bg-[#121212] pb-24">
       {/* Header */}
       <header className="text-black dark:text-gray-100 p-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">

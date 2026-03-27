@@ -231,7 +231,7 @@ export function BodyMetrics() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
+    <main className="min-h-screen bg-gray-100 dark:bg-[#121212] p-4 pb-24">
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-6">
         <button

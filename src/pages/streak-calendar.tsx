@@ -255,7 +255,7 @@ export function StreakCalendar() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a] pb-24">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#121212] pb-24">
       {/* Header */}
       <div className="bg-white dark:bg-[#2d2d2d] border-b dark:border-[#404040] px-4 py-6">
         <button

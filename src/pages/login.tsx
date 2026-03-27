@@ -95,7 +95,7 @@ export function Login() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a]">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#121212]">
       <div className="bg-white dark:bg-[#2d2d2d] shadow-md rounded-lg p-8 w-[85%] max-w-md border border-gray-200 dark:border-[#404040]">
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
           {showForgotPassword ? 'Recuperar Senha' : 'Login'}

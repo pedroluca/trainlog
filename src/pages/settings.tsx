@@ -296,7 +296,7 @@ export function Settings() {
   }
 
   return (
-    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#1a1a1a] p-4 pb-24">
+    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
       {/* Header */}
       <div className="w-full max-w-2xl mb-6">
         <button
