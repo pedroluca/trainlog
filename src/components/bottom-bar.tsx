@@ -1,11 +1,12 @@
-import { Dumbbell, TrendingUp, UsersRound } from 'lucide-react'
+import { BookUser, Dumbbell, TrendingUp, UsersRound } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { BottomBarItem } from './bottom-bar-item'
 
 const navItems = [
-  { to: '/train',    index: 0 },
-  { to: '/friends',  index: 1 },
-  { to: '/progress', index: 2 },
+  { to: '/train', index: 0 },
+  { to: '/friends', index: 1 },
+  { to: '/profile/connections', index: 2 },
+  { to: '/progress', index: 3 },
 ]
 
 export function BottomBar() {
@@ -51,6 +52,9 @@ export function BottomBar() {
             <Dumbbell size={28} />
           </BottomBarItem>
           <BottomBarItem to='/friends'>
+            <BookUser size={28} />
+          </BottomBarItem>
+          <BottomBarItem to='/profile/connections'>
             <UsersRound size={28} />
           </BottomBarItem>
           <BottomBarItem to='/progress'>

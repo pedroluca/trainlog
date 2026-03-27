@@ -673,6 +673,14 @@ export function Profile() {
         
         <div className="md:col-span-4 md:order-2 flex flex-col md:flex-row lg:flex-col gap-3">
           <button
+            onClick={() => navigate('/profile/connections')}
+            className="cursor-pointer flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
+          >
+            <UsersRound size={20} className="text-gray-500 group-hover:scale-110 transition-transform" />
+            Treinadores e Alunos
+          </button>
+
+          <button
             onClick={() => navigate('/profile/settings')}
             className="cursor-pointer flex-1 bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-800 dark:text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group"
           >

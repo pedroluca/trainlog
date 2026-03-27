@@ -33,6 +33,7 @@ import { logoutOneSignalUser, syncOneSignalUser } from './utils/onesignal'
 import { Friends } from './pages/friends'
 import { FriendProfile } from './pages/friend-profile'
 import { FriendFriends } from './pages/friend-friends'
+import { TrainerConnections } from './pages/trainer-connections'
 // import { Teste } from './pages/teste'
 
 type AndroidBridge = {
@@ -247,6 +248,7 @@ export function App() {
               <Route path='body-metrics' element={<BodyMetrics />} />
               <Route path='streak-calendar' element={<StreakCalendar />} />
               <Route path='log' element={<LogPage />} />
+              <Route path='connections' element={<TrainerConnections />} />
             </Route>
           </Route>
 

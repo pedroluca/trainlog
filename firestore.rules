@@ -119,5 +119,44 @@ service cloud.firestore {
         request.auth.uid == resource.data.receptorID
       );
     }
+
+    // trainer_relations collection
+    match /trainer_relations/{relationId} {
+      // Participants and admins can read relation documents
+      allow read: if request.auth != null && (
+        request.auth.uid in resource.data.participants || isAdmin()
+      );
+
+      // Requester can create a pending request involving themselves
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.requesterId &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.participants.hasAll([
+          request.resource.data.trainerId,
+          request.resource.data.studentId
+        ]) &&
+        request.resource.data.targetId in request.resource.data.participants;
+
+      // Only target can accept (pending -> accepted)
+      allow update: if request.auth != null && (
+        isAdmin() ||
+        (
+          request.auth.uid == resource.data.targetId &&
+          resource.data.status == 'pending' &&
+          request.resource.data.status == 'accepted' &&
+          request.resource.data.trainerId == resource.data.trainerId &&
+          request.resource.data.studentId == resource.data.studentId &&
+          request.resource.data.requesterId == resource.data.requesterId &&
+          request.resource.data.targetId == resource.data.targetId
+        )
+      );
+
+      // Requester/target/admin can delete a relation (reject/cancel/unlink)
+      allow delete: if request.auth != null && (
+        request.auth.uid == resource.data.requesterId ||
+        request.auth.uid == resource.data.targetId ||
+        isAdmin()
+      );
+    }
   }
 }
