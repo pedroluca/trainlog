@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { doc, getDoc, collection, addDoc, getDocs } from 'firebase/firestore'
+import { doc, getDoc, collection, addDoc, getDocs, query, where } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
 import { X, BookOpen } from 'lucide-react'
@@ -9,9 +9,10 @@ type AddWorkoutModalProps = {
   onClose: () => void
   currentDay: string
   usuarioID: string | null
+  createdByUserId?: string
 }
 
-export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutModalProps) {
+export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserId }: AddWorkoutModalProps) {
   const [muscleGroup, setMuscleGroup] = useState('')
   const [sharedWorkoutId, setSharedWorkoutId] = useState('')
   const [showTemplates, setShowTemplates] = useState(false)
@@ -27,12 +28,31 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
     setTimeout(() => setShowToast(false), 3000)
   }
 
+  const hasWorkoutOnCurrentDay = async () => {
+    if (!usuarioID) return false
+    const workoutsRef = collection(db, 'treinos')
+    const sameDayQuery = query(
+      workoutsRef,
+      where('usuarioID', '==', usuarioID),
+      where('dia', '==', currentDay)
+    )
+    const sameDaySnap = await getDocs(sameDayQuery)
+    return !sameDaySnap.empty
+  }
+
   const handleAddWorkout = async () => {
     if (!usuarioID) return
     try {
+      const alreadyHasWorkoutOnDay = await hasWorkoutOnCurrentDay()
+      if (alreadyHasWorkoutOnDay) {
+        showNotification('Ja existe treino cadastrado para este dia.', 'error')
+        return
+      }
+
       const workoutsRef = collection(db, 'treinos')
       await addDoc(workoutsRef, {
         usuarioID,
+        createdByUserId: createdByUserId || usuarioID,
         dia: currentDay,
         musculo: muscleGroup,
       })
@@ -48,6 +68,12 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
     const codeToUse = workoutIdCode || sharedWorkoutId
     if (!usuarioID || !codeToUse) return
     try {
+      const alreadyHasWorkoutOnDay = await hasWorkoutOnCurrentDay()
+      if (alreadyHasWorkoutOnDay) {
+        showNotification('Ja existe treino cadastrado para este dia.', 'error')
+        return
+      }
+
       // Divide o código de compartilhamento em [id do treino] e [id do usuário dono]
       const [workoutId, ownerId] = codeToUse.split('-')
   
@@ -68,6 +94,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID }: AddWorkoutMo
       const workoutData = workoutDoc.data()
       const newWorkoutRef = await addDoc(collection(db, 'treinos'), {
         usuarioID,
+        createdByUserId: createdByUserId || usuarioID,
         dia: currentDay,
         musculo: workoutData.musculo,
       })

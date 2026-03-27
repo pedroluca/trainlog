@@ -23,10 +23,11 @@ type TrainingCardProps = {
   nota?: string
   usesProgressiveWeight?: boolean
   progressiveSets?: Array<{ reps: number; weight: number }>
+  disableExecution?: boolean
 }
 
 export function TrainingCard(props: TrainingCardProps) {
-  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, reset, onEdit, onComplete, nota, usesProgressiveWeight, progressiveSets } = props
+  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, reset, onEdit, onComplete, nota, usesProgressiveWeight, progressiveSets, disableExecution } = props
   const [isBreakTime, setIsBreakTime] = useState(false)
   const [timeLeft, setTimeLeft] = useState(0)
   const [setsDone, setSetsDone] = useState(0)
@@ -134,6 +135,7 @@ export function TrainingCard(props: TrainingCardProps) {
   }
 
   const isFinished = isFeito
+  const isExecutionLocked = !!disableExecution
 
   useEffect(() => {
     if (reset) {
@@ -321,9 +323,15 @@ export function TrainingCard(props: TrainingCardProps) {
                 </p>
               </>
             )}
-            <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
-              <strong>Você fez:</strong> {isFinished ? sets : setsDone} séries de {sets}
-            </p>
+            {!isExecutionLocked ? (
+              <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <strong>Você fez:</strong> {isFinished ? sets : setsDone} séries de {sets}
+              </p>
+            ) : (
+              <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <strong>Modo:</strong> Planejamento do aluno
+              </p>
+            )}
             {nota && (
               <div className={`mt-4 p-3 rounded-lg ${isFinished ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
                 <p className={`text-sm ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-600 dark:text-gray-400'}`}>
@@ -334,11 +342,11 @@ export function TrainingCard(props: TrainingCardProps) {
           </div>
           <Button 
             onClick={handleStartSet} 
-            disabled={isFinished} 
+            disabled={isFinished || isExecutionLocked} 
             bgColor={'bg-[#27AE60] hover:bg-[#219150] disabled:bg-[#219150]'}
             className='w-full py-4 text-lg md:text-2xl lg:text-xl font-bold mt-4'
           >
-            {isFinished ? 'Concluído' : ('Finalizar ' + (setsDone + 1) + 'ª série')}
+            {isExecutionLocked ? 'Execução desativada' : isFinished ? 'Concluído' : ('Finalizar ' + (setsDone + 1) + 'ª série')}
           </Button>
         </>
       ) : (

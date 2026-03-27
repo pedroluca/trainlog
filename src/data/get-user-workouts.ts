@@ -6,11 +6,16 @@ export interface Treino {
   dia: string
   musculo: string
   usuarioID: string
+  createdByUserId?: string
   isTemplate?: boolean // Optional flag to mark template workouts
   exerciseOrder?: string[] // Ordem customizada dos IDs dos exercícios
 }
 
-export async function getUserWorkouts(usuarioID: string): Promise<Treino[]> {
+type GetUserWorkoutsOptions = {
+  createdByUserId?: string
+}
+
+export async function getUserWorkouts(usuarioID: string, options?: GetUserWorkoutsOptions): Promise<Treino[]> {
   const q = query(collection(db, 'treinos'), where('usuarioID', '==', usuarioID))
   const querySnapshot = await getDocs(q)
   const workouts = querySnapshot.docs.map((doc) => ({
@@ -19,5 +24,11 @@ export async function getUserWorkouts(usuarioID: string): Promise<Treino[]> {
   })) as Treino[]
   
   // Filter out templates (only show regular workouts)
-  return workouts.filter(workout => !workout.isTemplate)
+  const nonTemplate = workouts.filter(workout => !workout.isTemplate)
+
+  if (options?.createdByUserId) {
+    return nonTemplate.filter(workout => (workout.createdByUserId || workout.usuarioID) === options.createdByUserId)
+  }
+
+  return nonTemplate
 }

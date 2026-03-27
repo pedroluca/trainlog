@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
-import { Dumbbell, TrendingUp, UsersRound, UserRound } from 'lucide-react'
+import { BookUser, Dumbbell, TrendingUp, UsersRound, UserRound } from 'lucide-react'
 
 export function Header() {
   const [streak, setStreak] = useState(0)
@@ -103,7 +103,10 @@ export function Header() {
               <Dumbbell size={20} /> Treino
             </Link>
             <Link to='/friends' className={`flex items-center gap-2 transition-colors font-semibold text-base ${location.pathname.startsWith('/friends') ? 'text-white' : 'text-white/60 hover:text-white/80'}`}>
-              <UsersRound size={20} /> Amigos
+              <BookUser size={20} /> Amigos
+            </Link>
+            <Link to='/profile/connections' className={`flex items-center gap-2 transition-colors font-semibold text-base ${location.pathname.startsWith('/profile/connections') ? 'text-white' : 'text-white/60 hover:text-white/80'}`}>
+              <UsersRound size={20} /> Treinador/Aluno
             </Link>
             <Link to='/progress' className={`flex items-center gap-2 transition-colors font-semibold text-base ${location.pathname.startsWith('/progress') ? 'text-white' : 'text-white/60 hover:text-white/80'}`}>
               <TrendingUp size={20} /> Progresso

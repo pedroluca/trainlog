@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { UserPill } from '../components/user-pill'
 import { Toast, ToastState } from '../components/toast'
@@ -224,7 +224,8 @@ export function TrainerConnections() {
     try {
       setActionLoading('send')
       const now = new Date().toISOString()
-      await addDoc(collection(db, 'trainer_relations'), {
+        const relationId = `${relationConfig.trainerId}_${relationConfig.studentId}`
+        await setDoc(doc(db, 'trainer_relations', relationId), {
         trainerId: relationConfig.trainerId,
         studentId: relationConfig.studentId,
         status: 'pending',
@@ -422,7 +423,18 @@ export function TrainerConnections() {
                       isTrainer={student.isTrainer}
                       isFounder={student.isFounder}
                       isPremium={student.isPremium}
-                    />
+                    >
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/train?studentId=${student.id}&studentName=${encodeURIComponent(student.nome)}`
+                          )
+                        }
+                        className="cursor-pointer text-xs font-bold uppercase tracking-wider bg-[#27AE60]/10 hover:bg-[#27AE60]/20 text-[#27AE60] px-3 py-2 rounded-lg"
+                      >
+                        Gerenciar treinos
+                      </button>
+                    </UserPill>
                   ))}
                 </div>
               )}

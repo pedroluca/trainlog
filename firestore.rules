@@ -8,6 +8,15 @@ service cloud.firestore {
       return request.auth != null && 
              get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.isAdmin == true;
     }
+
+    function trainerRelationId(trainerId, studentId) {
+      return trainerId + '_' + studentId;
+    }
+
+    function hasAcceptedTrainerRelation(trainerId, studentId) {
+      return exists(/databases/$(database)/documents/trainer_relations/$(trainerRelationId(trainerId, studentId))) &&
+             get(/databases/$(database)/documents/trainer_relations/$(trainerRelationId(trainerId, studentId))).data.status == 'accepted';
+    }
     
     // sistema collection (for app version tracking)
     match /sistema/{documentId} {
@@ -54,25 +63,49 @@ service cloud.firestore {
       // 4. User is authenticated (to allow reading shared workouts)
       allow read: if request.auth != null;
       
-      // Allow write if user owns the workout or is admin
-      allow write: if request.auth.uid == resource.data.usuarioID || isAdmin();
+      // Allow write if user owns the workout, is creator, or is admin
+      allow write: if request.auth != null && (
+        request.auth.uid == resource.data.usuarioID ||
+        request.auth.uid == resource.data.createdByUserId ||
+        isAdmin()
+      );
       
       // Allow create if:
       // 1. User is creating their own workout, OR
-      // 2. It's a system template being created (for seeding script)
-      allow create: if request.auth.uid == request.resource.data.usuarioID || 
-                       request.resource.data.usuarioID == 'system';
+      // 2. Trainer is creating for linked student, OR
+      // 3. It's a system template being created (for seeding script)
+      allow create: if request.auth != null && (
+        request.auth.uid == request.resource.data.usuarioID ||
+        (
+          request.auth.uid == request.resource.data.createdByUserId &&
+          request.auth.uid != request.resource.data.usuarioID &&
+          hasAcceptedTrainerRelation(request.auth.uid, request.resource.data.usuarioID)
+        ) ||
+        // Transitional fallback for legacy trainer relations created before deterministic IDs.
+        (
+          request.auth.uid == request.resource.data.createdByUserId &&
+          request.auth.uid != request.resource.data.usuarioID &&
+          get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.isTrainer == true
+        ) ||
+        request.resource.data.usuarioID == 'system'
+      );
       
       // exercicios subcollection (nested inside treinos)
       match /exercicios/{exercicioId} {
         // Allow any authenticated user to read exercises (for sharing)
         allow read: if request.auth != null;
         
-        allow write: if request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID || 
-                        isAdmin();
+        allow write: if request.auth != null && (
+          request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID ||
+          request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.createdByUserId ||
+          isAdmin()
+        );
         
-        allow create: if request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID || 
-                         get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID == 'system';
+        allow create: if request.auth != null && (
+          request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID ||
+          request.auth.uid == get(/databases/$(database)/documents/treinos/$(treinoId)).data.createdByUserId ||
+          get(/databases/$(database)/documents/treinos/$(treinoId)).data.usuarioID == 'system'
+        );
       }
     }
     
@@ -130,6 +163,7 @@ service cloud.firestore {
       // Requester can create a pending request involving themselves
       allow create: if request.auth != null &&
         request.auth.uid == request.resource.data.requesterId &&
+        relationId == trainerRelationId(request.resource.data.trainerId, request.resource.data.studentId) &&
         request.resource.data.status == 'pending' &&
         request.resource.data.participants.hasAll([
           request.resource.data.trainerId,

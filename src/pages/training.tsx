@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TrainingCard, TrainingCardSkeleton } from '../components/training-card'
 import { ChevronLeft, ChevronRight, Settings2 } from 'lucide-react'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
@@ -8,8 +8,8 @@ import { AddWorkoutModal } from '../components/add-workout-modal'
 import { AddExerciseModal } from '../components/add-exercise-modal'
 import { WorkoutSettingsModal } from '../components/workout-settings-modal'
 import { WorkoutCompleteModal } from '../components/workout-complete-modal'
-import { useNavigate } from 'react-router-dom'
-import { collection, doc, getDocs, updateDoc } from 'firebase/firestore'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { updateStreak, updateScheduledDays } from '../data/streak-utils'
 import { trackPageView, trackWorkoutCompleted } from '../utils/analytics'
@@ -20,6 +20,7 @@ export function Training() {
   const todayIndex = new Date().getDay()
   const [currentDayIndex, setCurrentDayIndex] = useState(todayIndex)
   const [workouts, setWorkouts] = useState<Treino[]>([])
+  const [allManagedUserWorkouts, setAllManagedUserWorkouts] = useState<Treino[]>([])
   const [exercises, setExercises] = useState<Exercicio[]>([])
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -29,9 +30,17 @@ export function Training() {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
+  const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null)
+  const [creatorNames, setCreatorNames] = useState<Record<string, string>>({})
   const usuarioID = localStorage.getItem('usuarioId')
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [reset, setReset] = useState(false)
+  const managedUserId = searchParams.get('studentId') || usuarioID
+  const managedUserNameFromParams = searchParams.get('studentName') || ''
+  const isManagingStudent = !!usuarioID && !!managedUserId && managedUserId !== usuarioID
+  const canExecuteWorkout = !isManagingStudent
+  const [managedUserName, setManagedUserName] = useState(managedUserNameFromParams)
 
   if (!usuarioID) {
     navigate('/login')
@@ -39,27 +48,112 @@ export function Training() {
 
   const fetchWorkouts = useCallback(async () => {
     try {
-      if (!usuarioID) {
+      if (!usuarioID || !managedUserId) {
         console.error('Error: usuarioID is null')
         setLoading(false)
         return
       }
-      const data = await getUserWorkouts(usuarioID)
+
+      if (isManagingStudent) {
+        const meDoc = await getDoc(doc(db, 'usuarios', usuarioID))
+        const meData = meDoc.data()
+        if (!meDoc.exists() || !meData?.isTrainer) {
+          navigate('/profile/connections')
+          return
+        }
+
+        const relationQuery = query(
+          collection(db, 'trainer_relations'),
+          where('participants', 'array-contains', usuarioID),
+          where('trainerId', '==', usuarioID),
+          where('studentId', '==', managedUserId),
+          where('status', '==', 'accepted')
+        )
+        const relationSnap = await getDocs(relationQuery)
+        if (relationSnap.empty) {
+          navigate('/profile/connections')
+          return
+        }
+
+        const studentDoc = await getDoc(doc(db, 'usuarios', managedUserId))
+        if (studentDoc.exists()) {
+          setManagedUserName(studentDoc.data().nome || '')
+        }
+      }
+
+      const data = await getUserWorkouts(
+        managedUserId,
+        isManagingStudent ? { createdByUserId: usuarioID } : undefined
+      )
       setWorkouts(data)
+
+      if (isManagingStudent) {
+        const allStudentWorkouts = await getUserWorkouts(managedUserId)
+        setAllManagedUserWorkouts(allStudentWorkouts)
+
+        const creatorIds = Array.from(new Set(
+          allStudentWorkouts
+            .map((workout) => workout.createdByUserId || workout.usuarioID)
+            .filter((id) => !!id && id !== managedUserId)
+        ))
+
+        if (creatorIds.length > 0) {
+          const creatorDocs = await Promise.all(creatorIds.map((id) => getDoc(doc(db, 'usuarios', id))))
+          const namesMap: Record<string, string> = {}
+          creatorDocs.forEach((creatorDoc) => {
+            if (creatorDoc.exists()) {
+              namesMap[creatorDoc.id] = creatorDoc.data().nome || 'Treinador'
+            }
+          })
+          setCreatorNames(namesMap)
+        } else {
+          setCreatorNames({})
+        }
+      } else {
+        setAllManagedUserWorkouts(data)
+
+        const creatorIds = Array.from(new Set(
+          data
+            .map((workout) => workout.createdByUserId || workout.usuarioID)
+            .filter((id) => !!id && id !== managedUserId)
+        ))
+
+        if (creatorIds.length > 0) {
+          const creatorDocs = await Promise.all(creatorIds.map((id) => getDoc(doc(db, 'usuarios', id))))
+          const namesMap: Record<string, string> = {}
+          creatorDocs.forEach((creatorDoc) => {
+            if (creatorDoc.exists()) {
+              namesMap[creatorDoc.id] = creatorDoc.data().nome || 'Treinador'
+            }
+          })
+          setCreatorNames(namesMap)
+        } else {
+          setCreatorNames({})
+        }
+      }
     } catch (err) {
       console.error('Error fetching workouts:', err)
     } finally {
       setLoading(false)
     }
-  }, [usuarioID])
+  }, [usuarioID, managedUserId, isManagingStudent, navigate])
 
   const fetchExercisesForDay = useCallback(async (preserveIndex = false) => {
     const selectedDay = daysOfWeek[currentDayIndex]
-    const workoutForDay = workouts.find(
+    const dayWorkouts = workouts.filter(
       (workout) => workout.dia.toLowerCase() === selectedDay.toLowerCase()
     )
 
+    const workoutForDay = dayWorkouts.find((workout) => workout.id === selectedWorkoutId) || dayWorkouts[0]
+
     setSelectedWorkout(workoutForDay || null)
+    if (workoutForDay) {
+      if (selectedWorkoutId !== workoutForDay.id) {
+        setSelectedWorkoutId(workoutForDay.id)
+      }
+    } else if (selectedWorkoutId !== null) {
+      setSelectedWorkoutId(null)
+    }
 
     if (workoutForDay) {
       try {
@@ -77,7 +171,7 @@ export function Training() {
     }
 
     setReset(false)
-  }, [workouts, currentDayIndex])
+  }, [workouts, currentDayIndex, selectedWorkoutId])
 
   useEffect(() => {
     trackPageView('training')
@@ -150,7 +244,7 @@ export function Training() {
       const completionKey = `workout-completed-${selectedWorkout.id}-${today}`
       const hasCompletedToday = localStorage.getItem(completionKey) === 'true'
       
-      if (allComplete && !isCompleteModalOpen && !hasCompletedToday) {
+      if (allComplete && !isCompleteModalOpen && !hasCompletedToday && canExecuteWorkout) {
         if (usuarioID) {
           updateStreak(usuarioID).then(async (newStreak) => {
             try {
@@ -175,7 +269,7 @@ export function Training() {
         }, 500)
       }
     }
-  }, [exercises, isCompleteModalOpen, selectedWorkout, usuarioID])
+  }, [exercises, isCompleteModalOpen, selectedWorkout, usuarioID, canExecuteWorkout])
 
   const handleExerciseComplete = useCallback(() => {
     if (currentExerciseIndex < exercises.length - 1) {
@@ -190,9 +284,57 @@ export function Training() {
   }, [exercises, checkAllExercisesComplete])
 
   const currentExercise = exercises[currentExerciseIndex]
+  const dayWorkouts = useMemo(() => {
+    const selectedDay = daysOfWeek[currentDayIndex]
+    return workouts.filter(
+      (workout) => workout.dia.toLowerCase() === selectedDay.toLowerCase()
+    )
+  }, [workouts, currentDayIndex])
+
+  const hasAnyWorkoutOnSelectedDay = useMemo(() => {
+    const selectedDay = daysOfWeek[currentDayIndex]
+    return allManagedUserWorkouts.some(
+      (workout) => workout.dia.toLowerCase() === selectedDay.toLowerCase()
+    )
+  }, [allManagedUserWorkouts, currentDayIndex])
+
+  const hasWorkoutFromOtherCreatorOnSelectedDay = useMemo(() => {
+    const selectedDay = daysOfWeek[currentDayIndex]
+    return isManagingStudent && !selectedWorkout && allManagedUserWorkouts.some(
+      (workout) =>
+        workout.dia.toLowerCase() === selectedDay.toLowerCase() &&
+        (workout.createdByUserId || workout.usuarioID) !== usuarioID
+    )
+  }, [allManagedUserWorkouts, currentDayIndex, isManagingStudent, selectedWorkout, usuarioID])
+
+  const handleSelectWorkout = (workoutId: string) => {
+    setSelectedWorkoutId(workoutId)
+    setCurrentExerciseIndex(0)
+    setIsCompleteModalOpen(false)
+  }
+
+  const getWorkoutCreatorLabel = useCallback((workout: Treino) => {
+    const creatorId = workout.createdByUserId || workout.usuarioID
+    if (!managedUserId || creatorId === managedUserId) return null
+    return creatorNames[creatorId] || 'Treinador'
+  }, [creatorNames, managedUserId])
 
   return (
     <main className="flex flex-col items-center h-[calc(100dvh-74px)] md:h-[calc(100dvh-89px)] lg:h-[calc(100dvh-69px)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
+      {isManagingStudent && (
+        <div className="w-full max-w-3xl mb-3 bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-900/30 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+            Gerenciando treinos do aluno {managedUserName}
+          </p>
+          <button
+            onClick={() => navigate('/profile/connections')}
+            className="cursor-pointer text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 hover:underline"
+          >
+            Voltar
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center justify-center w-full max-w-3xl mb-2 flex-shrink-0">
         <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handlePreviousDay}>
           <ChevronLeft />
@@ -214,10 +356,42 @@ export function Training() {
         ) : (
           selectedWorkout ? (
             <div className="w-full max-w-3xl flex flex-col flex-1 overflow-hidden">
+              {dayWorkouts.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2 mb-2 flex-shrink-0">
+                  {dayWorkouts.map((workout) => (
+                    <button
+                      key={workout.id}
+                      onClick={() => handleSelectWorkout(workout.id)}
+                      className={`cursor-pointer whitespace-nowrap text-sm font-bold px-3 py-2 rounded-lg border transition-colors ${
+                        selectedWorkout?.id === workout.id
+                          ? 'bg-[#27AE60] text-white border-[#27AE60]'
+                          : 'bg-white dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#252525]'
+                      }`}
+                    >
+                      <span className="block">{workout.musculo}</span>
+                      {!isManagingStudent && getWorkoutCreatorLabel(workout) && (
+                        <span className={`block text-[10px] font-semibold ${
+                          selectedWorkout?.id === workout.id ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          por {getWorkoutCreatorLabel(workout)}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="flex justify-between items-center w-full border-b border-gray-300 dark:border-gray-700 pb-3 mb-4 flex-shrink-0">
-                <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100">
-                  Dia de: <span className="text-emerald-600 dark:text-emerald-400">{selectedWorkout.musculo}</span>
-                </h3>
+                <div>
+                  <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100">
+                    Dia de: <span className="text-emerald-600 dark:text-emerald-400">{selectedWorkout.musculo}</span>
+                  </h3>
+                  {!isManagingStudent && getWorkoutCreatorLabel(selectedWorkout) && (
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">
+                      Criado por: {getWorkoutCreatorLabel(selectedWorkout)}
+                    </p>
+                  )}
+                </div>
                 <button
                   onClick={() => setIsSettingsModalOpen(true)}
                   className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-[#1e1e1e] text-gray-600 dark:text-gray-300 transition-colors shadow-sm border border-transparent hover:border-gray-200 dark:hover:border-[#333]"
@@ -295,6 +469,7 @@ export function Training() {
                           nota={currentExercise.nota}
                           usesProgressiveWeight={currentExercise.usesProgressiveWeight}
                           progressiveSets={currentExercise.progressiveSets}
+                          disableExecution={!canExecuteWorkout}
                         />
                     </div>
                   )}
@@ -307,14 +482,28 @@ export function Training() {
             </div>
           ) : (
             <div className="w-full max-w-3xl flex flex-col items-center justify-center flex-1">
-              <p className="text-gray-700 dark:text-gray-300 text-lg">Desculpe, você não tem treinos registrados para este dia!</p>
-              <Button
-                className="bg-white dark:bg-[#1e1e1e] shadow-sm border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#252525] mt-6 px-8 py-3 rounded-xl transition-all"
-                buttonTextColor="text-gray-800 dark:text-white font-bold"
-                onClick={() => setIsWorkoutModalOpen(true)}
-              >
-                Adicionar treino
-              </Button>
+              {hasWorkoutFromOtherCreatorOnSelectedDay ? (
+                <>
+                  <p className="text-gray-700 dark:text-gray-300 text-lg text-center">
+                    Este aluno já possui treino neste dia, criado por outro responsável.
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
+                    Para evitar conflito de agenda, não é permitido criar outro treino para este dia.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-gray-700 dark:text-gray-300 text-lg">Desculpe, você não tem treinos registrados para este dia!</p>
+                  <Button
+                    className="bg-white dark:bg-[#1e1e1e] shadow-sm border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#252525] mt-6 px-8 py-3 rounded-xl transition-all"
+                    buttonTextColor="text-gray-800 dark:text-white font-bold"
+                    onClick={() => setIsWorkoutModalOpen(true)}
+                    disabled={isManagingStudent && hasAnyWorkoutOnSelectedDay}
+                  >
+                    Adicionar treino
+                  </Button>
+                </>
+              )}
             </div>
           )
         )
@@ -325,10 +514,11 @@ export function Training() {
           onClose={() => {
             setIsWorkoutModalOpen(false)
             fetchWorkouts()
-            if (usuarioID) updateScheduledDays(usuarioID)
+            if (managedUserId) updateScheduledDays(managedUserId)
           }}
           currentDay={daysOfWeek[currentDayIndex]}
-          usuarioID={usuarioID}
+          usuarioID={managedUserId}
+          createdByUserId={usuarioID || undefined}
         />
       )}
 
@@ -350,7 +540,7 @@ export function Training() {
           onSave={() => {
             setIsSettingsModalOpen(false)
             fetchWorkouts()
-            if (usuarioID) updateScheduledDays(usuarioID)
+            if (managedUserId) updateScheduledDays(managedUserId)
           }}
           onResetExercises={() => setIsResetModalOpen(true)}
           onAddExercise={() => setIsExerciseModalOpen(true)}
