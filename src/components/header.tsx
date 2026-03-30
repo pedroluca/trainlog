@@ -83,7 +83,7 @@ export function Header({ isFixed }: { isFixed?: boolean }) {
             )}
 
             {/* Nome */}
-            <span className='text-sm font-semibold text-white/90 group-hover:text-white transition-colors max-w-[100px] truncate'>
+            <span className='text-base font-semibold text-white/90 group-hover:text-white transition-colors max-w-[100px] truncate'>
               {firstName} {lastName}
             </span>
           </Link>
