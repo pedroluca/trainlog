@@ -33,6 +33,7 @@ export function WorkoutSettingsModal({
     message: '',
     type: 'success'
   })
+  const [isLoading, setIsLoading] = useState(false)
 
   // Para o Drag and Drop nativo
   const dragItemIndex = useRef<number | null>(null)
@@ -68,6 +69,7 @@ export function WorkoutSettingsModal({
 
   const handleSave = async () => {
     try {
+      setIsLoading(true)
       const workoutRef = doc(db, 'treinos', workout.id)
       
       // Monta o array de IDs na ordem atual do state
@@ -87,6 +89,7 @@ export function WorkoutSettingsModal({
     } catch (err) {
       console.error('Erro ao salvar ajustes do treino:', err)
       setToast({ show: true, message: 'Erro ao salvar ajustes.', type: 'error' })
+      setIsLoading(false)
     }
   }
 
@@ -202,18 +205,21 @@ export function WorkoutSettingsModal({
         <div className="flex gap-2 px-5 pb-5 pt-4 bg-gray-50 dark:bg-[#252525] border-t border-gray-100 dark:border-[#404040]">
           <Button
             type="button"
-            className="flex-1 bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050]"
+            className="flex-1 bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] disabled:opacity-50"
             buttonTextColor="text-gray-700 dark:text-gray-200"
             onClick={onClose}
+            disabled={isLoading}
           >
             Cancelar
           </Button>
           <Button
             type="button"
-            className="flex-1 bg-[#27AE60] hover:bg-[#219150]"
+            className="flex-1 bg-[#27AE60] hover:bg-[#219150] flex items-center justify-center gap-2 disabled:opacity-75"
             onClick={handleSave}
+            disabled={isLoading}
           >
-            Salvar Ajustes
+            {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+            <span>Salvar Ajustes</span>
           </Button>
         </div>
 

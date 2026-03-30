@@ -19,9 +19,11 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
     message: '',
     type: 'success'
   })
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSave = async () => {
     try {
+      setIsLoading(true)
       const workoutRef = doc(db, 'treinos', workout.id)
       await updateDoc(workoutRef, { dia: day, musculo: muscleGroup })
       onSave()
@@ -29,6 +31,7 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
     } catch (err) {
       console.error('Erro ao salvar treino:', err)
       setToast({ show: true, message: 'Erro ao salvar treino.', type: 'error' })
+      setIsLoading(false)
     }
   }
 
@@ -81,17 +84,20 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
           <div className="flex justify-end">
             <Button
               type="button"
-              className="bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 mr-2"
+              className="bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 mr-2 disabled:opacity-50"
               onClick={onClose}
+              disabled={isLoading}
             >
               Cancelar
             </Button>
             <Button
               type="button"
-              className="bg-blue-500 hover:bg-blue-600 text-white"
+              className="bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-2 disabled:opacity-75 min-w-[100px]"
               onClick={handleSave}
+              disabled={isLoading}
             >
-              Salvar
+              {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+              <span>Salvar</span>
             </Button>
           </div>
         </form>

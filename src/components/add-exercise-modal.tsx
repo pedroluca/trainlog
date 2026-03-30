@@ -24,6 +24,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
     message: '',
     type: 'success'
   })
+  const [isLoading, setIsLoading] = useState(false)
 
   // Sync progressive sets when series changes
   useEffect(() => {
@@ -87,6 +88,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
 
   const handleAddExercise = async () => {
     try {
+      setIsLoading(true)
       const [minutes, seconds] = tempoIntervalo.split(':').map(Number)
       const totalBreakTime = minutes * 60 + seconds
 
@@ -122,6 +124,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
     } catch (err) {
       console.error('Erro ao adicionar exercício:', err)
       setToast({ show: true, message: 'Erro ao adicionar exercício.', type: 'error' })
+      setIsLoading(false)
     }
   }
 
@@ -365,18 +368,21 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
           <div className="flex justify-end">
             <Button
               type="button"
-              className="bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2"
+              className="bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2 disabled:opacity-50"
               buttonTextColor='text-gray-700 dark:text-gray-300'
               onClick={onClose}
+              disabled={isLoading}
             >
               Cancelar
             </Button>
             <Button
               type="button"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 disabled:opacity-50 min-w-[100px]"
               onClick={handleAddExercise}
+              disabled={isLoading}
             >
-              Salvar
+              {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+              <span>Salvar</span>
             </Button>
           </div>
         </form>

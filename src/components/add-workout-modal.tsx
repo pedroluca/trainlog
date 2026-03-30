@@ -278,11 +278,12 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
         <div className="flex w-full mb-4">
           <Button
             type="button"
-            className="bg-blue-500 hover:bg-blue-600 text-white w-full"
+            className="bg-blue-500 hover:bg-blue-600 text-white w-full flex items-center justify-center gap-2 disabled:bg-blue-400 disabled:opacity-75"
             onClick={handleAddWorkout}
             disabled={isSubmitting}
             >
-            {isSubmitting ? 'Criando...' : 'Criar'}
+            {isSubmitting && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+            <span>{isSubmitting ? 'Criando...' : 'Criar'}</span>
           </Button>
         </div>
         
@@ -310,12 +311,13 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
         <div className="flex w-full">
           <Button
             type="button"
-            className="text-white w-full"
+            className="text-white w-full flex items-center justify-center gap-2 disabled:bg-[#D4AC0D] disabled:opacity-75"
             bgColor='bg-[#F1C40F] hover:bg-[#D4AC0D]'
             onClick={() => handleAddSharedWorkout()}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Adicionando...' : 'Adicionar'}
+            {isSubmitting && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+            <span>{isSubmitting ? 'Adicionando...' : 'Adicionar'}</span>
           </Button>
         </div>
         
