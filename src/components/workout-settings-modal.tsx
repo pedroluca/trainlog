@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
 import { Toast, ToastState } from './toast'
-import { GripVertical, IterationCw, Plus, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, IterationCw, Plus, X } from 'lucide-react'
 import { Exercicio } from '../data/get-workout-exercises'
 import { Treino } from '../data/get-user-workouts'
 
@@ -35,36 +35,22 @@ export function WorkoutSettingsModal({
   })
   const [isLoading, setIsLoading] = useState(false)
 
-  // Para o Drag and Drop nativo
-  const dragItemIndex = useRef<number | null>(null)
-  const dragOverItemIndex = useRef<number | null>(null)
-
-  const handleDragStart = (index: number) => {
-    dragItemIndex.current = index
+  const handleMoveUp = (index: number) => {
+    if (index === 0) return
+    const newOrder = [...orderedExercises]
+    const temp = newOrder[index]
+    newOrder[index] = newOrder[index - 1]
+    newOrder[index - 1] = temp
+    setOrderedExercises(newOrder)
   }
 
-  const handleDragEnter = (index: number) => {
-    dragOverItemIndex.current = index
-  }
-
-  const handleDragEnd = () => {
-    if (dragItemIndex.current === null || dragOverItemIndex.current === null) return
-    
-    // Nenhuma mudança
-    if (dragItemIndex.current === dragOverItemIndex.current) {
-      dragItemIndex.current = null
-      dragOverItemIndex.current = null
-      return
-    }
-
-    const _orderedExercises = [...orderedExercises]
-    const draggedItemContent = _orderedExercises.splice(dragItemIndex.current, 1)[0]
-    _orderedExercises.splice(dragOverItemIndex.current, 0, draggedItemContent)
-
-    dragItemIndex.current = null
-    dragOverItemIndex.current = null
-
-    setOrderedExercises(_orderedExercises)
+  const handleMoveDown = (index: number) => {
+    if (index === orderedExercises.length - 1) return
+    const newOrder = [...orderedExercises]
+    const temp = newOrder[index]
+    newOrder[index] = newOrder[index + 1]
+    newOrder[index + 1] = temp
+    setOrderedExercises(newOrder)
   }
 
   const handleSave = async () => {
@@ -164,7 +150,7 @@ export function WorkoutSettingsModal({
           <div>
             <label className="flex justify-between items-center text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
               <span>Ordem dos Exercícios</span>
-              <span className="text-xs font-normal text-gray-500">Arraste para reordenar</span>
+              <span className="text-xs font-normal text-gray-500">Use as setas para reordenar</span>
             </label>
             <div className="space-y-2">
               {orderedExercises.length === 0 ? (
@@ -175,16 +161,8 @@ export function WorkoutSettingsModal({
                 orderedExercises.map((ex, index) => (
                   <div
                     key={ex.id}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragEnter={() => handleDragEnter(index)}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={(e) => e.preventDefault()} // Necessário para permitir o drop
-                    className="flex items-center gap-3 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] p-3 rounded-lg cursor-move hover:bg-gray-100 dark:hover:bg-[#252525] transition-colors"
+                    className="flex items-center justify-between gap-3 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252525] transition-colors shadow-sm"
                   >
-                    <div className="text-gray-400 cursor-grab active:cursor-grabbing">
-                      <GripVertical size={18} />
-                    </div>
                     <div>
                       <p className="text-sm font-bold text-gray-800 dark:text-gray-200 leading-tight">
                         {ex.titulo}
@@ -192,6 +170,34 @@ export function WorkoutSettingsModal({
                       <p className="text-xs text-gray-500 mt-0.5">
                         {ex.series}s × {ex.repeticoes}r - {ex.peso}kg
                       </p>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveUp(index)}
+                        disabled={index === 0}
+                        className={`p-1 rounded border border-gray-300 dark:border-[#505050] bg-white dark:bg-[#2a2a2a] transition-colors flex items-center justify-center ${
+                          index === 0
+                            ? 'opacity-30 cursor-not-allowed'
+                            : 'hover:bg-gray-100 dark:hover:bg-[#3a3a3a] text-gray-700 dark:text-gray-300 active:bg-gray-200 dark:active:bg-[#4a4a4a]'
+                        }`}
+                        title="Mover para cima"
+                      >
+                        <ChevronUp size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveDown(index)}
+                        disabled={index === orderedExercises.length - 1}
+                        className={`p-1 rounded border border-gray-300 dark:border-[#505050] bg-white dark:bg-[#2a2a2a] transition-colors flex items-center justify-center ${
+                          index === orderedExercises.length - 1
+                            ? 'opacity-30 cursor-not-allowed'
+                            : 'hover:bg-gray-100 dark:hover:bg-[#3a3a3a] text-gray-700 dark:text-gray-300 active:bg-gray-200 dark:active:bg-[#4a4a4a]'
+                        }`}
+                        title="Mover para baixo"
+                      >
+                        <ChevronDown size={16} />
+                      </button>
                     </div>
                   </div>
                 ))
