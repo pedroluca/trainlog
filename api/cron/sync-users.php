@@ -116,6 +116,7 @@ try {
             'oneSignalPlayerId' => $doc['fields']['oneSignalPlayerId']['stringValue'] ?? null,
             'oneSignalSubscriptionId' => $doc['fields']['oneSignalSubscriptionId']['stringValue'] ?? null,
             'lastWorkoutDate' => $lastWorkoutDate,
+            'emailNotifications' => isset($doc['fields']['emailNotifications']['booleanValue']) ? $doc['fields']['emailNotifications']['booleanValue'] : true,
             'synced_at' => date('Y-m-d H:i:s')
         ];
     }

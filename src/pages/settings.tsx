@@ -4,7 +4,7 @@ import { auth, db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { Button } from '../components/button'
-import { ArrowLeft, Eye, EyeOff, Headset, Lock, Moon, Shield, Sun, Volume2, VolumeX } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, Headset, Lock, Moon, Shield, Sun, Volume2, VolumeX, Mail } from 'lucide-react'
 import { useTheme } from '../contexts/theme-context'
 import { Toast, ToastState } from '../components/toast'
 import { ReportBugModal } from '../components/report-bug-modal'
@@ -31,6 +31,10 @@ export function Settings() {
   // Audio settings
   const [audioEnabled, setAudioEnabled] = useState(false)
   const [loadingAudio, setLoadingAudio] = useState(false)
+
+  // Email Notification settings
+  const [emailEnabled, setEmailEnabled] = useState(true)
+  const [loadingEmail, setLoadingEmail] = useState(false)
 
   // User Info & Modals
   const [nome, setNome] = useState<string | null>(null)
@@ -97,6 +101,9 @@ export function Settings() {
           
           // Audio is disabled by default
           setAudioEnabled(userData.audioEnabled === true)
+          // Email is enabled by default
+          setEmailEnabled(userData.emailNotifications !== false)
+
           if (userData.privacidade) {
             setPrivacidade({
               ocultarEmail: userData.privacidade.ocultarEmail || false,
@@ -219,6 +226,27 @@ export function Settings() {
       setToast({ show: true, message: 'Erro ao atualizar configuração de áudio.', type: 'error' })
     } finally {
       setLoadingAudio(false)
+    }
+  }
+
+  const handleEmailToggle = async () => {
+    if (!usuarioID) return
+
+    try {
+      setLoadingEmail(true)
+      const newEmailState = !emailEnabled
+      
+      const userDocRef = doc(db, 'usuarios', usuarioID)
+      await updateDoc(userDocRef, {
+        emailNotifications: newEmailState
+      })
+
+      setEmailEnabled(newEmailState)
+    } catch (err) {
+      console.error('Erro ao atualizar configuração de e-mail:', err)
+      setToast({ show: true, message: 'Erro ao atualizar preferências de e-mail.', type: 'error' })
+    } finally {
+      setLoadingEmail(false)
     }
   }
 
@@ -453,6 +481,39 @@ export function Settings() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Email Notifications Section */}
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <Mail className={emailEnabled ? "text-[#27AE60]" : "text-gray-400"} />
+          E-mails do Sistema
+        </h2>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex-1 pr-4">
+            <p className="text-gray-700 dark:text-gray-300 font-medium mb-1">
+              Relatórios da Semana
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Receba um resumo dos seus treinos no seu e-mail aos domingos
+            </p>
+          </div>
+          
+          <button
+            onClick={handleEmailToggle}
+            disabled={loadingEmail}
+            className={`cursor-pointer relative inline-flex h-8 w-14 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+              emailEnabled ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
+            } ${loadingEmail ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                emailEnabled ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Audio Settings Section */}
