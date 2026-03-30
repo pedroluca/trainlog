@@ -18,6 +18,7 @@ import { AdminOverview } from './pages/admin/overview'
 import { AdminUsers } from './pages/admin/users'
 import { AdminActivities } from './pages/admin/activities'
 import { AdminBugs } from './pages/admin/bugs'
+import { AdminNotifications } from './pages/admin/notifications'
 import { StreakCalendar } from './pages/streak-calendar'
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
@@ -270,6 +271,7 @@ export function App() {
             <Route path='users' element={<AdminUsers />} />
             <Route path='activities' element={<AdminActivities />} />
             <Route path='bugs' element={<AdminBugs />} />
+            <Route path='notifications' element={<AdminNotifications />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

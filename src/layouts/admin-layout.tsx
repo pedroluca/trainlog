@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
 import { auth, db } from '../firebaseConfig'
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
-import { LayoutDashboard, Users, Activity, Bug, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, Activity, Bug, LogOut, Menu, X, Bell } from 'lucide-react'
 
 export type UserData = {
   id: string
@@ -180,6 +180,7 @@ export function AdminLayout() {
     { name: 'Usuários', path: '/admin/dashboard/users', icon: <Users size={20} /> },
     { name: 'Atividades', path: '/admin/dashboard/activities', icon: <Activity size={20} /> },
     { name: 'Reporte de Bugs', path: '/admin/dashboard/bugs', icon: <Bug size={20} /> },
+    { name: 'Notificações', path: '/admin/dashboard/notifications', icon: <Bell size={20} /> },
   ]
 
   if (loading) {
