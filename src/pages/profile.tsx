@@ -699,7 +699,7 @@ export function Profile() {
       </div>
 
       {/* Workouts Section */}
-      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-5xl mt-6 border border-gray-100 dark:border-[#2a2a2a]">
+      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl mt-6 border border-gray-100 dark:border-[#2a2a2a]">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Meus Treinos</h2>
           <span className="text-sm font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#2a2a2a] px-4 py-1.5 rounded-full border border-gray-200 dark:border-[#333]">
@@ -772,7 +772,7 @@ export function Profile() {
       </div>
 
       {/* Logout Section */}
-      <div className="flex justify-center w-full max-w-lg md:max-w-3xl lg:max-w-5xl mt-6 mb-2">
+      <div className="flex justify-center w-full max-w-lg md:max-w-3xl lg:max-w-4xl mt-6 mb-2">
         <button
           onClick={handleLogout}
           className="cursor-pointer w-full md:w-auto md:min-w-[250px] bg-white dark:bg-[#1e1e1e] hover:bg-red-50 dark:hover:bg-red-900/10 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-900/30 font-bold py-3.5 px-6 rounded-xl transition-all shadow-sm hover:shadow text-lg tracking-wide flex justify-center items-center gap-2"
