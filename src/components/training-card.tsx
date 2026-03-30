@@ -282,30 +282,39 @@ export function TrainingCard(props: TrainingCardProps) {
                 <p className={`text-lg md:text-2xl lg:text-xl mb-3 font-bold ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   Peso Progressivo:
                 </p>
-                {progressiveSets.map((set, index) => {
-                  const isCurrentSet = index === setsDone
-                  const isCompleted = index < setsDone
-                  
-                  return (
-                    <p 
-                      key={index} 
-                      className={`text-base md:text-xl lg:text-lg mb-2 transition-all ${
-                        isFinished 
-                          ? 'text-[#f4f4f4]' 
-                          : isCurrentSet
-                          ? 'text-[#27AE60] dark:text-[#2ecc71] font-bold text-lg scale-105'
-                          : isCompleted
-                          ? 'text-gray-400 dark:text-gray-600 line-through opacity-60'
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {isCurrentSet && '➤ '}
-                      <strong>Série {index + 1}:</strong> {set.reps} reps × {set.weight} kg
-                      {isCompleted && ' ✓'}
-                    </p>
-                  )
-                })}
-                <p className={`text-lg md:text-2xl lg:text-xl mb-3 mt-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <div className="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {progressiveSets.map((set, index) => {
+                    const isCurrentSet = index === setsDone
+                    const isCompleted = index < setsDone
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className={`min-w-[140px] p-3 rounded-xl snap-center flex-shrink-0 transition-all border ${
+                          isFinished
+                            ? 'bg-white/10 border-white/20 text-[#f4f4f4]'
+                            : isCurrentSet
+                            ? 'bg-green-50 dark:bg-green-900/20 border-green-500 shadow-sm transform scale-105 my-1'
+                            : isCompleted
+                            ? 'bg-gray-100 dark:bg-[#252525] border-gray-200 dark:border-[#404040] opacity-60'
+                            : 'bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#404040]'
+                        }`}
+                      >
+                        <h4 className={`text-sm font-bold mb-1 ${
+                          isFinished ? 'text-white/80' : isCurrentSet ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          Série {index + 1} {isCompleted && '✓'}
+                        </h4>
+                        <p className={`text-lg font-black ${
+                          isFinished ? 'text-white' : isCurrentSet ? 'text-green-800 dark:text-green-300' : 'text-gray-800 dark:text-gray-100'
+                        }`}>
+                          {set.reps}<span className="text-sm font-normal mx-1">×</span>{set.weight}kg
+                        </p>
+                      </div>
+                    )
+                  })}
+                </div>
+                <p className={`text-lg md:text-2xl lg:text-xl mb-3 mt-1 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   <strong>Descanso:</strong> {formatTime(breakTime)} min
                 </p>
               </>

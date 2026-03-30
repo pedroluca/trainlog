@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TrainingCard, TrainingCardSkeleton } from '../components/training-card'
 import { ChevronLeft, ChevronRight, Settings2 } from 'lucide-react'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
@@ -220,12 +220,36 @@ export function Training() {
     setIsResetModalOpen(false)
   }
 
+  const sliderRef = useRef<HTMLDivElement>(null)
+
+  const scrollToSlide = useCallback((index: number) => {
+    if (sliderRef.current) {
+      const width = sliderRef.current.clientWidth
+      sliderRef.current.scrollTo({ left: width * index, behavior: 'smooth' })
+    }
+  }, [])
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget
+    const scrollLeft = container.scrollLeft
+    const width = container.clientWidth
+    if (width > 0) {
+      const newIndex = Math.round(scrollLeft / width)
+      setCurrentExerciseIndex((prev) => {
+        if (prev !== newIndex && newIndex >= 0 && newIndex < exercises.length) {
+          return newIndex
+        }
+        return prev
+      })
+    }
+  }
+
   const handlePreviousExercise = () => {
-    setCurrentExerciseIndex((prev) => Math.max(0, prev - 1))
+    scrollToSlide(Math.max(0, currentExerciseIndex - 1))
   }
 
   const handleNextExercise = () => {
-    setCurrentExerciseIndex((prev) => Math.min(exercises.length - 1, prev + 1))
+    scrollToSlide(Math.min(exercises.length - 1, currentExerciseIndex + 1))
   }
 
   const checkAllExercisesComplete = useCallback(() => {
@@ -273,17 +297,16 @@ export function Training() {
 
   const handleExerciseComplete = useCallback(() => {
     if (currentExerciseIndex < exercises.length - 1) {
-      setCurrentExerciseIndex((prev) => prev + 1)
+      scrollToSlide(currentExerciseIndex + 1)
     }
     
     fetchExercisesForDay(true).then(() => {})
-  }, [currentExerciseIndex, exercises.length, fetchExercisesForDay])
+  }, [currentExerciseIndex, exercises.length, fetchExercisesForDay, scrollToSlide])
 
   useEffect(() => {
     checkAllExercisesComplete()
   }, [exercises, checkAllExercisesComplete])
 
-  const currentExercise = exercises[currentExerciseIndex]
   const dayWorkouts = useMemo(() => {
     const selectedDay = daysOfWeek[currentDayIndex]
     return workouts.filter(
@@ -431,7 +454,7 @@ export function Training() {
                                 ? 'bg-green-300 dark:bg-green-600 w-2'
                                 : 'bg-gray-300 dark:bg-gray-600 w-2'
                             }`}
-                            onClick={() => setCurrentExerciseIndex(index)}
+                            onClick={() => scrollToSlide(index)}
                           />
                         ))}
                       </div>
@@ -450,29 +473,38 @@ export function Training() {
                     </button>
                   </div>
 
-                  {/* Current exercise card */}
-                  {currentExercise && (
-                    <div className="w-full md:flex md:justify-center">
+                  {/* Exercises Horizontal Slider */}
+                  <div 
+                    ref={sliderRef}
+                    onScroll={handleScroll}
+                    className="flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar pb-3 pt-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                  >
+                    {exercises.map((exercise, index) => (
+                      <div 
+                        key={exercise.id} 
+                        className="w-full h-full flex-shrink-0 snap-center px-1 md:px-0 md:flex md:justify-center transition-opacity duration-300"
+                        style={{ opacity: currentExerciseIndex === index ? 1 : 0.4 }}
+                      >
                         <TrainingCard
-                          key={currentExercise.id}
-                          id={currentExercise.id}
+                          id={exercise.id}
                           workoutId={selectedWorkout.id}
-                          title={currentExercise.titulo}
-                          sets={currentExercise.series}
-                          reps={currentExercise.repeticoes}
-                          weight={currentExercise.peso}
-                          breakTime={currentExercise.tempoIntervalo}
-                          isFeito={currentExercise.isFeito}
+                          title={exercise.titulo}
+                          sets={exercise.series}
+                          reps={exercise.repeticoes}
+                          weight={exercise.peso}
+                          breakTime={exercise.tempoIntervalo}
+                          isFeito={exercise.isFeito}
                           reset={reset}
                           onEdit={() => fetchExercisesForDay(true)}
                           onComplete={handleExerciseComplete}
-                          nota={currentExercise.nota}
-                          usesProgressiveWeight={currentExercise.usesProgressiveWeight}
-                          progressiveSets={currentExercise.progressiveSets}
+                          nota={exercise.nota}
+                          usesProgressiveWeight={exercise.usesProgressiveWeight}
+                          progressiveSets={exercise.progressiveSets}
                           disableExecution={!canExecuteWorkout}
                         />
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <>
