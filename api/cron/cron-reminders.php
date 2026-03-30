@@ -23,65 +23,6 @@ function write_log($message) {
     echo $entry;
 }
 
-function get_firestore_access_token($credentials_path) {
-    if (!file_exists($credentials_path)) {
-        throw new Exception("Arquivo de credenciais não encontrado: $credentials_path");
-    }
-
-    $credentials = json_decode((string) file_get_contents($credentials_path), true);
-    if (!$credentials) {
-        throw new Exception('Erro ao ler credenciais JSON');
-    }
-
-    $private_key = $credentials['private_key'] ?? null;
-    $client_email = $credentials['client_email'] ?? null;
-
-    if (!$private_key || !$client_email) {
-        throw new Exception('Credenciais incompletas');
-    }
-
-    $header = json_encode(['alg' => 'RS256', 'typ' => 'JWT']);
-    $now = time();
-    $payload = json_encode([
-        'iss' => $client_email,
-        'sub' => $client_email,
-        'aud' => 'https://oauth2.googleapis.com/token',
-        'iat' => $now,
-        'exp' => $now + 3600,
-        'scope' => 'https://www.googleapis.com/auth/cloud-platform'
-    ]);
-
-    $header_encoded = rtrim(strtr(base64_encode($header), '+/', '-_'), '=');
-    $payload_encoded = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
-    $signature_input = "$header_encoded.$payload_encoded";
-
-    openssl_sign($signature_input, $signature, $private_key, 'SHA256');
-    $jwt = $signature_input . '.' . rtrim(strtr(base64_encode($signature), '+/', '-_'), '=');
-
-    $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => 'https://oauth2.googleapis.com/token',
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => http_build_query([
-            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-            'assertion' => $jwt
-        ]),
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 30
-    ]);
-
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($http_code !== 200) {
-        throw new Exception("Falha ao obter access token Firestore (HTTP $http_code): $response");
-    }
-
-    $decoded = json_decode((string) $response, true);
-    return $decoded['access_token'] ?? null;
-}
-
 function fetch_users_from_firestore($access_token) {
     $url = FIRESTORE_DB_URL . '/databases/(default)/documents/usuarios?pageSize=1000';
 

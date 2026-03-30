@@ -35,230 +35,181 @@ function write_log($message) {
     echo $log_entry;
 }
 
+function fetch_weekly_logs($access_token, $user_id) {
+    if (!$access_token || !$user_id) return [];
+
+    $query = [
+        "structuredQuery" => [
+            "from" => [ ["collectionId" => "logs"] ],
+            "where" => [
+                "fieldFilter" => [
+                    "field" => ["fieldPath" => "usuarioID"],
+                    "op" => "EQUAL",
+                    "value" => ["stringValue" => $user_id]
+                ]
+            ],
+            // Limite seguro que abrange 7 dias na grande maioria dos casos
+            "limit" => 1000
+        ]
+    ];
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => FIRESTORE_DB_URL . '/databases/(default)/documents:runQuery',
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($query),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $access_token,
+            'Content-Type: application/json'
+        ],
+        CURLOPT_TIMEOUT => 30
+    ]);
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($http_code !== 200) {
+        write_log("Falha ao buscar logs (HTTP $http_code)");
+        return [];
+    }
+
+    $results = json_decode((string) $response, true);
+    if (!is_array($results)) return [];
+
+    $seven_days_ago = strtotime('-7 days');
+    
+    $filtered_logs = [];
+    foreach ($results as $item) {
+        if (!isset($item['document']['fields'])) continue;
+        
+        $doc = $item['document']['fields'];
+        $data_str = $doc['data']['stringValue'] ?? '';
+        $log_timestamp = strtotime($data_str);
+        
+        if ($log_timestamp && $log_timestamp >= $seven_days_ago) {
+            $titulo = $doc['titulo']['stringValue'] ?? 'Exercício';
+            $series = $doc['series']['integerValue'] ?? $doc['series']['stringValue'] ?? $doc['series']['doubleValue'] ?? 0;
+            $repeticoes = $doc['repeticoes']['integerValue'] ?? $doc['repeticoes']['stringValue'] ?? $doc['repeticoes']['doubleValue'] ?? 0;
+            
+            $filtered_logs[] = [
+                'titulo' => $titulo,
+                'data' => substr($data_str, 0, 10),
+                'series' => (int)$series,
+                'repeticoes' => (int)$repeticoes
+            ];
+        }
+    }
+    
+    return $filtered_logs;
+}
+
 function generate_html_report($user_name, $weekly_data) {
     $total_treinos = $weekly_data['total_workouts'] ?? 0;
     $total_exercicios = $weekly_data['total_exercises'] ?? 0;
     $duracao_total = $weekly_data['total_duration'] ?? 0;
-    $muscle_groups = $weekly_data['muscle_groups'] ?? [];
+    $top_exercises = $weekly_data['top_exercises'] ?? [];
     
-    $muscle_groups_html = '';
-    foreach ($muscle_groups as $group) {
-        $muscle_groups_html .= "<li>$group</li>";
+    $top_exercises_html = '';
+    foreach ($top_exercises as $ex) {
+        $top_exercises_html .= "<li>🔥 $ex</li>";
     }
     
     $html = <<<HTML
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TrainLog - Seu Resumo da Semana</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f3f4f6;
-            padding: 40px 20px;
-            color: #1f2937;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e5e7eb;
-        }
-        .header {
-            background-color: #ffffff;
-            color: #1f2937;
-            padding: 30px 20px 20px;
-            text-align: center;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        .header h1 {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 5px;
-            color: #111827;
-        }
-        .header p {
-            font-size: 14px;
-            color: #6b7280;
-            font-weight: 500;
-        }
-        .header-logo {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-            background-color: #ecfdf5;
-            border-radius: 12px;
-            color: #27AE60;
-            font-size: 24px;
-            margin-bottom: 12px;
-        }
-        .content {
-            padding: 30px 40px;
-        }
-        .greeting {
-            font-size: 16px;
-            line-height: 1.5;
-            margin-bottom: 25px;
-            color: #374151;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin: 30px 0;
-        }
-        .stat-box {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            transition: all 0.2s;
-        }
-        .stat-box .number {
-            font-size: 24px;
-            font-weight: 800;
-            color: #27AE60;
-        }
-        .stat-box .label {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 4px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .section {
-            margin: 25px 0;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .section h2 {
-            font-size: 15px;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .section ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        .section li {
-            padding: 8px 0;
-            color: #4b5563;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        .section li:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        .cta {
-            text-align: center;
-            margin: 35px 0 10px;
-        }
-        .cta-button {
-            background-color: #27AE60;
-            color: white;
-            padding: 14px 32px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-block;
-            box-shadow: 0 4px 6px -1px rgba(39, 174, 96, 0.2);
-        }
-        .cta-button:hover {
-            background-color: #219150;
-        }
-        .footer {
-            background: #f9fafb;
-            padding: 25px;
-            text-align: center;
-            font-size: 13px;
-            color: #6b7280;
-            border-top: 1px solid #e5e7eb;
-        }
-        .footer p {
-            margin: 6px 0;
-        }
-        .footer a {
-            color: #27AE60;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="header-logo">🏋️</div>
-            <h1>TrainLog</h1>
-            <p>Relatório Semanal</p>
-        </div>
-        
-        <div class="content">
-            <div class="greeting">
-                <p>Oi <strong>$user_name</strong>! 🎉</p>
-                <p>Aqui está um resumo da sua semana de treinos:</p>
-            </div>
-            
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="number">$total_treinos</div>
-                    <div class="label">Treinos</div>
-                </div>
-                <div class="stat-box">
-                    <div class="number">$total_exercicios</div>
-                    <div class="label">Exercícios</div>
-                </div>
-                <div class="stat-box">
-                    <div class="number">{$duracao_total}min</div>
-                    <div class="label">Duração Total</div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <h2>💪 Grupos Musculares Trabalhados</h2>
-                <ul>
-                    $muscle_groups_html
-                </ul>
-            </div>
-            
-            <div class="cta">
-                <p style="margin-bottom: 15px; color: #666;">Confira todos os detalhes no TrainLog:</p>
-                <a href="https://trainlog.site/progress" class="cta-button">Ver Meus Progressos</a>
-            </div>
-            
-            <div style="background: #e8f8f5; border-left: 4px solid #27AE60; padding: 15px; margin: 20px 0; border-radius: 6px;">
-                <p style="font-size: 13px; color: #27AE60;">
-                    <strong>💡 Dica:</strong> Continue com a consistência! Cada treino conta. Volte semana que vem para bater novos recordes! 🚀
-                </p>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p><strong>TrainLog</strong> - Seu Diário de Treinos</p>
-            <p>Recebeu este e-mail porque optou por receber o relatório semanal.</p>
-            <p><a href="https://trainlog.site/settings" style="color: #27AE60; text-decoration: none;">Gerenciar Preferências</a></p>
-        </div>
-    </div>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; color: #1f2937;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 30px 20px 20px; border-bottom: 1px solid #f3f4f6;">
+                            <img src="https://app.trainlog.site/icon-192.png" alt="TrainLog Logo" width="60" height="60" style="display: block; margin: 0 auto 15px; border-radius: 14px;">
+                            <h1 style="margin: 0 0 5px; font-size: 24px; font-weight: 800; color: #111827;">TrainLog</h1>
+                            <p style="margin: 0; font-size: 14px; color: #6b7280; font-weight: 500;">Relatório Semanal</p>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 30px 40px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <p style="margin: 0 0 10px; font-size: 16px; color: #374151;">Oi <strong>$user_name</strong>! 🎉</p>
+                                        <p style="margin: 0 0 25px; font-size: 16px; color: #374151; line-height: 1.5;">Aqui está um resumo da sua semana de treinos:</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Stats Grid -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 30px;">
+                                <tr>
+                                    <td width="31%" align="center" style="background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 8px;">
+                                        <div style="font-size: 24px; font-weight: 800; color: #27AE60; margin-bottom: 4px;">$total_treinos</div>
+                                        <div style="font-size: 11px; color: #6b7280; font-weight: 600; text-transform: uppercase;">Treinos</div>
+                                    </td>
+                                    <td width="3%">&nbsp;</td>
+                                    <td width="32%" align="center" style="background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 8px;">
+                                        <div style="font-size: 24px; font-weight: 800; color: #27AE60; margin-bottom: 4px;">$total_exercicios</div>
+                                        <div style="font-size: 11px; color: #6b7280; font-weight: 600; text-transform: uppercase;">Exercícios</div>
+                                    </td>
+                                    <td width="3%">&nbsp;</td>
+                                    <td width="31%" align="center" style="background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 8px;">
+                                        <div style="font-size: 24px; font-weight: 800; color: #27AE60; margin-bottom: 4px;">{$duracao_total}m</div>
+                                        <div style="font-size: 11px; color: #6b7280; font-weight: 600; text-transform: uppercase;">Duração</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Muscle Groups -->
+                            <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                                <h2 style="margin: 0 0 15px; font-size: 15px; font-weight: 700; color: #111827;">Exercícios em Destaque</h2>
+                                <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 15px; line-height: 1.8; list-style-type: none; margin-left: -20px;">
+                                    $top_exercises_html
+                                </ul>
+                            </div>
+                            
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding: 0 0 30px;">
+                                        <p style="margin: 0 0 15px; color: #6b7280; font-size: 14px;">Confira todos os detalhes e gráficos no TrainLog:</p>
+                                        <a href="https://app.trainlog.site/progress" style="background-color: #27AE60; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 15px;">Ver Meus Progressos</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <!-- Tip -->
+                                        <div style="background-color: #ecfdf5; border-left: 4px solid #27AE60; padding: 15px; border-radius: 0 4px 4px 0;">
+                                            <p style="margin: 0; font-size: 13px; color: #065f46; line-height: 1.5;">
+                                                <strong>💡 Dica:</strong> Continue com a consistência! Cada treino conta. Volte semana que vem para bater novos recordes! 🚀
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="background-color: #f9fafb; padding: 25px; border-top: 1px solid #e5e7eb;">
+                            <p style="margin: 0 0 8px; font-size: 13px; color: #6b7280;"><strong>TrainLog</strong> - Seu Diário de Treinos 💪</p>
+                            <p style="margin: 0 0 8px; font-size: 12px; color: #9ca3af;">Você recebeu este e-mail porque ativou o relatório semanal.</p>
+                            <p style="margin: 0;"><a href="https://app.trainlog.site/profile/settings" style="color: #27AE60; text-decoration: none; font-size: 12px; font-weight: 600;">Gerenciar Preferências</a></p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
 HTML;
@@ -289,6 +240,11 @@ try {
     $test_email = filter_input(INPUT_GET, 'test_email', FILTER_VALIDATE_EMAIL);
     if ($test_email) {
         write_log("🧪 Modo de TESTE ativado para: $test_email");
+    }
+
+    $access_token = get_firestore_access_token(FIREBASE_CREDS_PATH);
+    if (!$access_token) {
+        throw new Exception('Não foi possível obter token de acesso do Firestore.');
     }
 
     // 1. Carregar usuários do arquivo de cache
@@ -335,13 +291,38 @@ try {
                 continue;
             }
             
-            // Aqui você precisará fazer uma Firestore query para ter os dados da semana
-            // Por agora, usaremos dados mock
+            // Resgatar dados reais dos logs do Firestore
+            $weekly_logs = fetch_weekly_logs($access_token, $user_id);
+            
+            if (empty($weekly_logs)) {
+                write_log("⏭️ Usuário sem atividades na última semana: $user_id ($user_email)");
+                continue;
+            }
+
+            // Processar dados dos logs
+            $unique_dates = [];
+            $exercise_counts = [];
+            
+            foreach ($weekly_logs as $log) {
+                // Contar datas únicas (treinos)
+                $unique_dates[$log['data']] = true;
+                
+                // Contar frequência dos exercícios
+                $title = mb_convert_case(trim($log['titulo']), MB_CASE_TITLE, "UTF-8");
+                if (!isset($exercise_counts[$title])) $exercise_counts[$title] = 0;
+                $exercise_counts[$title]++;
+            }
+            
+            arsort($exercise_counts);
+            $top_exercises = array_slice(array_keys($exercise_counts), 0, 3);
+            if (empty($top_exercises)) $top_exercises = ["Nenhum exercício"];
+
             $weekly_data = [
-                'total_workouts' => 4,
-                'total_exercises' => 24,
-                'total_duration' => 240,
-                'muscle_groups' => ['Peito 💪', 'Costas 🔙', 'Pernas 🦵']
+                'total_workouts' => count($unique_dates),
+                'total_exercises' => count($weekly_logs),
+                // Estimativa simples: cada exercício finalizado = ~8min
+                'total_duration' => count($weekly_logs) * 8, 
+                'top_exercises' => $top_exercises
             ];
             
             // Gerar HTML do e-mail
