@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays, Minus, UsersRound } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays, Minus, UsersRound, Crown } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
@@ -549,11 +549,22 @@ export function Profile() {
                   <Plus size={16} />
                   {altura > 0 && peso > 0 ? 'Nova Medição' : 'Adicionar Métricas'}
                 </button>
-                {isPremium && altura > 0 && peso > 0 && (
+                {altura > 0 && peso > 0 && (
                   <button
-                    onClick={() => navigate('/profile/body-metrics')}
-                    className="cursor-pointer flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                    onClick={() => {
+                      if (isPremium) {
+                        navigate('/profile/body-metrics')
+                      } else {
+                        setIsUpgradeModalOpen(true)
+                      }
+                    }}
+                    className="cursor-pointer flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-all text-sm flex items-center justify-center gap-2 relative overflow-hidden group"
                   >
+                    {!isPremium && (
+                      <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-amber-400 to-amber-600 rounded-bl-full flex items-start justify-end p-1 z-10 opacity-90 transition-transform group-hover:scale-110">
+                         <Crown size={12} className="text-white mt-0.5 mr-0.5" />
+                      </div>
+                    )}
                     <Activity size={16} />
                     Ver Histórico
                   </button>
@@ -641,14 +652,19 @@ export function Profile() {
               <Flame className="text-orange-500" size={20} />
               Estatísticas
             </h3>
-            {isPremium && (
             <button
-              onClick={() => navigate('/profile/streak-calendar')}
-              className="cursor-pointer bg-white/50 dark:bg-black/20 hover:bg-white dark:hover:bg-black/40 text-orange-600 dark:text-orange-400 font-bold py-1.5 px-3 rounded-lg text-xs md:text-sm flex items-center gap-1.5 transition-all outline outline-orange-500/20"
+              onClick={() => {
+                if (isPremium) {
+                  navigate('/profile/streak-calendar')
+                } else {
+                  setIsUpgradeModalOpen(true)
+                }
+              }}
+              className={`cursor-pointer bg-white/50 dark:bg-black/20 hover:bg-white dark:hover:bg-black/40 ${isPremium ? 'text-orange-600 dark:text-orange-400' : 'text-amber-600 dark:text-amber-500'} font-bold py-1.5 px-3 rounded-lg text-xs md:text-sm flex items-center gap-1.5 transition-all outline outline-orange-500/20 relative group overflow-hidden ${!isPremium ? 'pr-7' : ''}`}
             >
               <CalendarDays size={14} /> Calendário
+              {!isPremium && <Crown size={12} className="text-amber-500 absolute top-1.5 right-2 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" />}
             </button>
-          )}
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">

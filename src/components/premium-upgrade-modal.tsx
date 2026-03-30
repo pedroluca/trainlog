@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from './button'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
-import { X, Sparkles, Calendar, TrendingUp, Crown } from 'lucide-react'
+import { X, Sparkles, Calendar, TrendingUp, Crown, Eye, Star } from 'lucide-react'
 import { trackPremiumUpgradeModalOpened, trackPremiumUpgradeRequested } from '../utils/analytics'
 import QRCode from '../assets/qr-code-upgrade.jpg'
 import { Toast, ToastState } from './toast'
@@ -17,7 +17,6 @@ interface PremiumUpgradeModalProps {
 }
 
 export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, userId, userPhone }: PremiumUpgradeModalProps) {
-  const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [requestSent, setRequestSent] = useState(false)
   const [pixKeyCopied, setPixKeyCopied] = useState(false)
@@ -30,7 +29,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
   // PIX Configuration (UPDATE WITH YOUR PIX KEY!)
   const PIX_KEY = 'suporte@trainlog.site' // TROCAR PELA SUA CHAVE PIX
   const PIX_VALUE = '9.90' // Upgrade Premium fee (registration is R$ 14,90)
-  const ADMIN_WHATSAPP = '5577936181281' // TROCAR PELO SEU WHATSAPP (com DDD, sem espaços)
+  const ADMIN_WHATSAPP = '5571982434416' // TROCAR PELO SEU WHATSAPP (com DDD, sem espaços)
 
   const copyPixKey = () => {
     navigator.clipboard.writeText(PIX_KEY)
@@ -48,11 +47,6 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
   if (!isOpen) return null
 
   const handleUpgradeRequest = async () => {
-    if (!message.trim()) {
-      setToast({ show: true, message: 'Por favor, conte-nos por que você quer o Premium!', type: 'error' })
-      return
-    }
-
     setLoading(true)
 
     try {
@@ -62,7 +56,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
         userName,
         userEmail,
         userPhone,
-        message: message.trim(),
+        message: 'Upgrade direto via App',
         status: 'pending', // pending, approved, rejected
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -83,7 +77,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
   if (requestSent) {
     return (
       <div className='fixed inset-0 z-60 bg-black/50 dark:bg-black/70 flex items-center justify-center px-4 backdrop-blur-sm'>
-        <div className='bg-white z-65 dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl p-6 w-full max-w-md relative shadow-2xl max-h-[90vh] overflow-y-auto'>
+        <div className='bg-white z-65 dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl p-6 w-full max-w-lg relative shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-hide'>
           {/* Close Button */}
           <button
             onClick={onClose}
@@ -195,7 +189,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
 
   return (
     <div className='fixed inset-0 z-50 bg-black/50 dark:bg-black/70 flex items-center justify-center px-4 backdrop-blur-sm'>
-      <div className='bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl p-6 w-full max-w-md relative shadow-2xl max-h-[90vh] overflow-y-auto'>
+      <div className='bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl p-6 w-full max-w-lg relative shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-hide'>
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -218,81 +212,72 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
         </div>
 
         {/* Premium Features */}
-        <div className='space-y-3 mb-6'>
-          <div className='flex items-start gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3'>
+        <div className='space-y-2.5 mb-6 text-left'>
+          <div className='flex items-center gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3'>
             <div className='flex-shrink-0 w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center'>
               <Calendar className='text-white' size={18} />
             </div>
             <div>
-              <h3 className='font-semibold text-gray-800 dark:text-gray-100 text-sm'>
+              <h3 className='font-bold text-gray-800 dark:text-gray-100 text-sm'>
                 Calendário de Streaks
               </h3>
-              <p className='text-xs text-gray-600 dark:text-gray-400'>
-                Visualize seu histórico completo de treinos em um calendário interativo
+              <p className='text-xs text-gray-600 dark:text-gray-400 leading-tight'>
+                Visualize seu histórico de treinos em um calendário interativo.
               </p>
             </div>
           </div>
 
-          <div className='flex items-start gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3'>
+          <div className='flex items-center gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3'>
             <div className='flex-shrink-0 w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center'>
               <TrendingUp className='text-white' size={18} />
             </div>
             <div>
-              <h3 className='font-semibold text-gray-800 dark:text-gray-100 text-sm'>
-                Métricas Corporais
+              <h3 className='font-bold text-gray-800 dark:text-gray-100 text-sm'>
+                Métricas Corporais Avançadas
               </h3>
-              <p className='text-xs text-gray-600 dark:text-gray-400'>
-                Acompanhe peso, IMC e evolução física ao longo do tempo
+              <p className='text-xs text-gray-600 dark:text-gray-400 leading-tight'>
+                Acompanhe peso, IMC e evolução física com gráficos nativos.
               </p>
             </div>
           </div>
 
-          <div className='flex items-start gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3'>
+          <div className='flex items-center gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3'>
             <div className='flex-shrink-0 w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center'>
-              <Sparkles className='text-white' size={18} />
+              <Eye className='text-white' size={18} />
             </div>
             <div>
-              <h3 className='font-semibold text-gray-800 dark:text-gray-100 text-sm'>
-                Novos Recursos em Breve
+              <h3 className='font-bold text-gray-800 dark:text-gray-100 text-sm'>
+                Histórico de Amigos
               </h3>
-              <p className='text-xs text-gray-600 dark:text-gray-400'>
-                Acesso antecipado a todos os recursos futuros do TrainLog
+              <p className='text-xs text-gray-600 dark:text-gray-400 leading-tight'>
+                Veja além dos últimos 7 dias nas atividades de qualquer amigo.
+              </p>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3'>
+            <div className='flex-shrink-0 w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center'>
+              <Star className='text-white' size={18} />
+            </div>
+            <div>
+              <h3 className='font-bold text-gray-800 dark:text-gray-100 text-sm'>
+                Selo Premium & Recursos Inéditos
+              </h3>
+              <p className='text-xs text-gray-600 dark:text-gray-400 leading-tight'>
+                Badge VIP no seu perfil e acesso antecipado a novas features.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Request Form */}
-        <div className='space-y-4 mb-6'>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-              Por que você quer o Premium? 💪
-            </label>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder='Conte-nos como o Premium vai ajudar nos seus treinos...'
-              className='w-full border dark:border-[#404040] rounded-lg px-4 py-3 dark:bg-[#1a1a1a] dark:text-gray-100 text-sm resize-none focus:ring-2 focus:ring-amber-500 focus:border-transparent'
-              rows={4}
-              disabled={loading}
-            />
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-              Exemplo: "Treino 5x por semana e quero acompanhar minha evolução"
-            </p>
-          </div>
-
-          {/* User Info Display */}
-          <div className='bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] rounded-lg p-3'>
-            <p className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
-              Solicitação será enviada como:
-            </p>
-            <p className='text-sm font-medium text-gray-800 dark:text-gray-100'>
-              {userName}
-            </p>
-            <p className='text-xs text-gray-600 dark:text-gray-400'>
-              {userEmail}
-            </p>
-          </div>
+        {/* User Info Display */}
+        <div className='mb-6 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] rounded-lg p-3 text-center'>
+          <p className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
+            Solicitação será registrada como:
+          </p>
+          <p className='text-sm font-bold text-gray-800 dark:text-gray-100'>
+            {userName}
+          </p>
         </div>
 
         {/* Pricing Info */}
@@ -338,10 +323,10 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
                 Enviando...
               </div>
             ) : (
-              <>
+              <div className='flex items-center justify-center gap-2'>
                 <Sparkles size={18} className='mr-2' />
                 Solicitar Premium
-              </>
+              </div>
             )}
           </Button>
         </div>
