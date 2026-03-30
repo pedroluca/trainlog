@@ -298,7 +298,7 @@ export function Settings() {
   return (
     <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
       {/* Header */}
-      <div className="w-full max-w-2xl mb-6">
+      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl mb-6">
         <button
           onClick={() => navigate('/profile')}
           className="cursor-pointer flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
