@@ -141,13 +141,13 @@ export function Progress() {
   }
 
   // Calculate overall stats
-  const totalWorkouts = logs.length
+  const totalWorkouts = new Set(logs.map(log => log.data.split('T')[0])).size
   const uniqueExercisesCount = exercisesList.length
-  const totalVolume = logs.reduce((sum, log) => sum + (log.series * log.repeticoes * log.peso), 0)
+  const maxWeight = logs.length > 0 ? Math.max(...logs.map(log => log.peso)) : 0
 
   if (loading) {
     return (
-      <main className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-[#1a1a1a]">
+      <main className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Carregando progresso...</p>
@@ -158,7 +158,7 @@ export function Progress() {
 
   if (logs.length === 0) {
     return (
-      <main className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-[#1a1a1a] p-6">
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-6">
         <div className="text-center">
           <TrendingUp size={64} className="text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Sem Dados de Progresso</h2>
@@ -177,22 +177,23 @@ export function Progress() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 dark:bg-[#121212] pb-24">
-      {/* Header */}
-      <header className="text-black dark:text-gray-100 p-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <TrendingUp size={28} />
-          Progresso
-        </h1>
-        <p className="text-black/80 dark:text-gray-400 text-sm mt-1">Acompanhe sua evolução</p>
-      </header>
+    <main className="flex flex-col items-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-24 md:py-8 gap-4">
+      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a]">
+        {/* Header Section */}
+        <div className="flex flex-col mb-6">
+          <div className="flex items-center gap-2 text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">
+            <TrendingUp size={32} className="text-[#27AE60]" />
+            <h2>Progresso</h2>
+          </div>
+          <p className="text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wide uppercase ml-[42px]">Acompanhe sua evolução</p>
+        </div>
 
-      <div className="p-6 space-y-6">
-        {/* Overall Stats Cards */}
+        <div className="space-y-6">
+          {/* Overall Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             icon={<Calendar size={24} />}
-            label="Total de Logs"
+            label="Dias Treinados"
             value={totalWorkouts.toString()}
             color="from-blue-500 to-blue-600"
           />
@@ -204,8 +205,8 @@ export function Progress() {
           />
           <StatCard
             icon={<Award size={24} />}
-            label="Volume Total"
-            value={`${(totalVolume / 1000).toFixed(1)}t`}
+            label="Maior Carga"
+            value={maxWeight > 0 ? `${maxWeight}kg` : '-'}
             color="from-purple-500 to-purple-600"
           />
           <StatCard
@@ -217,7 +218,7 @@ export function Progress() {
         </div>
 
         {/* Exercise Selector */}
-        <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-6">
+        <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm p-6">
           <label className="block text-gray-700 dark:text-gray-300 font-bold mb-3">
             Selecione o Exercício
           </label>
@@ -239,22 +240,22 @@ export function Progress() {
           <>
             {/* Stats for Selected Exercise */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-4 text-center">
+              <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm p-4 text-center">
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Recorde Pessoal</p>
                 <p className="text-2xl font-bold text-[#27AE60]">{exerciseData.personalRecord}kg</p>
               </div>
-              <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-4 text-center">
+              <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm p-4 text-center">
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Último Peso</p>
                 <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{exerciseData.lastWeight}kg</p>
               </div>
-              <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-4 text-center">
+              <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm p-4 text-center">
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Sessões</p>
                 <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{exerciseData.totalLogs}</p>
               </div>
             </div>
 
             {/* Professional Line Chart with Recharts */}
-            <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-6">
+            <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Progressão de Peso</h3>
               
               <div className="w-full h-80">
@@ -327,7 +328,7 @@ export function Progress() {
             </div>
 
             {/* Recent Sessions Table */}
-            <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-6">
+            <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Sessões Recentes</h3>
               
               <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -372,7 +373,7 @@ export function Progress() {
             </div>
 
             {/* Progress Indicator */}
-            <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md p-6">
+            <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Evolução Geral</h3>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
@@ -405,6 +406,7 @@ export function Progress() {
             </div>
           </>
         )}
+        </div>
       </div>
     </main>
   )
@@ -413,7 +415,7 @@ export function Progress() {
 // Stat Card Component
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) {
   return (
-    <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-xl shadow-md overflow-hidden">
+    <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm overflow-hidden">
       <div className={`bg-gradient-to-br ${color} p-3 flex justify-center`}>
         <div className="text-white">
           {icon}
