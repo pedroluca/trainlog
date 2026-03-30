@@ -343,7 +343,7 @@ export function Training() {
   }, [creatorNames, managedUserId])
 
   return (
-    <main className="flex flex-col items-center h-screen pt-20 md:h-[calc(100dvh-89px)] lg:h-[calc(100dvh-69px)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
+    <main className="flex flex-col items-center h-screen pt-20 overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
       {isManagingStudent && (
         <div className="w-full max-w-3xl mb-3 bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-900/30 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
@@ -424,7 +424,7 @@ export function Training() {
                 </button>
               </div>
               {exercises.length > 0 ? (
-                <div className='w-full pb-24 flex flex-col items-center flex-1 overflow-hidden'>
+                <div className='w-full pb-24 lg:pb-0 flex flex-col items-center flex-1 overflow-hidden'>
                   {/* Navigation arrows & Progress */}
                   <div className="flex items-center justify-between w-full mb-3 flex-shrink-0">
                     <button
