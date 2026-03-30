@@ -335,7 +335,7 @@ export function Training() {
         </div>
       )}
 
-      <div className="flex items-center justify-center w-full max-w-3xl mb-2 flex-shrink-0">
+      <div className="flex items-center justify-center w-full max-w-4xl mb-2 flex-shrink-0">
         <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handlePreviousDay}>
           <ChevronLeft />
         </button>
