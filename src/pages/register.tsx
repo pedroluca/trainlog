@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getVersionWithPrefix } from '../version'
 import { Eye, EyeOff } from 'lucide-react'
 import { Toast, ToastState } from '../components/toast'
+import logo from '../assets/nova-logo-clear.png'
 
 export function Cadastro() {
   const [name, setName] = useState('')
@@ -160,42 +161,45 @@ export function Cadastro() {
   }
 
   return (
-    <main className="flex flex-col items-center py-2 justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a]">
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-md rounded-lg p-6 pb-4 w-[90%] max-w-md mx-4 border border-gray-200 dark:border-[#404040]">
-        <h1 className="text-2xl font-bold text-center mb-2 text-gray-800 dark:text-gray-100">Criar Conta</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
-          Crie sua conta gratuita e comece a treinar! 💪
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a] py-8 px-4">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-xl rounded-2xl p-6 sm:p-8 w-full max-w-md sm:max-w-2xl border border-gray-100 dark:border-[#404040]">
+        <div className="flex justify-center mb-6">
+          <img src={logo} alt="TrainLog Logo" className="h-16 w-auto drop-shadow-sm" />
+        </div>
+        <h1 className="text-3xl font-black text-center mb-2 text-gray-800 dark:text-gray-100">Junte-se a nós</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-8">
+          Acompanhe seus treinos e evolua mais rápido 💪
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Nome:</label>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 w-full mt-2">
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Nome completo</label>
             <input
               type="text"
               name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
-              placeholder="Digite seu nome completo"
+              className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
+              placeholder="Ex: Pedro Silva"
             />
           </div>
           
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Email:</label>
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Email</label>
             <input
               type="email"
               name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
+              className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
               placeholder="seu@email.com"
             />
           </div>
           
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Telefone:</label>
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Telefone com DDD</label>
             <input
               type="tel"
               name="phone"
@@ -203,34 +207,34 @@ export function Cadastro() {
               onChange={(e) => handlePhoneChange(e.target.value)}
               required
               maxLength={15}
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
+              className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
               placeholder="(11) 99999-9999"
             />
           </div>
 
-          <div className="rounded-lg border border-gray-200 dark:border-[#404040] bg-gray-50 dark:bg-[#1f1f1f] p-4">
+          <div className="sm:col-span-2 rounded-xl border border-gray-200 dark:border-[#404040] bg-gray-50 dark:bg-[#1f1f1f] p-4 transition-all">
             <label className="flex items-center justify-between cursor-pointer gap-3">
               <div>
-                <p className="text-gray-800 dark:text-gray-100 font-bold">Sou treinador</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Ative se quiser usar recursos para treinadores</p>
+                <p className="text-gray-800 dark:text-gray-100 font-bold text-sm">Sou treinador</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Ative para gerenciar alunos</p>
               </div>
               <input
                 type="checkbox"
                 checked={isTrainer}
                 onChange={(e) => setIsTrainer(e.target.checked)}
-                className="w-5 h-5 accent-[#27AE60]"
+                className="w-5 h-5 accent-[#27AE60] rounded cursor-pointer"
               />
             </label>
 
             {isTrainer && (
-              <div className="mt-3">
-                <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">CREF (opcional):</label>
+              <div className="mt-4 pt-3 border-t border-gray-200 dark:border-[#404040]">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">CREF (opcional)</label>
                 <input
                   type="text"
                   name="cref"
                   value={cref}
                   onChange={(e) => setCref(e.target.value.toUpperCase())}
-                  className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
+                  className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-white dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all text-sm"
                   placeholder="Ex: CREF 123456-G/SP"
                   maxLength={30}
                 />
@@ -239,7 +243,7 @@ export function Cadastro() {
           </div>
           
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Senha:</label>
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Senha</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -247,13 +251,13 @@ export function Cadastro() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full border dark:border-[#404040] rounded px-3 py-2 pr-10 dark:bg-[#1a1a1a] dark:text-gray-100"
+                className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 pr-12 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
                 placeholder="Mínimo 6 caracteres"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -261,7 +265,7 @@ export function Cadastro() {
           </div>
           
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Confirme sua senha:</label>
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Confirme a senha</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -269,13 +273,13 @@ export function Cadastro() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full border dark:border-[#404040] rounded px-3 py-2 pr-10 dark:bg-[#1a1a1a] dark:text-gray-100"
-                placeholder="Confirme sua senha"
+                className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 pr-12 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
+                placeholder="Repita sua senha"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
               >
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -285,18 +289,25 @@ export function Cadastro() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 px-4 rounded text-white font-bold ${
-              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#27AE60] hover:bg-[#219150]'
-            } transition-colors`}
+            className={`cursor-pointer w-full sm:col-span-2 mt-4 py-3.5 px-4 rounded-xl text-white font-bold text-lg shadow-md transition-all ${
+              loading ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-[#27AE60] hover:bg-[#219150] hover:shadow-lg'
+            }`}
           >
-            {loading ? 'Criando conta...' : 'Criar Conta Gratuita'}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>
+                <span>Criando conta...</span>
+              </div>
+            ) : (
+              'Criar Conta'
+            )}
           </button>
         </form>
         
-        <p className="text-center mt-6 mb-2 text-gray-600 dark:text-gray-400">
+        <p className="text-center mt-8 text-sm font-medium text-gray-600 dark:text-gray-400">
           Já tem uma conta?{' '}
-          <Link to="/login" className="text-blue-500 hover:underline">
-            Entre aqui
+          <Link to="/login" className="text-[#27AE60] hover:text-[#219150] hover:underline transition-colors font-bold">
+             Faça login
           </Link>
         </p>      
       </div>

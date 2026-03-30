@@ -3,10 +3,10 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/aut
 import { auth, db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
 import { Link, useNavigate } from 'react-router-dom'
-import { Button } from '../components/button'
 import { getVersionWithPrefix } from '../version'
 import { Eye, EyeOff } from 'lucide-react'
 import { trackLogin, trackPageView } from '../utils/analytics'
+import logo from '../assets/nova-logo-clear.png'
 
 export function Login() {
   const [email, setEmail] = useState('')
@@ -95,13 +95,19 @@ export function Login() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#121212]">
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-md rounded-lg p-8 w-[85%] max-w-md border border-gray-200 dark:border-[#404040]">
-        <h1 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
-          {showForgotPassword ? 'Recuperar Senha' : 'Login'}
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#121212] p-4">
+      <div className="bg-white dark:bg-[#2d2d2d] shadow-xl rounded-2xl p-6 sm:p-8 w-full max-w-md border border-gray-100 dark:border-[#404040]">
+        <div className="flex justify-center mb-6">
+          <img src={logo} alt="TrainLog Logo" className="h-16 w-auto drop-shadow-sm" />
+        </div>
+        <h1 className="text-3xl font-black text-center mb-2 text-gray-800 dark:text-gray-100">
+          {showForgotPassword ? 'Recuperar Senha' : 'Bem-vindo!'}
         </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-8">
+          {showForgotPassword ? 'Para redefinir sua senha' : 'Faça login para continuar seus treinos'}
+        </p>
         
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {error && <p className="text-red-500 text-sm font-medium text-center mb-4 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">{error}</p>}
         {resetEmailSent && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
             <p className="text-sm">
@@ -114,19 +120,19 @@ export function Login() {
           /* Login Form */
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Email:</label>
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Email</label>
               <input
                 type="email"
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
-                placeholder="Digite seu email"
+                className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
+                placeholder="seu@email.com"
               />
             </div>
             <div>
-              <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Senha:</label>
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Senha</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -134,13 +140,13 @@ export function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full border dark:border-[#404040] rounded px-3 py-2 pr-10 dark:bg-[#1a1a1a] dark:text-gray-100"
-                  placeholder="Digite sua senha"
+                  className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 pr-12 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
+                  placeholder="Sua senha"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -148,55 +154,66 @@ export function Login() {
             </div>
             
             {/* Forgot Password Link */}
-            <div className="text-right">
+            <div className="text-right pt-1">
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-blue-500 hover:underline"
+                className="cursor-pointer text-sm font-semibold text-[#27AE60] hover:text-[#219150] transition-colors"
               >
                 Esqueceu a senha?
               </button>
             </div>
 
-            <Button
+            <button
               type="submit"
               disabled={loading}
-              className={`w-full py-2 px-4 rounded text-white font-bold ${
-                loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+              className={`cursor-pointer w-full py-3.5 px-4 rounded-xl text-white font-bold text-lg shadow-md transition-all ${
+                loading ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-[#27AE60] hover:bg-[#219150] hover:shadow-lg'
               }`}
             >
-              {loading ? 'Carregando...' : 'Entrar'}
-            </Button>
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Entrando...</span>
+                </div>
+              ) : (
+                'Entrar'
+              )}
+            </button>
           </form>
         ) : (
           /* Forgot Password Form */
-          <div className="space-y-4">
-            <p className="text-gray-600 dark:text-gray-400 text-sm text-center mb-4">
-              Digite seu email para receber um link de recuperação de senha
-            </p>
+          <div className="space-y-5">
             <div>
-              <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Email:</label>
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Email cadastrado</label>
               <input
                 type="email"
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
-                placeholder="Digite seu email"
+                className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
+                placeholder="seu@email.com"
               />
             </div>
             
-            <Button
+            <button
               type="button"
               onClick={handleForgotPassword}
               disabled={loading}
-              className={`w-full py-2 px-4 rounded text-white font-bold ${
-                loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#27AE60] hover:bg-[#229954]'
+              className={`cursor-pointer w-full py-3.5 px-4 rounded-xl text-white font-bold text-lg shadow-md transition-all ${
+                loading ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-[#27AE60] hover:bg-[#219150] hover:shadow-lg'
               }`}
             >
-              {loading ? 'Enviando...' : 'Enviar Email de Recuperação'}
-            </Button>
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                   <div className="w-5 h-5 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>
+                   <span>Enviando...</span>
+                </div>
+              ) : (
+                'Enviar Recuperação'
+              )}
+            </button>
             
             <button
               type="button"
@@ -205,7 +222,7 @@ export function Login() {
                 setResetEmailSent(false)
                 setError('')
               }}
-              className="w-full text-sm text-gray-600 dark:text-gray-400 hover:underline mt-2"
+              className="cursor-pointer w-full text-sm text-gray-600 dark:text-gray-400 hover:underline mt-2"
             >
               ← Voltar para login
             </button>
@@ -213,10 +230,10 @@ export function Login() {
         )}
         
         {!showForgotPassword && (
-          <p className="text-center mt-4 text-gray-600 dark:text-gray-400">
+          <p className="text-center mt-8 text-sm font-medium text-gray-600 dark:text-gray-400">
             Não tem uma conta?{' '}
-            <Link to="/cadastro" className="text-blue-500 hover:underline">
-              Cadastre-se
+            <Link to="/cadastro" className="text-[#27AE60] hover:text-[#219150] hover:underline transition-colors font-bold">
+              Cadastre-se agora
             </Link>
           </p>
         )}
