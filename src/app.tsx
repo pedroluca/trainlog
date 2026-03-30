@@ -34,6 +34,7 @@ import { Friends } from './pages/friends'
 import { FriendProfile } from './pages/friend-profile'
 import { FriendFriends } from './pages/friend-friends'
 import { TrainerConnections } from './pages/trainer-connections'
+import { NotFound } from './pages/not-found'
 // import { Teste } from './pages/teste'
 
 type AndroidBridge = {
@@ -270,6 +271,8 @@ export function App() {
             <Route path='activities' element={<AdminActivities />} />
             <Route path='bugs' element={<AdminBugs />} />
           </Route>
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
