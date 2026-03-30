@@ -286,6 +286,11 @@ function send_email($to_email, $user_name, $html_content) {
 try {
     write_log("========== CRON: Relatório Semanal ==========");
     
+    $test_email = filter_input(INPUT_GET, 'test_email', FILTER_VALIDATE_EMAIL);
+    if ($test_email) {
+        write_log("🧪 Modo de TESTE ativado para: $test_email");
+    }
+
     // 1. Carregar usuários do arquivo de cache
     $users_file = __DIR__ . '/users-cache.json';
     $users = file_exists($users_file) ? 
@@ -315,6 +320,11 @@ try {
             $user_name = $user_data['nome'] ?? 'Usuário';
             $email_notifications = $user_data['emailNotifications'] ?? true;
             
+            // Modo de teste: pula todos que não sejam o email de teste
+            if ($test_email && $user_email !== $test_email) {
+                continue;
+            }
+
             if (!$email_notifications) {
                 write_log("⏭️ Usuário optou por não receber relatórios: $user_id ($user_email)");
                 continue;
