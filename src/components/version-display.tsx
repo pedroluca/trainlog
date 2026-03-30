@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { getVersionWithPrefix, VERSION_HISTORY } from '../version'
 import { useState } from 'react'
 
@@ -30,7 +31,7 @@ export function VersionDisplay({ theme = 'dark' }: VersionDisplayProps) {
                 onClick={() => setShowChangelog(false)}
                 className="text-gray-500 hover:text-gray-700 text-2xl"
               >
-                ×
+                <X />
               </button>
             </div>
             
