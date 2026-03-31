@@ -4,7 +4,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
 import { Button } from '../components/button'
-import { Shield } from 'lucide-react'
+import adminLogoClear from '../assets/admin-logo-clear.png'
+import adminLogo from '../assets/admin-logo.png'
 
 export function AdminLogin() {
   const navigate = useNavigate()
@@ -15,6 +16,16 @@ export function AdminLogin() {
 
   useEffect(() => {
     document.title = 'Admin - TrainLog'
+    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    const originalHref = link?.href;
+    if (link) {
+      link.href = adminLogo;
+    }
+    return () => {
+      if (link && originalHref) {
+        link.href = originalHref;
+      }
+    }
   }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -69,10 +80,10 @@ export function AdminLogin() {
       <div className="bg-gray-800/50 backdrop-blur-xl shadow-2xl rounded-2xl p-8 w-full max-w-md border border-white/10">
         {/* Header */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-[#27AE60] to-[#219150] rounded-full flex items-center justify-center mb-4">
-            <Shield size={32} className="text-white" />
+          <div className="w-24 h-24 mb-4">
+            <img src={adminLogoClear} alt="Admin Logo" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(39,174,96,0.5)]" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Admin Portal</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Portal Administrador</h1>
           <p className="text-gray-400 text-sm">Acesso restrito a administradores</p>
         </div>
 
@@ -137,7 +148,7 @@ export function AdminLogin() {
         <div className="mt-6 text-center">
           <button
             onClick={() => navigate('/')}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
+            className="cursor-pointer text-sm text-gray-400 hover:text-white transition-colors"
           >
             ← Voltar para home
           </button>

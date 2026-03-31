@@ -1,5 +1,6 @@
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
+import adminLogo from '../assets/admin-logo.png'
 
 /**
  * Notifica todos os usuários com `isAdmin == true` no Firebase
@@ -38,6 +39,7 @@ export async function notifyAdmins(title: string, body: string, targetPath: stri
     // Converte rota relativa (ex: '/admin/dashboard/users') em absoluta do App.
     const baseUrl = window.location.origin
     const url = targetPath.startsWith('http') ? targetPath : `${baseUrl}${targetPath}`
+    const iconUrl = `${baseUrl}${adminLogo}`
 
     const response = await fetch(`${API_BASE}/send-admin-push.php`, {
       method: 'POST',
@@ -49,7 +51,8 @@ export async function notifyAdmins(title: string, body: string, targetPath: stri
         target_ids: targetIds,
         title,
         body,
-        url
+        url,
+        icon: iconUrl
       }),
     })
 
