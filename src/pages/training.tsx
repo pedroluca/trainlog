@@ -296,11 +296,29 @@ export function Training() {
   }, [exercises, isCompleteModalOpen, selectedWorkout, usuarioID, canExecuteWorkout])
 
   const handleExerciseComplete = useCallback(() => {
+    // Optimistic update to immediately show completion state
+    setExercises(prev => {
+      const newExercises = [...prev]
+      if (newExercises[currentExerciseIndex]) {
+        newExercises[currentExerciseIndex] = {
+          ...newExercises[currentExerciseIndex],
+          isFeito: true,
+          lastDoneDate: new Date().toISOString()
+        }
+      }
+      return newExercises
+    })
+
     if (currentExerciseIndex < exercises.length - 1) {
-      scrollToSlide(currentExerciseIndex + 1)
+      setTimeout(() => {
+        scrollToSlide(currentExerciseIndex + 1)
+      }, 50)
     }
     
-    fetchExercisesForDay(true).then(() => {})
+    // Defer the refetch so it doesn't interrupt the smooth scroll animation
+    setTimeout(() => {
+      fetchExercisesForDay(true).catch(console.error)
+    }, 600)
   }, [currentExerciseIndex, exercises.length, fetchExercisesForDay, scrollToSlide])
 
   useEffect(() => {

@@ -170,11 +170,11 @@ export function TrainingCard(props: TrainingCardProps) {
       console.error('No user ID found in localStorage')
     }
     
-    onEdit()
-    
     // Call onComplete callback to move to next exercise
     if (onComplete) {
       onComplete()
+    } else {
+      onEdit()
     }
   }, [workoutId, id, onEdit, onComplete, title, sets, reps, weight])
 
@@ -282,7 +282,7 @@ export function TrainingCard(props: TrainingCardProps) {
                 <p className={`text-lg md:text-2xl lg:text-xl mb-3 font-bold ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   Peso Progressivo:
                 </p>
-                <div className="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="flex gap-3 overflow-x-auto pb-4 pt-2 px-2 -mx-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   {progressiveSets.map((set, index) => {
                     const isCurrentSet = index === setsDone
                     const isCompleted = index < setsDone
