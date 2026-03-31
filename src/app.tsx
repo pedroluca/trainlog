@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { LayoutWithBottomBar } from './layouts/layout-with-bottombar'
 import { LayoutWithoutBottomBar } from './layouts/layout-without-bottombar'
 import { Home } from './pages/home'
@@ -7,19 +7,22 @@ import { Training } from './pages/training'
 import { Login } from './pages/login'
 import { Cadastro } from './pages/register'
 import { Profile } from './pages/profile'
-import { Settings } from './pages/settings'
-import { LogPage } from './pages/log'
-import { Progress } from './pages/progress'
-import { BodyMetrics } from './pages/body-metrics'
-import { ResetPassword } from './pages/reset-password'
-import { AdminLogin } from './pages/admin-login'
-import { AdminLayout } from './layouts/admin-layout'
-import { AdminOverview } from './pages/admin/overview'
-import { AdminUsers } from './pages/admin/users'
-import { AdminActivities } from './pages/admin/activities'
-import { AdminBugs } from './pages/admin/bugs'
-import { AdminNotifications } from './pages/admin/notifications'
-import { StreakCalendar } from './pages/streak-calendar'
+
+const Settings = lazy(() => import('./pages/settings').then(m => ({ default: m.Settings })))
+const LogPage = lazy(() => import('./pages/log').then(m => ({ default: m.LogPage })))
+const Progress = lazy(() => import('./pages/progress').then(m => ({ default: m.Progress })))
+const BodyMetrics = lazy(() => import('./pages/body-metrics').then(m => ({ default: m.BodyMetrics })))
+const StreakCalendar = lazy(() => import('./pages/streak-calendar').then(m => ({ default: m.StreakCalendar })))
+
+const AdminLogin = lazy(() => import('./pages/admin-login').then(m => ({ default: m.AdminLogin })))
+const AdminLayout = lazy(() => import('./layouts/admin-layout').then(m => ({ default: m.AdminLayout })))
+const AdminOverview = lazy(() => import('./pages/admin/overview').then(m => ({ default: m.AdminOverview })))
+const AdminUsers = lazy(() => import('./pages/admin/users').then(m => ({ default: m.AdminUsers })))
+const AdminActivities = lazy(() => import('./pages/admin/activities').then(m => ({ default: m.AdminActivities })))
+const AdminBugs = lazy(() => import('./pages/admin/bugs').then(m => ({ default: m.AdminBugs })))
+const AdminNotifications = lazy(() => import('./pages/admin/notifications').then(m => ({ default: m.AdminNotifications })))
+const TrainerConnections = lazy(() => import('./pages/trainer-connections').then(m => ({ default: m.TrainerConnections })))
+
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
 import { WhatsNewModal } from './components/whats-new-modal'
@@ -34,8 +37,14 @@ import { logoutOneSignalUser, syncOneSignalUser } from './utils/onesignal'
 import { Friends } from './pages/friends'
 import { FriendProfile } from './pages/friend-profile'
 import { FriendFriends } from './pages/friend-friends'
-import { TrainerConnections } from './pages/trainer-connections'
 import { NotFound } from './pages/not-found'
+import { ResetPassword } from './pages/reset-password'
+
+const PageLoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gray-900">
+    <div className="w-12 h-12 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div>
+  </div>
+)
 // import { Teste } from './pages/teste'
 
 type AndroidBridge = {
@@ -238,44 +247,46 @@ export function App() {
           forceUpdateVersion={forceUpdateVersion}
           systemVersion={forceUpdateVersion || getVersion()}
         />
-        <Routes>
-          <Route element={<LayoutWithoutBottomBar />}>
-            <Route path='/' element={<Home />} />
-            <Route path='/login' element={<Login />} />
-            <Route path='/cadastro' element={<Cadastro />} />
-          </Route>
-
-          <Route path='/reset-password' element={<ResetPassword />} />
-
-          <Route element={<LayoutWithBottomBar />}>
-            {/* <Route path='/teste' element={<Teste />} /> */}
-            <Route path='/train' element={<Training />} />
-            {/* Rotas de Amigos */}
-            <Route path="/friends" element={<Friends />} />
-            <Route path="/friend/:id" element={<FriendProfile />} />
-            <Route path="/friend/:id/friends" element={<FriendFriends />} />
-            <Route path='/progress' element={<Progress />} />
-            <Route path='/profile'>
-              <Route index element={<Profile />} />
-              <Route path='settings' element={<Settings />} />
-              <Route path='body-metrics' element={<BodyMetrics />} />
-              <Route path='streak-calendar' element={<StreakCalendar />} />
-              <Route path='log' element={<LogPage />} />
-              <Route path='connections' element={<TrainerConnections />} />
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Routes>
+            <Route element={<LayoutWithoutBottomBar />}>
+              <Route path='/' element={<Home />} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/cadastro' element={<Cadastro />} />
             </Route>
-          </Route>
 
-          <Route path='/admin' element={<AdminLogin />} />
-          <Route path='/admin/dashboard' element={<AdminLayout />}>
-            <Route index element={<AdminOverview />} />
-            <Route path='users' element={<AdminUsers />} />
-            <Route path='activities' element={<AdminActivities />} />
-            <Route path='bugs' element={<AdminBugs />} />
-            <Route path='notifications' element={<AdminNotifications />} />
-          </Route>
+            <Route path='/reset-password' element={<ResetPassword />} />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route element={<LayoutWithBottomBar />}>
+              {/* <Route path='/teste' element={<Teste />} /> */}
+              <Route path='/train' element={<Training />} />
+              {/* Rotas de Amigos */}
+              <Route path="/friends" element={<Friends />} />
+              <Route path="/friend/:id" element={<FriendProfile />} />
+              <Route path="/friend/:id/friends" element={<FriendFriends />} />
+              <Route path='/progress' element={<Progress />} />
+              <Route path='/profile'>
+                <Route index element={<Profile />} />
+                <Route path='settings' element={<Settings />} />
+                <Route path='body-metrics' element={<BodyMetrics />} />
+                <Route path='streak-calendar' element={<StreakCalendar />} />
+                <Route path='log' element={<LogPage />} />
+                <Route path='connections' element={<TrainerConnections />} />
+              </Route>
+            </Route>
+
+            <Route path='/admin' element={<AdminLogin />} />
+            <Route path='/admin/dashboard' element={<AdminLayout />}>
+              <Route index element={<AdminOverview />} />
+              <Route path='users' element={<AdminUsers />} />
+              <Route path='activities' element={<AdminActivities />} />
+              <Route path='bugs' element={<AdminBugs />} />
+              <Route path='notifications' element={<AdminNotifications />} />
+            </Route>
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </ThemeProvider>
   )
