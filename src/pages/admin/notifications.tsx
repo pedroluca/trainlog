@@ -106,15 +106,17 @@ export function AdminNotifications() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-purple-500/20 text-purple-400 rounded-xl">
-          <Bell size={28} />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-white">Disparos & Testes</h1>
-          <p className="text-gray-400">Teste o envio de Notificações Push e Emails diretamente do painel.</p>
-        </div>
+    <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-xl min-h-[60vh]">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+          <div className="bg-purple-500/20 p-2 rounded-xl text-purple-400">
+            <Bell size={24} />
+          </div>
+          Disparos & Testes
+          <span className="text-sm bg-gray-700/50 text-gray-400 px-3 py-1 rounded-full ml-2 font-normal">
+            Teste envio de Push e Email
+          </span>
+        </h2>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
