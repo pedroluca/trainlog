@@ -27,7 +27,7 @@ export function Header({ isFixed }: { isFixed?: boolean }) {
           setIsFounder(!!data.isFounder)
           setIsPremium(!!data.isPremium)
           if (data.lastWorkoutDate) {
-            const todayStr = new Date().toISOString().slice(0, 10)
+            const todayStr = new Date().toLocaleDateString('en-CA')
             setTreinouHoje(data.lastWorkoutDate === todayStr)
           }
         }
@@ -40,7 +40,7 @@ export function Header({ isFixed }: { isFixed?: boolean }) {
     const handleStreakUpdate = (event: CustomEvent) => {
       setStreak(event.detail.newStreak)
       if (event.detail.lastWorkoutDate) {
-        const todayStr = new Date().toISOString().slice(0, 10)
+        const todayStr = new Date().toLocaleDateString('en-CA')
         setTreinouHoje(event.detail.lastWorkoutDate === todayStr)
       }
     }

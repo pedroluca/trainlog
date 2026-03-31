@@ -40,59 +40,7 @@ export async function updateScheduledDays(usuarioID: string): Promise<number[]> 
   }
 }
 
-function getPreviousScheduledDay(currentDate: Date, scheduledDays: number[]): Date | null {
-  if (scheduledDays.length === 0) return null
-  
-  let daysToSubtract = 1
-  
-  for (let i = 0; i < 7; i++) {
-    const checkDate = new Date(currentDate)
-    checkDate.setDate(checkDate.getDate() - daysToSubtract)
-    const checkDay = checkDate.getDay()
-    
-    if (scheduledDays.includes(checkDay)) {
-      return checkDate
-    }
-    daysToSubtract++
-  }
-  
-  return null
-}
-
-async function wasWorkoutCompletedOnDate(usuarioID: string, date: Date): Promise<boolean> {
-  try {
-    const targetDateStr = date.toDateString() // "Wed Oct 09 2025"
-    
-    const logsRef = collection(db, 'logs')
-    const q = query(logsRef, where('usuarioID', '==', usuarioID))
-    const querySnapshot = await getDocs(q)
-    
-    for (const docSnap of querySnapshot.docs) {
-      const logData = docSnap.data()
-      if (logData.data) {
-        let logDate: Date
-        
-        if (typeof logData.data === 'string') {
-          logDate = new Date(logData.data)
-        } else if (logData.data.seconds) {
-          logDate = new Date(logData.data.seconds * 1000)
-        } else {
-          continue // Skip invalid data
-        }
-        
-        if (logDate.toDateString() === targetDateStr) {
-          return true
-        }
-      }
-    }
-    
-    return false
-  } catch (err) {
-    console.error('❌ Error checking workout completion:', err)
-    return false
-  }
-}
-
+ 
 export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<void> {
   try {
     const userDocRef = doc(db, 'usuarios', usuarioID)
@@ -103,7 +51,6 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
     const userData = userDoc.data()
     const scheduledDays = userData.scheduledDays || []
     const lastCompletedDate = userData.lastCompletedDate
-    const lastWorkoutDate = userData.lastWorkoutDate // YYYY-MM-DD — saved on first full completion
     const currentStreak = userData.currentStreak || 0
     
     if (scheduledDays.length === 0 || currentStreak === 0) return
@@ -124,22 +71,10 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
     let missedScheduledDay = false
     
     while (checkDate < today) {
-      const checkDayOfWeek = checkDate.getDay()
-      
-      if (scheduledDays.includes(checkDayOfWeek)) {
-        // Primary check: logs collection
-        const wasCompleted = await wasWorkoutCompletedOnDate(usuarioID, checkDate)
-        
-        // Secondary check: lastWorkoutDate (protects against "added exercises after completion" scenario)
-        const checkDateStr = checkDate.toLocaleDateString('en-CA') // YYYY-MM-DD
-        const wasCompletedViaLastWorkout = lastWorkoutDate === checkDateStr
-
-        if (!wasCompleted && !wasCompletedViaLastWorkout) {
-          missedScheduledDay = true
-          break
-        }
+      if (scheduledDays.includes(checkDate.getDay())) {
+        missedScheduledDay = true
+        break
       }
-      
       checkDate.setDate(checkDate.getDate() + 1)
     }
     
@@ -151,7 +86,6 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
       window.dispatchEvent(new CustomEvent('streakUpdated', { 
         detail: { newStreak: 0 } 
       }))
-      
     }
   } catch (err) {
     console.error('❌ Error checking missed streak:', err)
@@ -229,30 +163,52 @@ export async function updateStreak(usuarioID: string): Promise<number> {
     const scheduledDays = userData.scheduledDays || []
     const currentStreak = userData.currentStreak || 0
     const longestStreak = userData.longestStreak || 0
+    
     const today = new Date()
-    const lastCompletedDate = userData.lastCompletedDate
-    const todayStr = today.toDateString()
-    if (lastCompletedDate === todayStr) {
+    const todayStrCA = today.toLocaleDateString('en-CA') // YYYY-MM-DD local
+    const todayStrLocal = today.toDateString() // "Sun Mar 30 2026"
+    const lastCompletedDateStr = userData.lastCompletedDate // Local string from previous completions
+    const lastWorkoutDateStr = userData.lastWorkoutDate // YYYY-MM-DD
+
+    // Check if we already computed streak today
+    if (lastCompletedDateStr === todayStrLocal || lastWorkoutDateStr === todayStrCA) {
       return currentStreak
     }
-    const previousScheduledDate = getPreviousScheduledDay(today, scheduledDays)
+
     let newStreak = 1
-    if (previousScheduledDate) {
-      const wasPreviousCompleted = await wasWorkoutCompletedOnDate(usuarioID, previousScheduledDate)
-      if (wasPreviousCompleted) {
-        newStreak = currentStreak + 1
-      } else {
-        newStreak = 1
+
+    if (lastCompletedDateStr) {
+      const lastCompleted = new Date(lastCompletedDateStr)
+      lastCompleted.setHours(0, 0, 0, 0)
+      
+      const checkDate = new Date(lastCompleted)
+      checkDate.setDate(checkDate.getDate() + 1)
+      
+      today.setHours(0, 0, 0, 0)
+      let missedScheduledDay = false
+      
+      while (checkDate < today) {
+        if (scheduledDays.includes(checkDate.getDay())) {
+          missedScheduledDay = true
+          break
+        }
+        checkDate.setDate(checkDate.getDate() + 1)
       }
-    } else {
-      newStreak = 1
+      
+      if (!missedScheduledDay) {
+        newStreak = currentStreak + 1
+      }
     }
+
     const newLongestStreak = Math.max(longestStreak, newStreak)
+    
     updateDoc(userDocRef, {
       currentStreak: newStreak,
       longestStreak: newLongestStreak,
-      lastCompletedDate: todayStr
+      lastCompletedDate: todayStrLocal,
+      lastWorkoutDate: todayStrCA
     }).catch(console.error)
+    
     return newStreak
   } catch (err) {
     console.error('❌ Error updating streak:', err)
