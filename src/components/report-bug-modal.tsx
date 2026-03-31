@@ -3,6 +3,7 @@ import { X, Upload, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Button } from './button'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
+import { notifyAdmins } from '../utils/admin-notifications'
 
 interface ReportBugModalProps {
   onClose: () => void
@@ -98,6 +99,13 @@ export function ReportBugModal({ onClose, usuarioID, nome, email, username }: Re
         dataCriacao: serverTimestamp(),
         status: 'pendente'
       })
+
+      // Notifica Administradores em Background
+      notifyAdmins(
+        `Novo(a) ${tipo} Reportado! 🐞`,
+        `${titulo.trim()} - Enviado por ${nome || 'Desconhecido'}`,
+        '/admin/dashboard/bugs'
+      ).catch(e => console.error('Silent error on push:', e))
 
       setSuccess(true)
       setTimeout(() => {

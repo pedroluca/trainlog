@@ -4,6 +4,7 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { X, Sparkles, Calendar, TrendingUp, Crown, Eye, Star } from 'lucide-react'
 import { trackPremiumUpgradeModalOpened, trackPremiumUpgradeRequested } from '../utils/analytics'
+import { notifyAdmins } from '../utils/admin-notifications'
 import QRCode from '../assets/qr-code-upgrade.jpg'
 import { Toast, ToastState } from './toast'
 
@@ -64,6 +65,13 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
 
       // Track successful request
       trackPremiumUpgradeRequested()
+
+      // Notifica Administradores em Background
+      notifyAdmins(
+        'Nova Solicitação de Premium! 👑',
+        `${userName} (${userEmail}) solicitou upgrade para Premium.`,
+        '/admin/dashboard'
+      ).catch(e => console.error('Silent error on push:', e))
 
       setRequestSent(true)
     } catch (error) {

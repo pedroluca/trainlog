@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
 import { Link, useNavigate } from 'react-router-dom'
 import { getVersionWithPrefix } from '../version'
+import { notifyAdmins } from '../utils/admin-notifications'
 import { Eye, EyeOff } from 'lucide-react'
 import { Toast, ToastState } from '../components/toast'
 import logo from '../assets/nova-logo-clear.png'
@@ -108,6 +109,13 @@ export function Cadastro() {
         longestStreak: 0,
         scheduledDays: [], // Empty array, user will set later
       })
+
+      // Notifica Administradores em Background
+      notifyAdmins(
+        'Novo Usuário Registrado! 🎉',
+        `Nome: ${name.trim()} | Email: ${email.trim().toLowerCase()}`,
+        '/admin/dashboard/users'
+      ).catch(e => console.error('Silent error on push:', e))
 
       setSuccess(true)
       
