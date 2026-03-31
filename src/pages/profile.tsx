@@ -413,15 +413,15 @@ export function Profile() {
           <div className="relative mb-3 md:mt-6 w-max mx-auto">
             {/* Plan Badge */}
             {isFounder ? (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-purple-500/40 flex items-center z-20 w-max border border-purple-400/30">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-purple-500/40 flex items-center z-10 w-max border border-purple-400/30">
                 <span>FUNDADOR</span>
               </div>
             ) : isPremium ? (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center z-20 w-max">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center z-10 w-max">
                 <span>PREMIUM</span>
               </div>
             ) : (
-             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-gray-400 to-gray-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg flex items-center z-20 w-max cursor-pointer hover:scale-105 transition-transform" onClick={() => handleOpenUpgradeModal()}>
+             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-gray-400 to-gray-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg flex items-center z-10 w-max cursor-pointer hover:scale-105 transition-transform" onClick={() => handleOpenUpgradeModal()}>
               <span>FREE</span>
             </div>
             )}

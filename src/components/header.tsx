@@ -4,7 +4,7 @@ import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
 import { BookUser, Dumbbell, TrendingUp, UsersRound, UserRound } from 'lucide-react'
 
-export function Header({ isFixed }: { isFixed?: boolean }) {
+export function Header() {
   const [streak, setStreak] = useState(0)
   const [treinouHoje, setTreinouHoje] = useState(false)
   const [photoURL, setPhotoURL] = useState<string | null>(null)
@@ -59,7 +59,7 @@ export function Header({ isFixed }: { isFixed?: boolean }) {
   const lastName = nome.split(' ')[1]
 
   return (
-    <header className={`bg-[#27AE60] text-white shadow-lg ${isFixed ? 'fixed top-0 left-0 right-0 z-10' : ''}`}>
+    <header className={`bg-[#27AE60] text-white shadow-lg fixed top-0 left-0 right-0 z-20`}>
       <main className='relative py-2.5 px-4 flex items-center justify-between border-b border-white/10'>
 
         {/* ── Esquerda: avatar + nome (logado) ou logo (deslogado) ── */}
