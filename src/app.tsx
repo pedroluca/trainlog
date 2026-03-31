@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { LayoutWithBottomBar } from './layouts/layout-with-bottombar'
 import { LayoutWithoutBottomBar } from './layouts/layout-without-bottombar'
@@ -63,6 +63,16 @@ declare global {
 }
 
 let lastSaved: { userId: string; playerId: string } | null = null
+
+function ScrollToTopOnRouteChange() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+
+  return null
+}
 
 const notifyAndroidUserLogged = (userId: string) => {
   if (typeof window === 'undefined') return
@@ -239,6 +249,7 @@ export function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <ScrollToTopOnRouteChange />
         <PWAUpdateNotification />
         <PWAInstallPrompt />
         <WhatsNewModal 
