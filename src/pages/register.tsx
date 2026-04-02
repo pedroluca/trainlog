@@ -176,7 +176,7 @@ export function Cadastro() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a] py-8 px-4">
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a] py-8 pt-20 px-4">
       <div className="bg-white dark:bg-[#2d2d2d] shadow-xl rounded-2xl p-6 sm:p-8 w-full max-w-md sm:max-w-2xl border border-gray-100 dark:border-[#404040]">
         <div className="flex justify-center mb-6">
           <img src={logo} alt="TrainLog Logo" className="h-16 w-auto drop-shadow-sm" />
