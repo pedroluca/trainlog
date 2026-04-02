@@ -22,6 +22,7 @@ const AdminActivities = lazy(() => import('./pages/admin/activities').then(m => 
 const AdminBugs = lazy(() => import('./pages/admin/bugs').then(m => ({ default: m.AdminBugs })))
 const AdminNotifications = lazy(() => import('./pages/admin/notifications').then(m => ({ default: m.AdminNotifications })))
 const TrainerConnections = lazy(() => import('./pages/trainer-connections').then(m => ({ default: m.TrainerConnections })))
+const PrivacyPolicy = lazy(() => import('./pages/privacy-policy').then(m => ({ default: m.PrivacyPolicy })))
 
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
@@ -267,6 +268,7 @@ export function App() {
             </Route>
 
             <Route path='/reset-password' element={<ResetPassword />} />
+            <Route path='/privacy' element={<PrivacyPolicy />} />
 
             <Route element={<LayoutWithBottomBar />}>
               {/* <Route path='/teste' element={<Teste />} /> */}

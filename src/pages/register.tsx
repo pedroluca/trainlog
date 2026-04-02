@@ -22,6 +22,7 @@ export function Cadastro() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' })
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const navigate = useNavigate()
 
   // Phone mask for Brazilian format: (99) 99999-9999
@@ -86,6 +87,12 @@ export function Cadastro() {
 
       if (password.length < 6) {
         setToast({ show: true, message: 'A senha deve ter pelo menos 6 caracteres.', type: 'error' })
+        setLoading(false)
+        return
+      }
+
+      if (!acceptedTerms) {
+        setToast({ show: true, message: 'Você precisa aceitar os termos de uso para continuar.', type: 'error' })
         setLoading(false)
         return
       }
@@ -294,11 +301,48 @@ export function Cadastro() {
             </div>
           </div>
 
+          {/* Terms of Service */}
+          <div className="sm:col-span-2 mt-2">
+            <label
+              htmlFor="accept-terms"
+              className={`flex items-start gap-3 cursor-pointer rounded-xl border p-4 transition-all ${
+                acceptedTerms
+                  ? 'border-[#27AE60]/50 bg-[#27AE60]/5'
+                  : 'border-gray-200 dark:border-[#404040] bg-gray-50 dark:bg-[#1f1f1f]'
+              }`}
+            >
+              <div className="flex-shrink-0 mt-0.5">
+                <input
+                  id="accept-terms"
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="w-5 h-5 accent-[#27AE60] rounded cursor-pointer"
+                />
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                Eu li e concordo com a{' '}
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#27AE60] font-semibold hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Política de Privacidade
+                </a>{' '}
+                e os Termos de Uso do TrainLog.
+              </p>
+            </label>
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
-            className={`cursor-pointer w-full sm:col-span-2 mt-4 py-3.5 px-4 rounded-xl text-white font-bold text-lg shadow-md transition-all ${
-              loading ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-[#27AE60] hover:bg-[#219150] hover:shadow-lg'
+            disabled={loading || !acceptedTerms}
+            className={`cursor-pointer w-full sm:col-span-2 mt-2 py-3.5 px-4 rounded-xl text-white font-bold text-lg shadow-md transition-all ${
+              loading || !acceptedTerms
+                ? 'bg-gray-400 cursor-not-allowed opacity-50'
+                : 'bg-[#27AE60] hover:bg-[#219150] hover:shadow-lg'
             }`}
           >
             {loading ? (

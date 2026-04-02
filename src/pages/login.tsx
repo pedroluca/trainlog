@@ -95,7 +95,7 @@ export function Login() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#121212] p-4">
+    <main className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-[#121212] p-4 pt-32">
       <div className="bg-white dark:bg-[#2d2d2d] shadow-xl rounded-2xl p-6 sm:p-8 w-full max-w-md border border-gray-100 dark:border-[#404040]">
         <div className="flex justify-center mb-6">
           <img src={logo} alt="TrainLog Logo" className="h-16 w-auto drop-shadow-sm" />
