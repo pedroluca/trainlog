@@ -23,6 +23,7 @@ const AdminBugs = lazy(() => import('./pages/admin/bugs').then(m => ({ default: 
 const AdminNotifications = lazy(() => import('./pages/admin/notifications').then(m => ({ default: m.AdminNotifications })))
 const TrainerConnections = lazy(() => import('./pages/trainer-connections').then(m => ({ default: m.TrainerConnections })))
 const PrivacyPolicy = lazy(() => import('./pages/privacy-policy').then(m => ({ default: m.PrivacyPolicy })))
+const DeleteAccount = lazy(() => import('./pages/delete-account').then(m => ({ default: m.DeleteAccount })))
 
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
@@ -269,6 +270,7 @@ export function App() {
 
             <Route path='/reset-password' element={<ResetPassword />} />
             <Route path='/privacy' element={<PrivacyPolicy />} />
+            <Route path='/delete-account' element={<DeleteAccount />} />
 
             <Route element={<LayoutWithBottomBar />}>
               {/* <Route path='/teste' element={<Teste />} /> */}

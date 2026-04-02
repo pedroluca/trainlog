@@ -300,4 +300,275 @@
   .privacy-section {
     padding: 1.25rem;
   }
-}
+}
+
+/* ================================
+   Delete Account Page
+   ================================ */
+
+.delete-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #111827 50%, #0f172a 100%);
+  color: #e2e8f0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.delete-container {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+/* Header */
+.delete-header {
+  text-align: center;
+  padding: 3rem 0 2.5rem;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.15);
+  margin-bottom: 2rem;
+}
+
+.delete-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 50%;
+  color: #f87171;
+  margin: 1.25rem auto 1.5rem;
+}
+
+.delete-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0 0 0.6rem;
+  letter-spacing: -0.03em;
+}
+
+.delete-subtitle {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.delete-subtitle strong {
+  color: #94a3b8;
+}
+
+/* Warning card */
+.delete-info-card {
+  display: flex;
+  gap: 1rem;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.delete-info-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.delete-info-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fca5a5;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.delete-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.delete-info-list li {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  padding-left: 1.2rem;
+  position: relative;
+}
+
+.delete-info-list li::before {
+  content: '×';
+  position: absolute;
+  left: 0;
+  color: #f87171;
+  font-weight: 700;
+}
+
+.delete-info-warning {
+  font-size: 0.88rem;
+  color: #f87171;
+  margin: 0;
+}
+
+.delete-info-warning strong {
+  color: #fca5a5;
+}
+
+/* Steps */
+.delete-steps {
+  margin-bottom: 2rem;
+}
+
+.delete-steps-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 1rem;
+}
+
+.delete-step {
+  display: flex;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  transition: border-color 0.2s;
+}
+
+.delete-step:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.delete-step-number {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: rgba(39, 174, 96, 0.15);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+  border-radius: 50%;
+  color: #27AE60;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.1rem;
+}
+
+.delete-step-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0 0 0.3rem;
+}
+
+.delete-step-desc {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.delete-step-desc strong {
+  color: #94a3b8;
+}
+
+/* CTA */
+.delete-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.delete-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+}
+
+.delete-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.delete-email-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.delete-email-label {
+  font-size: 0.82rem;
+  color: #475569;
+  text-align: center;
+}
+
+.delete-email-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+}
+
+.delete-email-code {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  font-family: 'Courier New', monospace;
+  background: none;
+  border: none;
+}
+
+.delete-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.delete-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+@media (max-width: 600px) {
+  .delete-container {
+    padding: 1rem 1rem 3rem;
+  }
+  .delete-title {
+    font-size: 1.4rem;
+  }
+}
+
