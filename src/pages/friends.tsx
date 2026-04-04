@@ -13,6 +13,7 @@ interface Usuario {
   username?: string
   photoURL?: string
   lastWorkoutDate?: string
+  currentStreak?: number
   isTrainer?: boolean
   isFounder?: boolean
   isPremium?: boolean
@@ -101,14 +102,14 @@ export function Friends() {
     )
   }, [amigos, searchTerm])
 
-  const isAtivoRecentemente = (lastWorkoutDate?: string) => {
-    if (!lastWorkoutDate) return false
-    const lastDate = new Date(lastWorkoutDate)
-    const today = new Date()
-    const diffTime = Math.abs(today.getTime() - lastDate.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays <= 7
-  }
+  // const isAtivoRecentemente = (lastWorkoutDate?: string) => {
+  //   if (!lastWorkoutDate) return false
+  //   const lastDate = new Date(lastWorkoutDate)
+  //   const today = new Date()
+  //   const diffTime = Math.abs(today.getTime() - lastDate.getTime())
+  //   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  //   return diffDays <= 7
+  // }
 
   return (
     <main className="flex flex-col items-center justify-start min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-28 md:py-8 space-y-4">
@@ -188,14 +189,15 @@ export function Friends() {
                   isPremium={amigo.usuario.isPremium}
                   onClick={() => navigate(`/friend/${amigo.usuario.id}`)}
                 >
-                  {isAtivoRecentemente(amigo.usuario.lastWorkoutDate) ? (
-                    <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/10 text-orange-500 border border-orange-200 dark:border-orange-800/30 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider">
+                  {(amigo.usuario.currentStreak ?? 0) > 0 ? (
+                    <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/10 text-orange-500 border border-orange-200 dark:border-orange-800/30 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider">
                       <Flame size={14} className="animate-pulse" />
-                      <span>Ativo</span>
+                      <span>{amigo.usuario.currentStreak}</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-[#333] text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-[#404040] px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider">
-                      <span>Ausente</span>
+                    <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-[#333] text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-[#404040] px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider">
+                      <Flame size={14} />
+                      <span>0</span>
                     </div>
                   )}
                 </UserPill>
