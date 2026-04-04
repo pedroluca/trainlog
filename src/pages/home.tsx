@@ -15,7 +15,7 @@ export function Home() {
   })
 
   return (
-    <main className={`${isLogged ? 'pb-24' : ''} flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0d0d0d] dark:via-[#121212] dark:to-[#0d0d0d] p-4 md:p-8`}>
+    <main className={`${isLogged ? 'pb-24' : ''} flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0d0d0d] dark:via-[#121212] dark:to-[#0d0d0d] p-4 md:p-8 pt-20 md:pt-20`}>
 
       {/* ── Desktop: two-column layout ── */}
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
