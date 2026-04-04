@@ -544,7 +544,7 @@ export function Profile() {
               <>
                 <button
                   onClick={() => setIsEditingMetrics(true)}
-                  className="cursor-pointer flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                  className="cursor-pointer flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                 >
                   <Plus size={16} />
                   {altura > 0 && peso > 0 ? 'Nova Medição' : 'Adicionar Métricas'}
@@ -558,7 +558,7 @@ export function Profile() {
                         setIsUpgradeModalOpen(true)
                       }
                     }}
-                    className="cursor-pointer flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-lg transition-all text-sm flex items-center justify-center gap-2 relative overflow-hidden group"
+                    className="cursor-pointer flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-3 px-4 rounded-lg transition-all text-sm flex items-center justify-center gap-2 relative overflow-hidden group"
                   >
                     {!isPremium && (
                       <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-amber-400 to-amber-600 rounded-bl-full flex items-start justify-end p-1 z-10 opacity-90 transition-transform group-hover:scale-110">
@@ -571,14 +571,14 @@ export function Profile() {
                 )}
               </>
             ) : (
-              <div className="flex-1 space-y-3">
+              <div className="flex flex-col gap-2 w-full">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Altura (metros)</label>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setEditedAltura((prev) => Math.max(0.5, parseFloat(prev || '0') - 0.01).toFixed(2))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
+                      className="cursor-pointer bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/5 h-10 rounded flex items-center justify-center"
                     >
                       <Minus size={16} />
                     </button>
@@ -587,13 +587,13 @@ export function Profile() {
                       step="0.01"
                       value={editedAltura}
                       onChange={(e) => setEditedAltura(e.target.value)}
-                      className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                      className="w-3/5 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
                       placeholder="1.75"
                     />
                     <button
                       type="button"
                       onClick={() => setEditedAltura((prev) => Math.min(3, parseFloat(prev || '0') + 0.01).toFixed(2))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
+                      className="cursor-pointer bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/5 h-10 rounded flex items-center justify-center"
                     >
                       <Plus size={16} />
                     </button>
@@ -605,7 +605,7 @@ export function Profile() {
                     <button
                       type="button"
                       onClick={() => setEditedPeso((prev) => Math.max(20, parseFloat(prev || '0') - 0.1).toFixed(1))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
+                      className="cursor-pointer bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/5 h-10 rounded flex items-center justify-center"
                     >
                       <Minus size={16} />
                     </button>
@@ -614,28 +614,28 @@ export function Profile() {
                       step="0.1"
                       value={editedPeso}
                       onChange={(e) => setEditedPeso(e.target.value)}
-                      className="flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
+                      className="w-3/5 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center"
                       placeholder="75.0"
                     />
                     <button
                       type="button"
                       onClick={() => setEditedPeso((prev) => Math.min(500, parseFloat(prev || '0') + 0.1).toFixed(1))}
-                      className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-14 h-10 rounded flex items-center justify-center"
+                      className="cursor-pointer bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/5 h-10 rounded flex items-center justify-center"
                     >
                       <Plus size={16} />
                     </button>
                   </div>
                 </div>
-                <div className="flex gap-2 pt-1">
+                <div className="flex gap-2 pt-2">
                   <button
                     onClick={() => setIsEditingMetrics(false)}
-                    className="flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                    className="cursor-pointer flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 font-semibold py-3 px-4 rounded-lg transition-colors text-base"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleSaveMetrics}
-                    className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                    className="cursor-pointer flex-1 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-3 px-4 rounded-lg transition-colors text-base"
                   >
                     Salvar
                   </button>
