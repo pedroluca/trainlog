@@ -126,13 +126,14 @@ export function Cadastro() {
         telefone: phone,
         isTrainer,
         cref: isTrainer ? cref.trim().toUpperCase() : '',
-        isPremium: false, // Start as free user
+        isPremium: false,
         isAdmin: false,
         isActive: true,
         criadoEm: new Date().toISOString(),
         currentStreak: 0,
         longestStreak: 0,
-        scheduledDays: [], // Empty array, user will set later
+        scheduledDays: [],
+        badges: isTrainer ? ['trainer'] : [],
       })
 
       // Register email in public lookup collection

@@ -14,6 +14,7 @@ import { Toast, ToastState } from '../components/toast'
 import { WhatsNewModal } from '../components/whats-new-modal'
 import { BadgeList } from '../components/badge-chip'
 import { resolveUserBadges, resolveAvatarRing, type BadgeDefinition } from '../data/badges'
+import { addBadgesToUser, removeBadgesFromUser } from '../utils/badge-utils'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -30,6 +31,7 @@ export function Profile() {
   const [isTrainer, setIsTrainer] = useState(false)
   const [cref, setCref] = useState('')
   const [isPremium, setIsPremium] = useState<boolean>(false)
+  const [rawBadgeIds, setRawBadgeIds] = useState<string[]>([])
   const [userBadges, setUserBadges] = useState<BadgeDefinition[]>([])
   const [avatarRing, setAvatarRing] = useState('ring-4 ring-white dark:ring-[#1e1e1e]')
   const [isEditingMetrics, setIsEditingMetrics] = useState(false)
@@ -107,7 +109,9 @@ export function Profile() {
             setIsPremium(userData.isPremium || false)
             setEditedAltura(userData.altura ? (userData.altura / 100).toFixed(2) : '')
             setEditedPeso(userData.peso ? userData.peso.toFixed(1) : '')
-            // Resolve badges
+            // Resolve badges — store the raw IDs so we can mutate them later without losing special ones
+            const ids: string[] = userData.badges || []
+            setRawBadgeIds(ids)
             const badges = resolveUserBadges(userData)
             setUserBadges(badges)
             setAvatarRing(resolveAvatarRing(badges))
@@ -388,6 +392,22 @@ export function Profile() {
         isTrainer: editedIsTrainer,
         cref: editedIsTrainer ? editedCref.trim().toUpperCase() : '',
       })
+
+      // Sync trainer badge
+      if (editedIsTrainer !== isTrainer) {
+        let newIds: string[]
+        if (editedIsTrainer) {
+          await addBadgesToUser(usuarioID, ['trainer'])
+          newIds = rawBadgeIds.includes('trainer') ? rawBadgeIds : [...rawBadgeIds, 'trainer']
+        } else {
+          await removeBadgesFromUser(usuarioID, ['trainer'])
+          newIds = rawBadgeIds.filter(id => id !== 'trainer')
+        }
+        setRawBadgeIds(newIds)
+        const freshBadges = resolveUserBadges({ badges: newIds })
+        setUserBadges(freshBadges)
+        setAvatarRing(resolveAvatarRing(freshBadges))
+      }
       setNome(editedNome.trim())
       setUsername(trimmedUsername)
       setDataNascimento(editedDataNascimento)

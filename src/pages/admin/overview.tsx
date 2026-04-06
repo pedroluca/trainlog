@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
+import { addBadgesToUser } from '../../utils/badge-utils'
 import { Users, Dumbbell, FileText, TrendingUp, Check, X } from 'lucide-react'
 import { Button } from '../../components/button'
 import { trackPremiumUpgradeApproved, trackPremiumUpgradeRejected } from '../../utils/analytics'
@@ -38,6 +39,7 @@ export function AdminOverview() {
     try {
       const userDocRef = doc(db, 'usuarios', request.userId)
       await updateDoc(userDocRef, { isPremium: true })
+      await addBadgesToUser(request.userId, ['premium'])
 
       const requestDocRef = doc(db, 'upgrade_requests', request.id)
       await updateDoc(requestDocRef, {
