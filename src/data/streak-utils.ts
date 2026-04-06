@@ -16,7 +16,7 @@ export async function updateScheduledDays(usuarioID: string): Promise<number[]> 
     const workoutsRef = collection(db, 'treinos')
     const q = query(workoutsRef, where('usuarioID', '==', usuarioID))
     const querySnapshot = await getDocs(q)
-    
+
     const uniqueDays = new Set<number>()
     querySnapshot.docs.forEach((doc) => {
       const dia = doc.data().dia as string
@@ -25,14 +25,14 @@ export async function updateScheduledDays(usuarioID: string): Promise<number[]> 
         uniqueDays.add(dayNumber)
       }
     })
-    
+
     const scheduledDays = Array.from(uniqueDays).sort()
-    
+
     const userDocRef = doc(db, 'usuarios', usuarioID)
     updateDoc(userDocRef, {
       scheduledDays
     }).catch(console.error)
-    
+
     return scheduledDays
   } catch (err) {
     console.error('❌ Error updating scheduled days:', err)
@@ -40,36 +40,36 @@ export async function updateScheduledDays(usuarioID: string): Promise<number[]> 
   }
 }
 
- 
+
 export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<void> {
   try {
     const userDocRef = doc(db, 'usuarios', usuarioID)
     const userDoc = await getDoc(userDocRef)
-    
+
     if (!userDoc.exists()) return
-    
+
     const userData = userDoc.data()
     const scheduledDays = userData.scheduledDays || []
     const lastCompletedDate = userData.lastCompletedDate
     const currentStreak = userData.currentStreak || 0
-    
+
     if (scheduledDays.length === 0 || currentStreak === 0) return
-    
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     if (!lastCompletedDate) return
-    
+
     const lastCompleted = new Date(lastCompletedDate)
     lastCompleted.setHours(0, 0, 0, 0)
-    
+
     if (lastCompleted.toDateString() === today.toDateString()) return
-    
+
     const checkDate = new Date(lastCompleted)
     checkDate.setDate(checkDate.getDate() + 1) // Start from day after last completed
-    
+
     let missedScheduledDay = false
-    
+
     while (checkDate < today) {
       if (scheduledDays.includes(checkDate.getDay())) {
         missedScheduledDay = true
@@ -77,14 +77,14 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
       }
       checkDate.setDate(checkDate.getDate() + 1)
     }
-    
+
     if (missedScheduledDay) {
       updateDoc(userDocRef, {
         currentStreak: 0
       }).catch(console.error)
-      
-      window.dispatchEvent(new CustomEvent('streakUpdated', { 
-        detail: { newStreak: 0 } 
+
+      window.dispatchEvent(new CustomEvent('streakUpdated', {
+        detail: { newStreak: 0 }
       }))
     }
   } catch (err) {
@@ -96,7 +96,7 @@ export async function resetPreviousDaysExercises(usuarioID: string): Promise<voi
   try {
     const today = new Date()
     const todayDayOfWeek = today.getDay()
-    
+
     const dayNumberToName: Record<number, string> = {
       0: 'Domingo',
       1: 'Segunda-feira',
@@ -106,27 +106,27 @@ export async function resetPreviousDaysExercises(usuarioID: string): Promise<voi
       5: 'Sexta-feira',
       6: 'Sábado'
     }
-    
+
     const todayName = dayNumberToName[todayDayOfWeek]
-    
+
     const workoutsRef = collection(db, 'treinos')
     const q = query(workoutsRef, where('usuarioID', '==', usuarioID))
     const querySnapshot = await getDocs(q)
-    
+
     let resetCount = 0
-    
+
     for (const docSnap of querySnapshot.docs) {
       const workoutData = docSnap.data()
       const workoutDay = workoutData.dia
-      
+
       if (workoutDay === todayName) continue
-      
+
       const exercisesRef = collection(db, 'treinos', docSnap.id, 'exercicios')
       const exercisesSnap = await getDocs(exercisesRef)
-      
+
       let hasUpdates = false
       const updatePromises: Promise<void>[] = []
-      
+
       for (const exDoc of exercisesSnap.docs) {
         const exData = exDoc.data()
         if (exData.isFeito === true) {
@@ -134,15 +134,11 @@ export async function resetPreviousDaysExercises(usuarioID: string): Promise<voi
           updatePromises.push(updateDoc(exDoc.ref, { isFeito: false }))
         }
       }
-      
+
       if (hasUpdates) {
         await Promise.all(updatePromises)
         resetCount++
       }
-    }
-    
-    if (resetCount > 0) {
-      console.log(`✅ Reset ${resetCount} previous days' workouts for user ${usuarioID}`)
     }
   } catch (err) {
     console.error('❌ Error resetting previous days exercises:', err)
@@ -153,17 +149,17 @@ export async function updateStreak(usuarioID: string): Promise<number> {
   try {
     const userDocRef = doc(db, 'usuarios', usuarioID)
     const userDoc = await getDoc(userDocRef)
-    
+
     if (!userDoc.exists()) {
       console.error('❌ User not found')
       return 0
     }
-    
+
     const userData = userDoc.data()
     const scheduledDays = userData.scheduledDays || []
     const currentStreak = userData.currentStreak || 0
     const longestStreak = userData.longestStreak || 0
-    
+
     const today = new Date()
     const todayStrCA = today.toLocaleDateString('en-CA') // YYYY-MM-DD local
     const todayStrLocal = today.toDateString() // "Sun Mar 30 2026"
@@ -180,13 +176,13 @@ export async function updateStreak(usuarioID: string): Promise<number> {
     if (lastCompletedDateStr) {
       const lastCompleted = new Date(lastCompletedDateStr)
       lastCompleted.setHours(0, 0, 0, 0)
-      
+
       const checkDate = new Date(lastCompleted)
       checkDate.setDate(checkDate.getDate() + 1)
-      
+
       today.setHours(0, 0, 0, 0)
       let missedScheduledDay = false
-      
+
       while (checkDate < today) {
         if (scheduledDays.includes(checkDate.getDay())) {
           missedScheduledDay = true
@@ -194,21 +190,21 @@ export async function updateStreak(usuarioID: string): Promise<number> {
         }
         checkDate.setDate(checkDate.getDate() + 1)
       }
-      
+
       if (!missedScheduledDay) {
         newStreak = currentStreak + 1
       }
     }
 
     const newLongestStreak = Math.max(longestStreak, newStreak)
-    
+
     updateDoc(userDocRef, {
       currentStreak: newStreak,
       longestStreak: newLongestStreak,
       lastCompletedDate: todayStrLocal,
       lastWorkoutDate: todayStrCA
     }).catch(console.error)
-    
+
     return newStreak
   } catch (err) {
     console.error('❌ Error updating streak:', err)
@@ -224,11 +220,11 @@ export async function getStreakData(usuarioID: string): Promise<{
   try {
     const userDocRef = doc(db, 'usuarios', usuarioID)
     const userDoc = await getDoc(userDocRef)
-    
+
     if (!userDoc.exists()) {
       return { currentStreak: 0, longestStreak: 0, scheduledDays: [] }
     }
-    
+
     const userData = userDoc.data()
     return {
       currentStreak: userData.currentStreak || 0,

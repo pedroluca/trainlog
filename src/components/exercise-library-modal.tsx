@@ -27,28 +27,20 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
     ? searchResults 
     : searchResults.filter(ex => ex.musculos.includes(selectedMuscle))
 
-  // Fetch Wger exercises ONCE when modal opens (for all muscle groups)
   useEffect(() => {
     if (hasFetchedInitial) return
 
     const fetchAllWgerData = async () => {
       setLoadingImages(true)
-      console.log(`🎯 Initial fetch: Loading Wger data for all muscle groups...`)
       
-      // Get all unique muscle groups from the library
       const allExercises = searchExercises('')
       const allMuscles = [...new Set(allExercises.map(ex => ex.musculos[0]))]
       
-      console.log(`📚 Muscle groups to fetch: ${allMuscles.join(', ')}`)
-      
-      // Fetch each muscle group
       for (const muscle of allMuscles) {
         try {
           const wgerExercises = await getExercisesByMuscleGroup(muscle)
           setWgerCache(prev => ({ ...prev, [muscle]: wgerExercises }))
-          console.log(`✅ Cached ${wgerExercises.length} exercises for ${muscle}`)
           
-          // Small delay between muscle groups to be respectful
           await new Promise(resolve => setTimeout(resolve, 200))
         } catch (error) {
           console.error(`❌ Error fetching ${muscle}:`, error)
@@ -57,7 +49,6 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
       
       setHasFetchedInitial(true)
       setLoadingImages(false)
-      console.log(`✨ All Wger data cached!`)
     }
 
     fetchAllWgerData()
@@ -67,13 +58,9 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
   useEffect(() => {
     if (Object.keys(wgerCache).length === 0) return
 
-    console.log(`🔍 Starting image matching for ${filteredExercises.length} exercises`)
-
     const newImages: Record<string, string> = {}
     
-    // Process ALL filtered exercises, not just first 30
     for (const exercise of filteredExercises) {
-      // Skip if already has image (unless it's a placeholder)
       if (exerciseImages[exercise.id] && !exerciseImages[exercise.id].includes('placeholder')) {
         continue
       }
@@ -109,27 +96,20 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
         newImages[exercise.id] = imageUrl || getPlaceholderImage(muscleGroup)
         
         if (imageUrl) {
-          console.log(`🖼️ "${exercise.nome}" → "${getExerciseName(bestMatch)}" (score: ${bestScore})`)
         } else {
-          console.warn(`⚠️ "${exercise.nome}" matched to "${getExerciseName(bestMatch)}" but image extraction failed`)
           newImages[exercise.id] = getPlaceholderImage(muscleGroup)
         }
       } else {
-        // Use placeholder if no good match
-        console.warn(`⚠️ No good match for "${exercise.nome}" (best score: ${bestScore}), using placeholder`)
         newImages[exercise.id] = getPlaceholderImage(muscleGroup)
       }
     }
     
     if (Object.keys(newImages).length > 0) {
       setExerciseImages(prev => ({ ...prev, ...newImages }))
-      console.log(`✨ Matched ${Object.keys(newImages).length} exercises with images`)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wgerCache, filteredExercises.length])
 
   const handleSelectExercise = (exercise: Exercise) => {
-    // Add image URL to exercise before passing it back
     const exerciseWithImage = {
       ...exercise,
       imagemUrl: exerciseImages[exercise.id] || getPlaceholderImage(exercise.musculos[0])

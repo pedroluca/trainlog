@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { Users, ChevronDown, ChevronUp, ChevronRight, Activity, Dumbbell, CalendarDays, Trash2 } from 'lucide-react'
+import { Users, ChevronDown, ChevronUp, ChevronRight, Activity, Dumbbell, CalendarDays, Trash2/*, DatabaseZap*/ } from 'lucide-react'
 import { Button } from '../../components/button'
 import { AdminContextData, WorkoutData } from '../../layouts/admin-layout'
 import { db } from '../../firebaseConfig'
-import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs/*, setDoc*/ } from 'firebase/firestore'
 
 type ExercicioData = {
   id: string
@@ -163,6 +163,34 @@ export function AdminUsers() {
   const [sortBy, setSortBy] = useState<'name' | 'lastActivity' | 'logs' | 'workouts' | 'createdAt'>('lastActivity')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [filterBy, setFilterBy] = useState<'all' | 'premium' | 'free' | 'active' | 'admin'>('all')
+  // [SEED] One-time migration: indexes all existing user emails into the `emailsRegistrados` collection.
+  // Uncomment and use the button below if ever needed again (e.g. after a data migration).
+  // const [seedingEmails, setSeedingEmails] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  // const handleSeedEmails = async () => {
+  //   if (seedingEmails === 'loading') return
+  //   const confirm = window.confirm(`Isso vai indexar ${users.length} email(s) na coleção emailsRegistrados. Continuar?`)
+  //   if (!confirm) return
+  //   setSeedingEmails('loading')
+  //   try {
+  //     const CHUNK = 400
+  //     for (let i = 0; i < users.length; i += CHUNK) {
+  //       const chunk = users.slice(i, i + CHUNK)
+  //       await Promise.all(
+  //         chunk
+  //           .filter(u => u.email)
+  //           .map(u => setDoc(
+  //             doc(db, 'emailsRegistrados', u.email.trim().toLowerCase()),
+  //             { uid: u.id, criadoEm: u.criadoEm || new Date().toISOString() },
+  //             { merge: true }
+  //           ))
+  //       )
+  //     }
+  //     setSeedingEmails('done')
+  //   } catch (err) {
+  //     console.error('Erro ao indexar emails:', err)
+  //     setSeedingEmails('error')
+  //   }
+  // }
 
   const getCreatedAtDate = (createdAt: any) => {
     if (!createdAt) return 0
@@ -241,6 +269,12 @@ export function AdminUsers() {
             {filteredAndSortedUsers.length} encontrados
           </span>
         </h2>
+{/* [SEED] Uncomment to show the one-time email indexing button
+        <button onClick={handleSeedEmails} disabled={seedingEmails === 'loading'}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border bg-purple-500/10 text-purple-300 border-purple-500/30 hover:bg-purple-500/20 disabled:opacity-60">
+          <DatabaseZap size={16} /> Indexar Emails
+        </button>
+        */}
       </div>
 
       {/* Filters and Sorting Controls */}

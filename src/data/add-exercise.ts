@@ -10,7 +10,7 @@ export async function addExercise(
   tempoIntervalo: number
 ) {
   try {
-    const docRef = await addDoc(collection(db, 'exercicios'), {
+    await addDoc(collection(db, 'exercicios'), {
       workoutId,
       titulo, // Exemplo: "Supino reto"
       series, // Exemplo: 3
@@ -18,7 +18,6 @@ export async function addExercise(
       peso, // Exemplo: 40 (kg)
       tempoIntervalo, // Exemplo: 60 (segundos)
     })
-    console.log('Exercício adicionado com ID:', docRef.id)
   } catch (error) {
     console.error('Erro ao adicionar exercício:', error)
   }

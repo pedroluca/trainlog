@@ -56,9 +56,7 @@ export function PWAUpdateNotification() {
       // Set up periodic update check every 60 seconds
       if (r) {
         setInterval(() => {
-          console.log('🔄 Checking for updates...')
           r.update().then(() => {
-            console.log('✅ Update check completed')
           }).catch((err) => {
             console.error('❌ Update check failed:', err)
           })
@@ -81,22 +79,14 @@ export function PWAUpdateNotification() {
     if (needRefresh) {
       const detectedUpdateType = getUpdateType()
       
-      console.log('📱 Current installed version:', currentVersion)
-      console.log('🆕 Update available - Type:', detectedUpdateType)
       
       if (detectedUpdateType === 'patch') {
-        // Auto-update patch versions silently
-        console.log('🔧 Patch update detected - auto-updating...')
         updateServiceWorker(true) // Auto-reload for patches
         setNeedRefresh(false)
       } else if (detectedUpdateType === 'minor' || detectedUpdateType === 'major') {
-        // Show prompt for minor/major updates
-        console.log('🎯 Minor/Major update detected - showing notification')
         setUpdateType(detectedUpdateType)
         setShow(true)
       } else {
-        // Unknown update type, show prompt to be safe
-        console.log('⚠️ Unknown update type - showing notification')
         setUpdateType(null)
         setShow(true)
       }
@@ -104,13 +94,11 @@ export function PWAUpdateNotification() {
   }, [needRefresh, currentVersion, updateServiceWorker, setNeedRefresh])
 
   const handleUpdate = () => {
-    console.log('🔄 User clicked update - reloading app...')
     updateServiceWorker(true)
     setShow(false)
   }
 
   const handleDismiss = () => {
-    console.log('⏭️ User dismissed update notification')
     setShow(false)
     setNeedRefresh(false)
   }

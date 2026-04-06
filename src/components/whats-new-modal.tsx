@@ -56,7 +56,6 @@ export function WhatsNewModal({ isOpen, onClose, forceUpdateVersion, systemVersi
   }
 
   const handleForceUpdate = async () => {
-    console.log('Forcing app update/reload...')
     try {
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations()

@@ -66,13 +66,13 @@ export function getExerciseName(exercise: WgerExercise): string {
   if (!exercise.translations || exercise.translations.length === 0) {
     return `Exercise ${exercise.id}`
   }
-  
+
   // Try to find English translation first (language = 2)
   const englishTranslation = exercise.translations.find(t => t.language === 2)
   if (englishTranslation) {
     return englishTranslation.name
   }
-  
+
   // Fall back to first available translation
   return exercise.translations[0].name
 }
@@ -96,13 +96,11 @@ const musculoToWgerCategory: Record<string, number> = {
 export async function getExercisesByMuscleGroup(musculoGrupo: string): Promise<WgerExercise[]> {
   try {
     const categoryId = musculoToWgerCategory[musculoGrupo]
-    
+
     if (!categoryId) {
       console.warn(`No category mapping for ${musculoGrupo}`)
       return []
     }
-
-    console.log(`🔍 Fetching Wger exercises for: "${musculoGrupo}" (category ${categoryId})`)
 
     // Use exerciseinfo endpoint which includes images directly - increase limit to get more results
     const response = await fetch(
@@ -121,12 +119,12 @@ export async function getExercisesByMuscleGroup(musculoGrupo: string): Promise<W
 
     const data = await response.json()
     console.log(`✅ Found ${data.results.length} total exercises from Wger for ${musculoGrupo}`)
-    
+
     // IMPORTANT: Filter to only return exercises that have images
-    const exercisesWithImages = data.results.filter((ex: WgerExercise) => 
+    const exercisesWithImages = data.results.filter((ex: WgerExercise) =>
       ex.images && ex.images.length > 0
     )
-    
+
     console.log(`🖼️ ${exercisesWithImages.length} exercises have images (${data.results.length - exercisesWithImages.length} without images filtered out)`)
 
     return exercisesWithImages
