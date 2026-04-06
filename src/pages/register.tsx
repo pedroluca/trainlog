@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { auth, db } from '../firebaseConfig'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { doc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { Link, useNavigate } from 'react-router-dom'
 import { getVersionWithPrefix } from '../version'
 import { notifyAdmins } from '../utils/admin-notifications'
@@ -23,7 +23,25 @@ export function Cadastro() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' })
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [emailChecking, setEmailChecking] = useState(false)
+  const [emailError, setEmailError] = useState<string | null>(null)
   const navigate = useNavigate()
+
+  const checkEmailExists = async () => {
+    const trimmed = email.trim().toLowerCase()
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!trimmed || !emailRegex.test(trimmed)) return
+
+    setEmailChecking(true)
+    try {
+      const snap = await getDoc(doc(db, 'emailsRegistrados', trimmed))
+      setEmailError(snap.exists() ? 'in-use' : null)
+    } catch {
+      // silently ignore network errors on blur
+    } finally {
+      setEmailChecking(false)
+    }
+  }
 
   // Phone mask for Brazilian format: (99) 99999-9999
   const handlePhoneChange = (value: string) => {
@@ -117,6 +135,12 @@ export function Cadastro() {
         scheduledDays: [], // Empty array, user will set later
       })
 
+      // Register email in public lookup collection
+      await setDoc(doc(db, 'emailsRegistrados', email.trim().toLowerCase()), {
+        uid: user.uid,
+        criadoEm: new Date().toISOString(),
+      })
+
       // Notifica Administradores em Background
       notifyAdmins(
         'Novo Usuário Registrado! 🎉',
@@ -206,11 +230,33 @@ export function Cadastro() {
               type="email"
               name="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setEmailError(null) }}
               required
-              className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
+              className={`w-full border rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 font-medium transition-all ${
+                emailError === 'in-use'
+                  ? 'border-red-400 dark:border-red-500 focus:ring-red-400/50'
+                  : 'border-gray-300 dark:border-[#404040] focus:ring-[#27AE60]/50'
+              }`}
               placeholder="seu@email.com"
+              onBlur={checkEmailExists}
             />
+            {emailChecking && (
+              <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                <span className="inline-block w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                Verificando email...
+              </p>
+            )}
+            {emailError === 'in-use' && !emailChecking && (
+              <p className="mt-1.5 text-xs text-red-500 dark:text-red-400">
+                Esse email já está em uso.{' '}
+                <Link
+                  to="/login"
+                  className="font-bold underline hover:text-red-600 dark:hover:text-red-300 transition-colors"
+                >
+                  Deseja fazer login?
+                </Link>
+              </p>
+            )}
           </div>
           
           <div>
