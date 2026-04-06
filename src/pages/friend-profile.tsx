@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc, collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore'
 import { ArrowLeft, Lock, UsersRound, Dumbbell, Activity } from 'lucide-react'
+import { BadgeList } from '../components/badge-chip'
+import { resolveUserBadges, resolveAvatarRing } from '../data/badges'
 
 // Types
 interface Privacidade {
@@ -34,6 +36,7 @@ interface UsuarioProfile {
   privacidade?: Privacidade
   isPremium?: boolean
   isFounder?: boolean
+  badges?: string[]
 }
 
 interface LogEntry {
@@ -242,21 +245,10 @@ export function FriendProfile() {
         
         {/* Profile Head */}
         <div className="flex flex-col items-center pt-8 md:pt-4 mb-8">
+          {/* Avatar */}
           <div className="relative mb-3 w-max mx-auto">
-            {/* Plan Badge */}
-            {profile.isFounder ? (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-purple-500/40 flex items-center z-20 w-max border border-purple-400/30">
-                <span>FUNDADOR</span>
-              </div>
-            ) : profile.isPremium && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center z-20 w-max">
-                <span>PREMIUM</span>
-              </div>
-            )}
-            
-            <div className={`w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl font-bold overflow-hidden shadow-inner ${
-              profile.isFounder ? 'ring-4 ring-purple-500 dark:ring-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.5)] relative z-0' :
-              profile.isPremium ? 'ring-4 ring-amber-400 dark:ring-amber-500 shadow-lg shadow-amber-400/40 relative z-0' : 'ring-4 ring-white dark:ring-[#1e1e1e] relative z-0'
+            <div className={`w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl font-bold overflow-hidden shadow-inner relative z-0 ${
+              resolveAvatarRing(resolveUserBadges(profile))
             }`}>
               {profile.photoURL ? (
                 <img src={profile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
@@ -265,15 +257,14 @@ export function FriendProfile() {
               )}
             </div>
           </div>
+
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">{profile.nome}</h1>
           {profile.username && (
             <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">@{profile.username}</p>
           )}
-          {profile.isTrainer && (
-            <p className="mt-2 text-[11px] uppercase tracking-wider font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/40 px-3 py-1 rounded-full">
-              Treinador
-            </p>
-          )}
+
+          {/* Badges */}
+          <BadgeList badges={resolveUserBadges(profile)} />
         </div>
 
         {/* Info Grid */}

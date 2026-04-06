@@ -12,6 +12,8 @@ import { updateScheduledDays } from '../data/streak-utils'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
 import { Toast, ToastState } from '../components/toast'
 import { WhatsNewModal } from '../components/whats-new-modal'
+import { BadgeList } from '../components/badge-chip'
+import { resolveUserBadges, resolveAvatarRing, type BadgeDefinition } from '../data/badges'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -28,7 +30,8 @@ export function Profile() {
   const [isTrainer, setIsTrainer] = useState(false)
   const [cref, setCref] = useState('')
   const [isPremium, setIsPremium] = useState<boolean>(false)
-  const [isFounder, setIsFounder] = useState<boolean>(false)
+  const [userBadges, setUserBadges] = useState<BadgeDefinition[]>([])
+  const [avatarRing, setAvatarRing] = useState('ring-4 ring-white dark:ring-[#1e1e1e]')
   const [isEditingMetrics, setIsEditingMetrics] = useState(false)
   const [editedAltura, setEditedAltura] = useState<string>('')
   const [editedPeso, setEditedPeso] = useState<string>('')
@@ -102,9 +105,12 @@ export function Profile() {
             setIsTrainer(userData.isTrainer || false)
             setCref(userData.cref || '')
             setIsPremium(userData.isPremium || false)
-            setIsFounder(userData.isFounder || false)
             setEditedAltura(userData.altura ? (userData.altura / 100).toFixed(2) : '')
             setEditedPeso(userData.peso ? userData.peso.toFixed(1) : '')
+            // Resolve badges
+            const badges = resolveUserBadges(userData)
+            setUserBadges(badges)
+            setAvatarRing(resolveAvatarRing(badges))
             setCurrentStreak(userData.currentStreak || 0)
             setLongestStreak(userData.longestStreak || 0)
           } else {
@@ -411,25 +417,7 @@ export function Profile() {
         <div className="md:col-span-1 lg:col-span-4 flex flex-col items-center relative">
           {/* Avatar Circle with Image Upload */}
           <div className="relative mb-3 md:mt-6 w-max mx-auto">
-            {/* Plan Badge */}
-            {isFounder ? (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-purple-500/40 flex items-center z-10 w-max border border-purple-400/30">
-                <span>FUNDADOR</span>
-              </div>
-            ) : isPremium ? (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg shadow-amber-500/30 flex items-center z-10 w-max">
-                <span>PREMIUM</span>
-              </div>
-            ) : (
-             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-gray-400 to-gray-600 text-white text-[10px] uppercase font-black tracking-wider px-3 py-1 rounded-full shadow-lg flex items-center z-10 w-max cursor-pointer hover:scale-105 transition-transform" onClick={() => handleOpenUpgradeModal()}>
-              <span>FREE</span>
-            </div>
-            )}
-            
-            <div className={`w-24 md:w-32 lg:w-40 h-24 md:h-32 lg:h-40 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl lg:text-5xl font-bold overflow-hidden shadow-inner ${
-              isFounder ? 'ring-4 ring-purple-500 dark:ring-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.5)] relative z-0' :
-              isPremium ? 'ring-4 ring-amber-400 dark:ring-amber-500 shadow-lg shadow-amber-400/40 relative z-0' : 'ring-4 ring-white dark:ring-[#1e1e1e] relative z-0'
-            }`}>
+            <div className={`w-24 md:w-32 lg:w-40 h-24 md:h-32 lg:h-40 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl lg:text-5xl font-bold overflow-hidden shadow-inner relative z-0 ${avatarRing}`}>
               {photoURL ? (
                 <img 
                   src={photoURL} 
@@ -462,8 +450,12 @@ export function Profile() {
               disabled={uploadingImage}
             />
           </div>
-            <h1 className="text-2xl lg:text-3xl text-center md:text-left font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
-          <h1 className="text-sm md:text-base lg:text-lg font-bold text-gray-800 dark:text-gray-100">{username ? '@' + username : ''}</h1>
+
+          <h1 className="text-2xl lg:text-3xl text-center font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
+          <p className="text-sm md:text-base font-bold text-gray-500 dark:text-gray-400">{username ? '@' + username : ''}</p>
+
+          {/* Badges */}
+          <BadgeList badges={userBadges} onUpgrade={handleOpenUpgradeModal} />
         </div>
         
         {/* Personal Info Fields */}
