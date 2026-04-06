@@ -381,6 +381,330 @@ export const exerciseLibrary: Exercise[] = [
     instrucoes: 'Rotação do tronco para trabalhar oblíquos',
     dificuldade: 'Iniciante'
   },
+
+  // PEITO (adicionais)
+  {
+    id: 'supino-halteres',
+    nome: 'Supino com Halteres',
+    musculos: ['Peito', 'Tríceps', 'Ombros'],
+    equipamento: 'Halteres',
+    instrucoes: 'Igual ao supino reto, mas com halteres — maior amplitude de movimento',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'voador-peck-deck',
+    nome: 'Voador (Peck Deck)',
+    musculos: ['Peito'],
+    equipamento: 'Máquina',
+    instrucoes: 'Junte os braços à frente do peito na máquina, mantendo cotovelos levemente flexionados',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'crossover',
+    nome: 'Crossover',
+    musculos: ['Peito'],
+    equipamento: 'Cabo',
+    instrucoes: 'Puxe os cabos de cima cruzando as mãos à frente do corpo',
+    dificuldade: 'Intermediário'
+  },
+  {
+    id: 'supino-pegada-fechada',
+    nome: 'Supino com Pegada Fechada',
+    musculos: ['Tríceps', 'Peito'],
+    equipamento: 'Barra',
+    instrucoes: 'Pegada estreita no supino, foco maior no tríceps',
+    dificuldade: 'Intermediário'
+  },
+
+  // COSTAS (adicionais)
+  {
+    id: 'remada-unilateral',
+    nome: 'Remada Unilateral',
+    musculos: ['Costas', 'Bíceps'],
+    equipamento: 'Halteres',
+    instrucoes: 'Apoiado no banco, puxe o halter até o quadril com um braço de cada vez',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'puxada-supinada',
+    nome: 'Puxada Supinada',
+    musculos: ['Costas', 'Bíceps'],
+    equipamento: 'Cabo',
+    instrucoes: 'Puxada com pegada supinada (palmas para cima), maior ativação do bíceps',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'puxada-neutra',
+    nome: 'Puxada Neutra',
+    musculos: ['Costas', 'Bíceps'],
+    equipamento: 'Cabo',
+    instrucoes: 'Puxada com triângulo ou pegada neutra, mais confortável para os ombros',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'barra-fixa-supinada',
+    nome: 'Barra Fixa Supinada (Chin-up)',
+    musculos: ['Costas', 'Bíceps'],
+    equipamento: 'Peso Corporal',
+    instrucoes: 'Pegada supinada na barra, maior ativação do bíceps que a pegada pronada',
+    dificuldade: 'Intermediário'
+  },
+  {
+    id: 'remada-cavalinho',
+    nome: 'Remada Cavalinho (T-Bar)',
+    musculos: ['Costas'],
+    equipamento: 'Barra',
+    instrucoes: 'Inclinado sobre a barra fixada no chão, puxe em direção ao abdômen',
+    dificuldade: 'Intermediário'
+  },
+  {
+    id: 'hiperextensao',
+    nome: 'Hiperextensão Lombar',
+    musculos: ['Costas', 'Glúteos'],
+    equipamento: 'Máquina',
+    instrucoes: 'No banco romano, eleve o tronco até a posição horizontal',
+    dificuldade: 'Iniciante'
+  },
+
+  // OMBROS (adicionais)
+  {
+    id: 'desenvolvimento-arnold',
+    nome: 'Desenvolvimento Arnold',
+    musculos: ['Ombros'],
+    equipamento: 'Halteres',
+    instrucoes: 'Inicie com palmas para dentro e gire para fora ao empurrar os halteres',
+    dificuldade: 'Intermediário'
+  },
+  {
+    id: 'encolhimento-ombros',
+    nome: 'Encolhimento de Ombros (Shrug)',
+    musculos: ['Ombros'],
+    equipamento: 'Halteres',
+    instrucoes: 'Eleve os ombros em direção às orelhas, sem dobrar os cotovelos',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'face-pull',
+    nome: 'Face Pull',
+    musculos: ['Ombros', 'Costas'],
+    equipamento: 'Cabo',
+    instrucoes: 'Puxe a corda em direção ao rosto, abrindo os cotovelos para os lados',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'elevacao-lateral-cabo',
+    nome: 'Elevação Lateral no Cabo',
+    musculos: ['Ombros'],
+    equipamento: 'Cabo',
+    instrucoes: 'Eleve o cabo lateralmente até a altura dos ombros, tensão constante',
+    dificuldade: 'Iniciante'
+  },
+
+  // BÍCEPS (adicionais)
+  {
+    id: 'rosca-concentrada',
+    nome: 'Rosca Concentrada',
+    musculos: ['Bíceps'],
+    equipamento: 'Halteres',
+    instrucoes: 'Sentado, apoie o cotovelo na coxa e faça a rosca concentrada em um braço',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'rosca-barra-w',
+    nome: 'Rosca com Barra W (EZ)',
+    musculos: ['Bíceps'],
+    equipamento: 'Barra',
+    instrucoes: 'Barra W reduz o estresse no pulso durante a rosca',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'rosca-cabo',
+    nome: 'Rosca no Cabo',
+    musculos: ['Bíceps'],
+    equipamento: 'Cabo',
+    instrucoes: 'Tensão constante no bíceps ao longo de todo o movimento',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'rosca-inclinada',
+    nome: 'Rosca Inclinada',
+    musculos: ['Bíceps'],
+    equipamento: 'Halteres',
+    instrucoes: 'Banco reclinado 45°, braços atrás do corpo para maior alongamento',
+    dificuldade: 'Intermediário'
+  },
+
+  // TRÍCEPS (adicionais)
+  {
+    id: 'triceps-coice',
+    nome: 'Tríceps Coice (Kickback)',
+    musculos: ['Tríceps'],
+    equipamento: 'Halteres',
+    instrucoes: 'Inclinado, estenda o braço para trás mantendo o cotovelo fixo',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'triceps-maquina',
+    nome: 'Tríceps na Máquina',
+    musculos: ['Tríceps'],
+    equipamento: 'Máquina',
+    instrucoes: 'Pressione a barra ou pegas para baixo isolando o tríceps',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'extensao-triceps-unilateral',
+    nome: 'Extensão de Tríceps Unilateral',
+    musculos: ['Tríceps'],
+    equipamento: 'Cabo',
+    instrucoes: 'Com uma alça, estenda um braço de cada vez para baixo no cabo',
+    dificuldade: 'Iniciante'
+  },
+
+  // PERNAS / QUADRÍCEPS (adicionais)
+  {
+    id: 'agachamento-sumo',
+    nome: 'Agachamento Sumô',
+    musculos: ['Quadríceps', 'Glúteos', 'Posteriores'],
+    equipamento: 'Halteres',
+    instrucoes: 'Pés afastados e apontados para fora, segure um halter entre as pernas',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'agachamento-bulgaro',
+    nome: 'Agachamento Búlgaro',
+    musculos: ['Quadríceps', 'Glúteos'],
+    equipamento: 'Halteres',
+    instrucoes: 'Pé traseiro elevado no banco, agache na perna da frente',
+    dificuldade: 'Avançado'
+  },
+  {
+    id: 'hack-squat',
+    nome: 'Hack Squat',
+    musculos: ['Quadríceps', 'Glúteos'],
+    equipamento: 'Máquina',
+    instrucoes: 'Na máquina de hack squat, desça até 90° e empurre de volta',
+    dificuldade: 'Intermediário'
+  },
+  {
+    id: 'step-up',
+    nome: 'Step-up no Banco',
+    musculos: ['Quadríceps', 'Glúteos'],
+    equipamento: 'Peso Corporal',
+    instrucoes: 'Suba e desça de um banco ou caixa alternando as pernas',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'passada-caminhando',
+    nome: 'Passada Caminhando',
+    musculos: ['Quadríceps', 'Glúteos', 'Posteriores'],
+    equipamento: 'Halteres',
+    instrucoes: 'Alterne passadas à frente andando pelo espaço',
+    dificuldade: 'Iniciante'
+  },
+
+  // POSTERIORES (adicionais)
+  {
+    id: 'levantamento-terra-romeno',
+    nome: 'Levantamento Terra Romeno',
+    musculos: ['Posteriores', 'Glúteos', 'Costas'],
+    equipamento: 'Barra',
+    instrucoes: 'Pernas levemente flexionadas, desça a barra deslizando pelas coxas',
+    dificuldade: 'Intermediário'
+  },
+  {
+    id: 'good-morning',
+    nome: 'Good Morning',
+    musculos: ['Posteriores', 'Costas'],
+    equipamento: 'Barra',
+    instrucoes: 'Barra nas costas, incline o tronco à frente mantendo as costas retas',
+    dificuldade: 'Intermediário'
+  },
+
+  // GLÚTEOS (adicionais)
+  {
+    id: 'kickback-cabo',
+    nome: 'Kickback no Cabo',
+    musculos: ['Glúteos'],
+    equipamento: 'Cabo',
+    instrucoes: 'Apoiado na máquina, empurre a perna para trás com tornozeleira',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'abdutora-cabo',
+    nome: 'Abdução de Quadril no Cabo',
+    musculos: ['Glúteos'],
+    equipamento: 'Cabo',
+    instrucoes: 'Com tornozeleira, abra a perna lateralmente no cabo',
+    dificuldade: 'Iniciante'
+  },
+
+  // PANTURRILHA (adicionais)
+  {
+    id: 'panturrilha-leg-press',
+    nome: 'Panturrilha no Leg Press',
+    musculos: ['Panturrilha'],
+    equipamento: 'Máquina',
+    instrucoes: 'Com pés na borda da plataforma, flexione e estenda o tornozelo',
+    dificuldade: 'Iniciante'
+  },
+
+  // ABDÔMEN (adicionais)
+  {
+    id: 'roda-abdominal',
+    nome: 'Roda Abdominal (Ab Wheel)',
+    musculos: ['Abdômen'],
+    equipamento: 'Máquina',
+    instrucoes: 'De joelhos, role a roda à frente e volte sem deixar o quadril cair',
+    dificuldade: 'Avançado'
+  },
+  {
+    id: 'elevacao-pernas-barra',
+    nome: 'Elevação de Pernas na Barra',
+    musculos: ['Abdômen'],
+    equipamento: 'Peso Corporal',
+    instrucoes: 'Suspenso na barra, eleve as pernas até 90° ou acima',
+    dificuldade: 'Avançado'
+  },
+  {
+    id: 'elevacao-pernas-deitado',
+    nome: 'Elevação de Pernas Deitado',
+    musculos: ['Abdômen'],
+    equipamento: 'Peso Corporal',
+    instrucoes: 'Deitado, eleve as pernas esticadas até 90° e baixe sem encostar',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'russian-twist',
+    nome: 'Russian Twist',
+    musculos: ['Abdômen'],
+    equipamento: 'Peso Corporal',
+    instrucoes: 'Sentado com tronco inclinado, gire de lado a lado (pode usar peso)',
+    dificuldade: 'Intermediário'
+  },
+  {
+    id: 'prancha-lateral',
+    nome: 'Prancha Lateral',
+    musculos: ['Abdômen'],
+    equipamento: 'Peso Corporal',
+    instrucoes: 'Apoiado no antebraço e pé, mantenha o corpo reto de lado',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'crunch-maquina',
+    nome: 'Crunch na Máquina',
+    musculos: ['Abdômen'],
+    equipamento: 'Máquina',
+    instrucoes: 'Flexione o tronco na máquina de abdominal com carga',
+    dificuldade: 'Iniciante'
+  },
+  {
+    id: 'obliquo-cabo',
+    nome: 'Abdominal Oblíquo no Cabo',
+    musculos: ['Abdômen'],
+    equipamento: 'Cabo',
+    instrucoes: 'Segure o cabo acima e incline lateralmente trabalhando os oblíquos',
+    dificuldade: 'Intermediário'
+  },
 ]
 
 // Helper functions
