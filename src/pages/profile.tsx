@@ -462,14 +462,12 @@ export function Profile() {
               disabled={uploadingImage}
             />
           </div>
+            <h1 className="text-2xl lg:text-3xl text-center md:text-left font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
           <h1 className="text-sm md:text-base lg:text-lg font-bold text-gray-800 dark:text-gray-100">{username ? '@' + username : ''}</h1>
         </div>
         
         {/* Personal Info Fields */}
         <div className="md:col-span-3 lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-3">
-          <div className="col-span-full py-1">
-            <h1 className="text-2xl lg:text-3xl text-center md:text-left font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
-          </div>
           <div className="col-span-2 md:col-span-full bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Email</p>
             <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
