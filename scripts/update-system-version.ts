@@ -44,16 +44,11 @@ const auth = getAuth(app)
 const db = getFirestore(app)
 
 async function updateSystemVersion() {
-  console.log(`\n🚀 Updating 'sistema/info' to version ${currentVersion}...`)
-
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email as string, password as string)
-    console.log(`✅ Signed in as Admin: ${userCredential.user.uid}`)
 
     const infoRef = doc(db, 'sistema', 'info')
     await setDoc(infoRef, { lastVersion: currentVersion }, { merge: true })
-
-    console.log(`✅ Successfully updated sistema/info to v${currentVersion}!\n`)
   } catch (error) {
     console.error('❌ Error updating system version:', error)
     process.exit(1)

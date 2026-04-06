@@ -25,37 +25,26 @@ const db = getFirestore(app)
 
 async function updateExistingUsers() {
   try {
-    console.log('🚀 Starting user migration...')
-    
     const usersRef = collection(db, 'usuarios')
     const usersSnapshot = await getDocs(usersRef)
-    
-    console.log(`📊 Found ${usersSnapshot.size} users to update`)
-    
+
     let updated = 0
-    
+
     for (const userDoc of usersSnapshot.docs) {
       const userData = userDoc.data()
-      
-      // Only update if isActive doesn't exist
+
       if (userData.isActive === undefined) {
         await updateDoc(doc(db, 'usuarios', userDoc.id), {
           isActive: true
         })
-        
-        console.log(`✅ Updated user: ${userData.nome || userData.email}`)
+
         updated++
-      } else {
-        console.log(`⏭️  Skipped user: ${userData.nome || userData.email} (already has isActive)`)
       }
     }
-    
-    console.log(`🎉 Migration complete! Updated ${updated} users.`)
-    
+
   } catch (error) {
     console.error('❌ Error updating users:', error)
   }
 }
 
-// Run the migration
 updateExistingUsers()

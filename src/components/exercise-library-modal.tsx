@@ -1,9 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { X, Search, Dumbbell } from 'lucide-react'
 import { searchExercises, getMuscleGroups, type Exercise, type MuscleGroup } from '../data/exercise-library'
-import { getExercisesByMuscleGroup, getExerciseImageUrl, getExerciseName, type WgerExercise } from '../data/wger-api'
-import { getPlaceholderImage } from '../data/exercisedb-api'
-import { calculateMatchScore } from '../data/exercise-name-mapping'
 import { Button } from './button'
 
 type ExerciseLibraryModalProps = {
@@ -11,110 +8,26 @@ type ExerciseLibraryModalProps = {
   onSelectExercise: (exercise: Exercise) => void
 }
 
+const difficultyStyles: Record<string, string> = {
+  'Iniciante':     'bg-green-100 text-green-700',
+  'Intermediário': 'bg-yellow-100 text-yellow-700',
+  'Avançado':      'bg-red-100 text-red-700',
+}
+
 export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibraryModalProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | 'all'>('all')
-  const [exerciseImages, setExerciseImages] = useState<Record<string, string>>({})
-  const [loadingImages, setLoadingImages] = useState(false)
-  const [wgerCache, setWgerCache] = useState<Record<string, WgerExercise[]>>({})
-  const [hasFetchedInitial, setHasFetchedInitial] = useState(false)
-  
+
   const muscleGroups = getMuscleGroups()
-  
-  // Filter exercises
-  const searchResults = searchExercises(searchQuery)
-  const filteredExercises = selectedMuscle === 'all' 
-    ? searchResults 
-    : searchResults.filter(ex => ex.musculos.includes(selectedMuscle))
 
-  useEffect(() => {
-    if (hasFetchedInitial) return
-
-    const fetchAllWgerData = async () => {
-      setLoadingImages(true)
-      
-      const allExercises = searchExercises('')
-      const allMuscles = [...new Set(allExercises.map(ex => ex.musculos[0]))]
-      
-      for (const muscle of allMuscles) {
-        try {
-          const wgerExercises = await getExercisesByMuscleGroup(muscle)
-          setWgerCache(prev => ({ ...prev, [muscle]: wgerExercises }))
-          
-          await new Promise(resolve => setTimeout(resolve, 200))
-        } catch (error) {
-          console.error(`❌ Error fetching ${muscle}:`, error)
-        }
-      }
-      
-      setHasFetchedInitial(true)
-      setLoadingImages(false)
-    }
-
-    fetchAllWgerData()
-  }, [hasFetchedInitial])
-
-  // Match exercises with Wger images
-  useEffect(() => {
-    if (Object.keys(wgerCache).length === 0) return
-
-    const newImages: Record<string, string> = {}
-    
-    for (const exercise of filteredExercises) {
-      if (exerciseImages[exercise.id] && !exerciseImages[exercise.id].includes('placeholder')) {
-        continue
-      }
-      
-      const muscleGroup = exercise.musculos[0]
-      const wgerExercises = wgerCache[muscleGroup] || []
-      
-      if (wgerExercises.length === 0) {
-        console.warn(`⚠️ No Wger exercises with images for ${muscleGroup}, using placeholder`)
-        newImages[exercise.id] = getPlaceholderImage(muscleGroup)
-        continue
-      }
-      
-      // Try to find matching exercise using the manual mapping
-      let bestMatch = null
-      let bestScore = 0
-      
-      for (const wgerEx of wgerExercises) {
-        if (!wgerEx.images || wgerEx.images.length === 0) continue
-        
-        const wgerName = getExerciseName(wgerEx)
-        const score = calculateMatchScore(exercise.id, wgerName)
-        
-        if (score > bestScore) {
-          bestScore = score
-          bestMatch = wgerEx
-        }
-      }
-      
-      // Only use match if score is good enough (at least 10 points)
-      if (bestMatch && bestScore >= 10) {
-        const imageUrl = getExerciseImageUrl(bestMatch)
-        newImages[exercise.id] = imageUrl || getPlaceholderImage(muscleGroup)
-        
-        if (imageUrl) {
-        } else {
-          newImages[exercise.id] = getPlaceholderImage(muscleGroup)
-        }
-      } else {
-        newImages[exercise.id] = getPlaceholderImage(muscleGroup)
-      }
-    }
-    
-    if (Object.keys(newImages).length > 0) {
-      setExerciseImages(prev => ({ ...prev, ...newImages }))
-    }
-  }, [wgerCache, filteredExercises.length])
+  const filteredExercises = (
+    selectedMuscle === 'all'
+      ? searchExercises(searchQuery)
+      : searchExercises(searchQuery).filter(ex => ex.musculos.includes(selectedMuscle))
+  )
 
   const handleSelectExercise = (exercise: Exercise) => {
-    const exerciseWithImage = {
-      ...exercise,
-      imagemUrl: exerciseImages[exercise.id] || getPlaceholderImage(exercise.musculos[0])
-    }
-    onSelectExercise(exerciseWithImage)
+    onSelectExercise(exercise)
     onClose()
   }
 
@@ -174,11 +87,6 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
 
         {/* Exercise List */}
         <div className="flex-1 overflow-y-auto">
-          {loadingImages && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#27AE60]"></div>
-            </div>
-          )}
           {filteredExercises.length === 0 ? (
             <div className="text-center py-12">
               <Dumbbell size={48} className="text-gray-300 mx-auto mb-4" />
@@ -187,66 +95,41 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {filteredExercises.map((exercise) => {
-                const imageUrl = exerciseImages[exercise.id] || getPlaceholderImage(exercise.musculos[0])
-                
-                return (
-                  <button
-                    key={exercise.id}
-                    onClick={() => handleSelectExercise(exercise)}
-                    className="text-left border-2 border-gray-200 rounded-lg overflow-hidden hover:border-[#27AE60] hover:bg-green-50 transition-all group"
-                  >
-                    {/* Exercise Image */}
-                    <div className="w-full h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
-                      <img 
-                        src={imageUrl} 
-                        alt={exercise.nome}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        loading="lazy"
-                      />
-                    </div>
+              {filteredExercises.map((exercise) => (
+                <button
+                  key={exercise.id}
+                  onClick={() => handleSelectExercise(exercise)}
+                  className="text-left border-2 border-gray-200 rounded-lg overflow-hidden hover:border-[#27AE60] hover:bg-green-50 transition-all group p-4"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-bold text-gray-800 group-hover:text-[#27AE60] transition-colors">
+                      {exercise.nome}
+                    </h3>
+                    <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2 ${difficultyStyles[exercise.dificuldade]}`}>
+                      {exercise.dificuldade}
+                    </span>
+                  </div>
 
-                    {/* Exercise Info */}
-                    <div className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-bold text-gray-800 group-hover:text-[#27AE60] transition-colors">
-                          {exercise.nome}
-                        </h3>
-                        <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2 ${
-                          exercise.dificuldade === 'Iniciante' 
-                            ? 'bg-green-100 text-green-700'
-                            : exercise.dificuldade === 'Intermediário'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}>
-                          {exercise.dificuldade}
-                        </span>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {exercise.musculos.map((musculo, index) => (
-                          <span
-                            key={index}
-                            className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded"
-                          >
-                            {musculo}
-                          </span>
-                        ))}
-                      </div>
-                      
-                      <p className="text-xs text-gray-600 mb-1">
-                        <strong>Equipamento:</strong> {exercise.equipamento}
-                      </p>
-                      
-                      {exercise.instrucoes && (
-                        <p className="text-xs text-gray-500 line-clamp-2">
-                          {exercise.instrucoes}
-                        </p>
-                      )}
-                    </div>
-                  </button>
-                )
-              })}
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {exercise.musculos.map((musculo, index) => (
+                      <span
+                        key={index}
+                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded"
+                      >
+                        {musculo}
+                      </span>
+                    ))}
+                  </div>
+
+                  <p className="text-xs text-gray-600 mb-1">
+                    <strong>Equipamento:</strong> {exercise.equipamento}
+                  </p>
+
+                  {exercise.instrucoes && (
+                    <p className="text-xs text-gray-500 line-clamp-2">{exercise.instrucoes}</p>
+                  )}
+                </button>
+              ))}
             </div>
           )}
         </div>

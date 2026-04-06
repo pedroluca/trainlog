@@ -46,12 +46,8 @@ export function PWAUpdateNotification() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
-      console.log('✅ SW Registered:', r)
-      
-      // Store current version on registration
       const currentVersion = getVersion()
       localStorage.setItem('app-version', currentVersion)
-      console.log('💾 Stored current version:', currentVersion)
       
       // Set up periodic update check every 60 seconds
       if (r) {
@@ -65,9 +61,6 @@ export function PWAUpdateNotification() {
     },
     onRegisterError(error) {
       console.error('❌ SW registration error:', error)
-    },
-    onNeedRefresh() {
-      console.log('🔔 New version available!')
     }
   })
 

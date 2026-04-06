@@ -50,7 +50,7 @@ export function AdminNotifications() {
           targetSubscriptionId = data.oneSignalSubscriptionId || data.player_id || ''
         }
       } catch (e) {
-        console.log('Firebase fetch ignorado:', e)
+        console.error(e)
       }
 
       const url = new URL(`${API_BASE}/cron/test-simple-send.php`)
