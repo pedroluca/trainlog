@@ -525,9 +525,16 @@ export function Training() {
                   </div>
                 </div>
               ) : (
-                <>
-                  <p className="text-gray-700 dark:text-gray-300 mt-4 text-center">Desculpe, você ainda não tem exercícios registrados para este treino!</p>
-                </>
+                <div className="flex flex-col items-center justify-center flex-1 w-full pb-10">
+                  <p className="text-gray-700 dark:text-gray-300 text-center text-lg">Desculpe, você ainda não tem exercícios registrados para este treino!</p>
+                  <Button
+                    className="bg-white dark:bg-[#1e1e1e] shadow-sm border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#252525] mt-6 px-8 py-3 rounded-xl transition-all"
+                    buttonTextColor="text-gray-800 dark:text-white font-bold"
+                    onClick={() => setIsExerciseModalOpen(true)}
+                  >
+                    Adicionar exercício
+                  </Button>
+                </div>
               )}
             </div>
           ) : (

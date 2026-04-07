@@ -449,11 +449,11 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <Button type="button" className="bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2 disabled:opacity-50" buttonTextColor='text-gray-700 dark:text-gray-300' onClick={onClose} disabled={isLoading}>
+          <div className="flex w-full">
+            <Button type="button" className="w-1/2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2 disabled:opacity-50" buttonTextColor='text-gray-700 dark:text-gray-300' onClick={onClose} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button type="button" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 disabled:opacity-50 min-w-[100px]" onClick={handleAddExercise} disabled={isLoading}>
+            <Button type="button" className="w-1/2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 disabled:opacity-50 min-w-[100px]" onClick={handleAddExercise} disabled={isLoading}>
               {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
               <span>Salvar</span>
             </Button>
