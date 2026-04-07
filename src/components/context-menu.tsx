@@ -1,4 +1,4 @@
-import { Edit, FileText } from 'lucide-react'
+import { Edit, FileText, Undo2, RotateCcw } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
 interface ContextMenuProps {
@@ -6,10 +6,12 @@ interface ContextMenuProps {
   onClose: () => void
   onEdit: () => void
   onAddNote: () => void
+  onUndoSet?: () => void
+  onResetExercise?: () => void
   position?: { top: number; right: number }
 }
 
-export function ContextMenu({ isOpen, onClose, onEdit, onAddNote, position }: ContextMenuProps) {
+export function ContextMenu({ isOpen, onClose, onEdit, onAddNote, onUndoSet, onResetExercise, position }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -60,6 +62,32 @@ export function ContextMenu({ isOpen, onClose, onEdit, onAddNote, position }: Co
         <FileText size={18} />
         <span>Anotação</span>
       </button>
+      
+      {onUndoSet && (
+        <button
+          onClick={() => {
+            onUndoSet()
+            onClose()
+          }}
+          className="w-full md:text-lg px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-orange-600 dark:text-orange-400 transition-colors"
+        >
+          <Undo2 size={18} />
+          <span>Desfazer Série</span>
+        </button>
+      )}
+
+      {onResetExercise && (
+        <button
+          onClick={() => {
+            onResetExercise()
+            onClose()
+          }}
+          className="w-full md:text-lg px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 text-red-600 dark:text-red-400 transition-colors border-t border-gray-100 dark:border-gray-700"
+        >
+          <RotateCcw size={18} />
+          <span>Reiniciar Exercício</span>
+        </button>
+      )}
     </div>
   )
 }

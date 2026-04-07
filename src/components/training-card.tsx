@@ -146,6 +146,30 @@ export function TrainingCard(props: TrainingCardProps) {
     }
   }, [timeLeft, isBreakTime, sets, setsDone, handleFinishSet, playBeepSound])
 
+  const handleUndoSet = useCallback(() => {
+    if (setsDone > 0) {
+      setSetsDone(prev => prev - 1)
+      setIsBreakTime(false)
+      setTimeLeft(0)
+      if (isFeito) {
+        const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+        updateDoc(exerciseRef, { isFeito: false }).catch(err => console.error('Erro ao desmarcar conclusão:', err))
+        onEdit() // Trigger parent rebuild to drop finished status visually
+      }
+    }
+  }, [setsDone, isFeito, workoutId, id, onEdit])
+
+  const handleResetExercise = useCallback(() => {
+    setSetsDone(0)
+    setIsBreakTime(false)
+    setTimeLeft(0)
+    if (isFeito) {
+      const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+      updateDoc(exerciseRef, { isFeito: false }).catch(err => console.error('Erro ao resetar conclusão:', err))
+      onEdit() // Trigger parent rebuild
+    }
+  }, [isFeito, workoutId, id, onEdit])
+
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -184,6 +208,8 @@ export function TrainingCard(props: TrainingCardProps) {
         onClose={() => setIsContextMenuOpen(false)}
         onEdit={() => setIsModalOpen(true)}
         onAddNote={() => setIsNoteModalOpen(true)}
+        onUndoSet={setsDone > 0 ? handleUndoSet : undefined}
+        onResetExercise={setsDone > 0 ? handleResetExercise : undefined}
       />
 
       <h2 className={`text-3xl md:text-4xl lg:text-2xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h2>
