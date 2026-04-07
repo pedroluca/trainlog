@@ -81,10 +81,10 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
               className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
             />
           </div>
-          <div className="flex justify-end">
+          <div className="flex w-full">
             <Button
               type="button"
-              className="bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 mr-2 disabled:opacity-50"
+              className="w-1/2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 mr-2 disabled:opacity-50"
               onClick={onClose}
               disabled={isLoading}
             >
@@ -92,7 +92,7 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
             </Button>
             <Button
               type="button"
-              className="bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-2 disabled:opacity-75 min-w-[100px]"
+              className="w-1/2 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-2 disabled:opacity-75 min-w-[100px]"
               onClick={handleSave}
               disabled={isLoading}
             >

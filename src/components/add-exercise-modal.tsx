@@ -4,7 +4,7 @@ import { db } from '../firebaseConfig'
 import { Button } from './button'
 import { exerciseLibrary, getMuscleGroups, type MuscleGroup } from '../data/exercise-library'
 import { Toast, ToastState } from './toast'
-import { Search, ChevronDown, X, Dumbbell, CheckCircle2 } from 'lucide-react'
+import { Search, ChevronDown, X, Dumbbell, CheckCircle2, Minus, Plus } from 'lucide-react'
 
 type Props = {
   workoutId: string
@@ -333,8 +333,8 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
     }
   }
 
-  const inputClass = 'flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
-  const stepBtnClass = 'bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center'
+  const inputClass = 'flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center w-4/6'
+  const stepBtnClass = 'bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center'
 
   return (
     <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center z-60">
@@ -379,9 +379,9 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               Séries:
             </label>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => setSeries(Math.max(0, series - 1))} className={stepBtnClass}>-</button>
-              <input id="series" type="number" value={series || ''} onChange={(e) => setSeries(Number(e.target.value))} className={inputClass} placeholder="Ex: 3" required />
-              <button type="button" onClick={() => setSeries(series + 1)} className={stepBtnClass}>+</button>
+              <button type="button" onClick={() => setSeries(Math.max(0, series - 1))} className={`${stepBtnClass} cursor-pointer flex items-center justify-center`}><Minus /></button>
+              <input id="series" type="number" value={series || ''} onChange={(e) => setSeries(Number(e.target.value))} className={`${inputClass}`} placeholder="Ex: 3" required />
+              <button type="button" onClick={() => setSeries(series + 1)} className={`${stepBtnClass} cursor-pointer flex items-center justify-center`}><Plus /></button>
             </div>
           </div>
 
@@ -411,7 +411,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
                 <div key={index} className='flex items-center gap-2 mb-2'>
                   <span className='text-gray-700 dark:text-gray-300 text-sm font-bold w-16'>Série {index + 1}:</span>
                   <input type='number' value={set.reps} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].reps = Number(e.target.value); setProgressiveSets(newSets) }} className='w-16 border dark:border-[#404040] rounded px-2 py-1 dark:bg-[#2d2d2d] dark:text-gray-100 text-center text-sm' placeholder='Reps' />
-                  <span className='text-gray-600 dark:text-gray-400 text-sm'>reps ×</span>
+                  <span className='text-gray-600 dark:text-gray-400 text-sm'>reps x</span>
                   <input type='number' value={set.weight} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].weight = Number(e.target.value); setProgressiveSets(newSets) }} className='w-16 border dark:border-[#404040] rounded px-2 py-1 dark:bg-[#2d2d2d] dark:text-gray-100 text-center text-sm' placeholder='Peso' />
                   <span className='text-gray-600 dark:text-gray-400 text-sm'>kg</span>
                 </div>
@@ -424,17 +424,17 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               <div>
                 <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="repeticoes">Repetições:</label>
                 <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => setRepeticoes(Math.max(0, repeticoes - 1))} className={stepBtnClass}>-</button>
+                  <button type="button" onClick={() => setRepeticoes(Math.max(0, repeticoes - 1))} className={`${stepBtnClass} cursor-pointer flex items-center justify-center`}><Minus /></button>
                   <input id="repeticoes" type="number" value={repeticoes || ''} onChange={(e) => setRepeticoes(Number(e.target.value))} className={inputClass} placeholder="Ex: 12" required />
-                  <button type="button" onClick={() => setRepeticoes(repeticoes + 1)} className={stepBtnClass}>+</button>
+                  <button type="button" onClick={() => setRepeticoes(repeticoes + 1)} className={`${stepBtnClass} cursor-pointer flex items-center justify-center`}><Plus /></button>
                 </div>
               </div>
               <div>
                 <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="peso">Peso (kg):</label>
                 <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => setPeso(Math.max(0, peso - 1))} className={stepBtnClass}>-</button>
+                  <button type="button" onClick={() => setPeso(Math.max(0, peso - 1))} className={`${stepBtnClass} cursor-pointer flex items-center justify-center`}><Minus /></button>
                   <input id="peso" type="number" value={peso || ''} onChange={(e) => setPeso(Number(e.target.value))} className={inputClass} placeholder="Ex: 20" required />
-                  <button type="button" onClick={() => setPeso(peso + 1)} className={stepBtnClass}>+</button>
+                  <button type="button" onClick={() => setPeso(peso + 1)} className={`${stepBtnClass} cursor-pointer flex items-center justify-center`}><Plus /></button>
                 </div>
               </div>
             </>
@@ -443,17 +443,17 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2" htmlFor="tempoIntervalo">Tempo de intervalo (MM:SS):</label>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => adjustBreakTime(-10)} className={stepBtnClass}>-</button>
+              <button type="button" onClick={() => adjustBreakTime(-10)} className={`${stepBtnClass} cursor-pointer flex items-center justify-center`}><Minus /></button>
               <input id="tempoIntervalo" type="text" value={tempoIntervalo} onChange={(e) => handleBreakTimeChange(e.target.value)} className={inputClass} placeholder="Ex: 01:30" required />
-              <button type="button" onClick={() => adjustBreakTime(10)} className={stepBtnClass}>+</button>
+              <button type="button" onClick={() => adjustBreakTime(10)} className={`${stepBtnClass} cursor-pointer flex items-center justify-center`}><Plus /></button>
             </div>
           </div>
 
           <div className="flex w-full">
-            <Button type="button" className="w-1/2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2 disabled:opacity-50" buttonTextColor='text-gray-700 dark:text-gray-300' onClick={onClose} disabled={isLoading}>
+            <Button type="button" className="w-1/2 text-base bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2 disabled:opacity-50" buttonTextColor='text-gray-700 dark:text-gray-300' onClick={onClose} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button type="button" className="w-1/2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 disabled:opacity-50 min-w-[100px]" onClick={handleAddExercise} disabled={isLoading}>
+            <Button type="button" className="w-1/2 text-base bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 disabled:opacity-50 min-w-[100px]" onClick={handleAddExercise} disabled={isLoading}>
               {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
               <span>Salvar</span>
             </Button>

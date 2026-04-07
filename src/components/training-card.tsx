@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from './button'
-import { EllipsisVertical, Trash2 } from 'lucide-react'
+import { EllipsisVertical, Minus, Plus, Trash2 } from 'lucide-react'
 import { addDoc, collection, deleteDoc, doc, updateDoc, getDoc, deleteField } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import beepSound from '../assets/beep.mp3'
@@ -410,22 +410,22 @@ export function TrainingCard(props: TrainingCardProps) {
                   <button
                     type="button"
                     onClick={() => setEditedSets(Math.max(0, editedSets - 1))}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center"
                   >
-                    -
+                    <Minus />
                   </button>
                   <input
                     type='number'
                     value={editedSets}
                     onChange={(e) => setEditedSets(Number(e.target.value))}
-                    className='flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
+                    className='flex-1 w-4/6 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
                   />
                   <button
                     type="button"
                     onClick={() => setEditedSets(editedSets + 1)}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center"
                   >
-                    +
+                    <Plus />
                   </button>
                 </div>
               </div>
@@ -502,22 +502,22 @@ export function TrainingCard(props: TrainingCardProps) {
                   <button
                     type="button"
                     onClick={() => setEditedReps(Math.max(0, editedReps - 1))}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center"
                   >
-                    -
+                    <Minus />
                   </button>
                   <input
                     type='number'
                     value={editedReps}
                     onChange={(e) => setEditedReps(Number(e.target.value))}
-                    className='flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
+                    className='flex-1 w-4/6 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
                   />
                   <button
                     type="button"
                     onClick={() => setEditedReps(editedReps + 1)}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center"
                   >
-                    +
+                    <Plus />
                   </button>
                 </div>
               </div>
@@ -527,22 +527,22 @@ export function TrainingCard(props: TrainingCardProps) {
                   <button
                     type="button"
                     onClick={() => setEditedWeight(Math.max(0, editedWeight - 1))}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center"
                   >
-                    -
+                    <Minus />
                   </button>
                   <input
                     type='number'
                     value={editedWeight}
                     onChange={(e) => setEditedWeight(Number(e.target.value))}
-                    className='flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
+                    className='flex-1 w-4/6 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
                   />
                   <button
                     type="button"
                     onClick={() => setEditedWeight(editedWeight + 1)}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center"
                   >
-                    +
+                    <Plus />
                   </button>
                 </div>
               </div>
@@ -554,30 +554,30 @@ export function TrainingCard(props: TrainingCardProps) {
                   <button
                     type="button"
                     onClick={() => adjustBreakTime(-10)}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center"
                   >
-                    -
+                    <Minus />
                   </button>
                   <input
                     type='text'
                     value={editedBreakTime}
                     onChange={(e) => handleBreakTimeChange(e.target.value)}
-                    className='flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
+                    className='flex-1 w-4/6 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center'
                     placeholder='00:00'
                   />
                   <button
                     type="button"
                     onClick={() => adjustBreakTime(10)}
-                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-10 h-10 rounded flex items-center justify-center"
+                    className="bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center"
                   >
-                    +
+                    <Plus />
                   </button>
                 </div>
               </div>
-              <div className='flex justify-end'>
+              <div className='flex w-full'>
                 <Button
                   type='button'
-                  className='bg-red-500 hover:bg-red-600 mr-2'
+                  className='w-1/5 flex items-center justify-center bg-red-500 hover:bg-red-600 mr-2'
                   onClick={() => setIsDeleteModalOpen(true)} // Abre o modal de exclusão
                 >
                   <Trash2 />
@@ -585,7 +585,7 @@ export function TrainingCard(props: TrainingCardProps) {
                 <Button
                   type='button'
                   buttonTextColor='text-gray-800 dark:text-gray-300'
-                  className='bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2'
+                  className='w-2/5 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2'
                   onClick={() => setIsModalOpen(false)}
                 >
                   Cancelar
@@ -593,6 +593,7 @@ export function TrainingCard(props: TrainingCardProps) {
                 <Button
                   type='button'
                   onClick={handleSaveChanges}
+                  className='w-2/5'
                 >
                   Salvar
                 </Button>
