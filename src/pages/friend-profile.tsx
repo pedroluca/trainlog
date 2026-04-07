@@ -46,6 +46,8 @@ interface LogEntry {
   series: number
   repeticoes: number
   peso: number
+  usesProgressiveWeight?: boolean
+  progressiveSets?: { reps: number; weight: number }[]
   data: string
 }
 
@@ -390,7 +392,11 @@ export function FriendProfile() {
                                 <div className="flex-1">
                                   <h4 className="font-bold text-gray-800 dark:text-gray-100">{log.titulo || 'Exercício Concluído'}</h4>
                                   <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-                                    {log.series} séries × {log.repeticoes} repetições
+                                    {log.usesProgressiveWeight && log.progressiveSets && log.progressiveSets.length > 0 ? (
+                                      <>{log.series} séries (Progressão: {log.progressiveSets.map(s => `${s.reps}x${s.weight}kg`).join(' - ')})</>
+                                    ) : (
+                                      <>{log.series} séries × {log.repeticoes} repetições</>
+                                    )}
                                   </p>
                                 </div>
                                 <div className="flex flex-col items-end gap-1">

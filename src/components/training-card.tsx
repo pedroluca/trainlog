@@ -111,6 +111,8 @@ export function TrainingCard(props: TrainingCardProps) {
         series: sets,
         repeticoes: reps,
         peso: weight,
+        usesProgressiveWeight: usesProgressiveWeight || false,
+        progressiveSets: usesProgressiveWeight ? progressiveSets || [] : [],
         data: new Date().toISOString(),
       }).catch(logErr => console.error('Erro ao adicionar exercício ao log:', logErr))
     } else {

@@ -116,7 +116,11 @@ export function LogPage() {
               <div className="flex-1">
                 <h4 className="font-semibold text-gray-800 dark:text-gray-100">{log.titulo}</h4>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  {log.series} séries × {log.repeticoes} repetições × {log.peso}kg
+                  {log.usesProgressiveWeight && log.progressiveSets && log.progressiveSets.length > 0 ? (
+                    <>{log.series} séries (Progressão: {log.progressiveSets.map(s => `${s.reps}x${s.weight}kg`).join(' - ')})</>
+                  ) : (
+                    <>{log.series} séries × {log.repeticoes} repetições × {log.peso}kg</>
+                  )}
                 </p>
               </div>
               <span className="text-xs text-gray-500 dark:text-gray-500">

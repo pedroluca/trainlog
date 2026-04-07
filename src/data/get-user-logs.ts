@@ -8,6 +8,8 @@ export type LogEntry = {
   series: number
   repeticoes: number
   peso: number
+  usesProgressiveWeight?: boolean
+  progressiveSets?: { reps: number; weight: number }[]
   data: string
 }
 
