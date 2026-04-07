@@ -18,13 +18,24 @@ export async function updateScheduledDays(usuarioID: string): Promise<number[]> 
     const querySnapshot = await getDocs(q)
 
     const uniqueDays = new Set<number>()
-    querySnapshot.docs.forEach((doc) => {
-      const dia = doc.data().dia as string
-      const dayNumber = dayNameToNumber[dia]
-      if (dayNumber !== undefined) {
-        uniqueDays.add(dayNumber)
+    
+    // Verifica cada treino para ver se ele tem exercícios
+    const exerciseChecks = querySnapshot.docs.map(async (workoutDoc) => {
+      const exercisesRef = collection(db, 'treinos', workoutDoc.id, 'exercicios')
+      const exercisesSnap = await getDocs(exercisesRef)
+      
+      // Só adiciona o dia na lista de dias de treino se tiver PELA MENOS UM exercício
+      if (!exercisesSnap.empty) {
+        const dia = workoutDoc.data().dia as string
+        const dayNumber = dayNameToNumber[dia]
+        if (dayNumber !== undefined) {
+          uniqueDays.add(dayNumber)
+        }
       }
     })
+
+    // Aguarda todas as checagens subjacentes terminarem
+    await Promise.all(exerciseChecks)
 
     const scheduledDays = Array.from(uniqueDays).sort()
 
