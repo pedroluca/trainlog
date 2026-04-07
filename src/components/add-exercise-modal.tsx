@@ -333,15 +333,15 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
     }
   }
 
-  const inputClass = 'flex-1 border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100 text-center w-4/6'
-  const stepBtnClass = 'bg-gray-200 dark:bg-[#404040] hover:bg-gray-300 dark:hover:bg-[#505050] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-10 rounded flex items-center justify-center'
+  const inputClass = 'flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 text-center w-4/6 focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all shadow-sm'
+  const stepBtnClass = 'bg-gray-100 border border-gray-200 dark:border-[#404040] dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#3a3a3a] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-[46px] rounded-lg flex items-center justify-center transition-all shadow-sm'
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center z-60">
-      <div className="bg-white dark:bg-[#2d2d2d] dark:border dark:border-[#404040] rounded-lg p-6 w-full max-w-md mx-4 overflow-y-auto max-h-screen">
-        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Adicionar Exercício</h2>
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center z-60 px-4">
+      <div className="bg-white dark:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] rounded-2xl p-6 w-full max-w-md overflow-y-auto max-h-[90vh] shadow-xl">
+        <h2 className="text-2xl font-bold mb-6 dark:text-gray-100">Adicionar Exercício</h2>
 
-        <form className="space-y-4">
+        <form className="space-y-5">
           {/* ── Exercise Picker ── */}
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
@@ -368,7 +368,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               type="text"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
+              className="w-full border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all shadow-sm"
               placeholder="Ex: Supino Inclinado"
               required
             />
@@ -385,35 +385,43 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
             </div>
           </div>
 
-          {/* Progressive Weight Toggle */}
-          <div>
-            <label className='flex items-center gap-2 text-gray-700 dark:text-gray-300 font-bold cursor-pointer'>
-              <input
-                type='checkbox'
-                checked={usesProgressiveWeight}
-                onChange={(e) => {
-                  setUsesProgressiveWeight(e.target.checked)
-                  if (e.target.checked) {
-                    setProgressiveSets(Array.from({ length: series || 3 }, () => ({ reps: repeticoes || 10, weight: peso || 0 })))
-                  }
-                }}
-                className='w-4 h-4'
+          {/* Progressive Weight Switch */}
+          <div className='bg-gray-50 dark:bg-[#252525] p-4 rounded-xl border border-gray-200 dark:border-[#404040] flex items-center justify-between'>
+            <div className="flex-1 pr-4">
+              <p className="text-gray-800 dark:text-gray-100 font-bold text-sm">Progressão de carga</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Configurar peso e repetições para cada série</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const checked = !usesProgressiveWeight
+                setUsesProgressiveWeight(checked)
+                if (checked) {
+                  setProgressiveSets(Array.from({ length: series || 3 }, () => ({ reps: repeticoes || 10, weight: peso || 0 })))
+                }
+              }}
+              className={`cursor-pointer relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+                usesProgressiveWeight ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                  usesProgressiveWeight ? 'translate-x-6' : 'translate-x-1'
+                }`}
               />
-              Usar peso progressivo nas séries?
-            </label>
+            </button>
           </div>
 
           {/* Progressive Sets Configuration */}
           {usesProgressiveWeight && (
-            <div className='p-4 border border-gray-300 dark:border-[#404040] rounded bg-gray-50 dark:bg-[#1a1a1a]'>
-              <p className='text-sm text-gray-600 dark:text-gray-400 mb-3'>Configure cada série individualmente:</p>
+            <div className='p-4 border border-gray-200 dark:border-[#404040] rounded-xl bg-gray-50 dark:bg-[#1f1f1f]'>
               {progressiveSets.map((set, index) => (
-                <div key={index} className='flex items-center gap-2 mb-2'>
+                <div key={index} className='flex items-center gap-2 mb-3 last:mb-0'>
                   <span className='text-gray-700 dark:text-gray-300 text-sm font-bold w-16'>Série {index + 1}:</span>
-                  <input type='number' value={set.reps} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].reps = Number(e.target.value); setProgressiveSets(newSets) }} className='w-16 border dark:border-[#404040] rounded px-2 py-1 dark:bg-[#2d2d2d] dark:text-gray-100 text-center text-sm' placeholder='Reps' />
-                  <span className='text-gray-600 dark:text-gray-400 text-sm'>reps x</span>
-                  <input type='number' value={set.weight} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].weight = Number(e.target.value); setProgressiveSets(newSets) }} className='w-16 border dark:border-[#404040] rounded px-2 py-1 dark:bg-[#2d2d2d] dark:text-gray-100 text-center text-sm' placeholder='Peso' />
-                  <span className='text-gray-600 dark:text-gray-400 text-sm'>kg</span>
+                  <input type='number' value={set.reps} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].reps = Number(e.target.value); setProgressiveSets(newSets) }} className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 transition-all shadow-sm' placeholder='Reps' />
+                  <span className='text-gray-600 dark:text-gray-400 text-sm font-medium'>x</span>
+                  <input type='number' value={set.weight} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].weight = Number(e.target.value); setProgressiveSets(newSets) }} className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 transition-all shadow-sm' placeholder='Peso' />
+                  <span className='text-gray-600 dark:text-gray-400 text-sm font-medium'>kg</span>
                 </div>
               ))}
             </div>
@@ -449,11 +457,11 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
             </div>
           </div>
 
-          <div className="flex w-full">
-            <Button type="button" className="w-1/2 text-base bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 mr-2 disabled:opacity-50" buttonTextColor='text-gray-700 dark:text-gray-300' onClick={onClose} disabled={isLoading}>
+          <div className="flex items-center w-full gap-2 mt-6">
+            <Button type="button" className="flex-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:border-[#505050] dark:bg-[#404040] dark:hover:bg-[#505050] py-3 rounded-lg shadow-sm disabled:opacity-50" buttonTextColor='text-gray-800 dark:text-gray-300' onClick={onClose} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button type="button" className="w-1/2 text-base bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 disabled:opacity-50 min-w-[100px]" onClick={handleAddExercise} disabled={isLoading}>
+            <Button type="button" className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg py-3 flex items-center justify-center gap-2 disabled:opacity-50 min-w-[100px] shadow-sm" onClick={handleAddExercise} disabled={isLoading}>
               {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
               <span>Salvar</span>
             </Button>
