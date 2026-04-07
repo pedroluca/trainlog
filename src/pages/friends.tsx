@@ -187,7 +187,7 @@ export function Friends() {
                   isTrainer={amigo.usuario.isTrainer}
                   isFounder={amigo.usuario.isFounder}
                   isPremium={amigo.usuario.isPremium}
-                  onClick={() => navigate(`/friend/${amigo.usuario.id}`)}
+                  onClick={() => navigate(`/friend/${amigo.usuario.username || amigo.usuario.id}`)}
                 >
                   {(amigo.usuario.currentStreak ?? 0) > 0 ? (
                     <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/10 text-orange-500 border border-orange-200 dark:border-orange-800/30 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider">

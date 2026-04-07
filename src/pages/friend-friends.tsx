@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc, limit } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { UserPill } from '../components/user-pill'
 import { Search, Flame, UsersRound, ArrowLeft, Lock } from 'lucide-react'
@@ -39,7 +39,18 @@ export function FriendFriends() {
       setLoading(true)
       
       // Get the friend user first to check privacy
-      const userSnap = await getDoc(doc(db, 'usuarios', id))
+      let userSnap = await getDoc(doc(db, 'usuarios', id))
+      let realUserId = id
+      
+      if (!userSnap.exists()) {
+        const qUser = query(collection(db, 'usuarios'), where('username', '==', id), limit(1))
+        const qsUser = await getDocs(qUser)
+        if (!qsUser.empty) {
+          userSnap = qsUser.docs[0]
+          realUserId = userSnap.id
+        }
+      }
+
       if (!userSnap.exists()) {
         setIsPrivate(true)
         return
@@ -56,7 +67,7 @@ export function FriendFriends() {
       // Fetch friends
       const qFriends = query(
         collection(db, 'amizades'),
-        where('participantes', 'array-contains', id),
+        where('participantes', 'array-contains', realUserId),
         where('status', '==', 'aceito')
       )
       
@@ -65,7 +76,7 @@ export function FriendFriends() {
       
       for (const authDoc of snap.docs) {
         const data = authDoc.data()
-        const targetId = data.participantes.find((pId: string) => pId !== id)
+        const targetId = data.participantes.find((pId: string) => pId !== realUserId)
         if (targetId) {
           const uSnap = await getDoc(doc(db, 'usuarios', targetId))
           if (uSnap.exists()) {
@@ -107,11 +118,11 @@ export function FriendFriends() {
     return diffDays <= 7
   }
 
-  const handleUserClick = (userId: string) => {
-    if (userId === currentUserId) {
+  const handleUserClick = (friendData: Usuario) => {
+    if (friendData.id === currentUserId) {
       navigate('/profile')
     } else {
-      navigate(`/friend/${userId}`)
+      navigate(`/friend/${friendData.username || friendData.id}`)
     }
   }
 
@@ -176,7 +187,7 @@ export function FriendFriends() {
                       isTrainer={amigo.usuario.isTrainer}
                       isFounder={amigo.usuario.isFounder}
                       isPremium={amigo.usuario.isPremium}
-                      onClick={() => handleUserClick(amigo.usuario.id)}
+                      onClick={() => handleUserClick(amigo.usuario)}
                     >
                       {isAtivoRecentemente(amigo.usuario.lastWorkoutDate) ? (
                         <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/10 text-orange-500 border border-orange-200 dark:border-orange-800/30 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider">

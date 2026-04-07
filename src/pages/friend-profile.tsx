@@ -101,15 +101,25 @@ export function FriendProfile() {
     const fetchUserAndCount = async () => {
       setLoading(true)
       try {
-        const userRef = doc(db, 'usuarios', id)
-        const userSnap = await getDoc(userRef)
+        let userSnap = await getDoc(doc(db, 'usuarios', id))
+        let realUserId = id
+        
+        if (!userSnap.exists()) {
+          const qUser = query(collection(db, 'usuarios'), where('username', '==', id), limit(1))
+          const qsUser = await getDocs(qUser)
+          if (!qsUser.empty) {
+            userSnap = qsUser.docs[0]
+            realUserId = userSnap.id
+          }
+        }
+
         if (userSnap.exists()) {
-          setProfile({ id: userSnap.id, ...userSnap.data() } as UsuarioProfile)
+          setProfile({ id: realUserId, ...userSnap.data() } as UsuarioProfile)
         }
 
         const q = query(
           collection(db, 'amizades'),
-          where('participantes', 'array-contains', id),
+          where('participantes', 'array-contains', realUserId),
           where('status', '==', 'aceito')
         )
         const snapCount = await getDocs(q)
@@ -133,13 +143,13 @@ export function FriendProfile() {
   }, [profile, activeTab, logsLimit])
 
   const fetchLogsData = async () => {
-    if (!id) return
+    if (!profile?.id) return
     setLoadingLogs(true)
     try {
       const logsRef = collection(db, 'logs')
       const q = query(
         logsRef,
-        where('usuarioID', '==', id),
+        where('usuarioID', '==', profile.id),
         orderBy('data', 'desc'),
         limit(logsLimit)
       )
@@ -154,16 +164,18 @@ export function FriendProfile() {
   }
 
   const fetchTreinosData = async () => {
-    if (!id) return
+    if (!profile?.id) return
     setLoadingTreinos(true)
     try {
       const treinosRef = collection(db, 'treinos')
-      const q = query(treinosRef, where('usuarioID', '==', id))
+      const q = query(treinosRef, where('usuarioID', '==', profile.id))
       const snap = await getDocs(q)
       
       const list: TreinoListItem[] = []
       for (const tDoc of snap.docs) {
         const tData = tDoc.data()
+        
+        if (tData.isTemplate) continue
         
         // Fetch subcollection exercicios
         const exRef = collection(tDoc.ref, 'exercicios')
@@ -319,7 +331,7 @@ export function FriendProfile() {
           
           {!priv.ocultarAmigos && (
              <div 
-               onClick={() => navigate(`/friend/${profile.id}/friends`)}
+               onClick={() => navigate(`/friend/${profile.username || profile.id}/friends`)}
                className="col-span-1 border border-gray-100 dark:border-[#333] bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors"
              >
                <p className="text-xs uppercase font-medium text-blue-600 dark:text-blue-400">Amigos</p>
