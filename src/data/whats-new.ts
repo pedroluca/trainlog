@@ -3,12 +3,12 @@
 
 export type WhatsNewItem = {
   id: string
-  icon: string // Emoji or icon
+  icon: string
   title: string
   description: string
   action?: {
     label: string
-    route: string // Route to navigate when clicked
+    route: string
   }
 }
 
@@ -17,19 +17,33 @@ export type WhatsNewRelease = {
   date: string // YYYY-MM-DD
   title: string
   items: WhatsNewItem[]
+  /** Previous highlights shown below a divider (optional) */
+  previousItems?: WhatsNewItem[]
 }
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
-  version: '1.17.0',
-  date: '2026-03-27',
-  title: 'Novidades da Versão 1.17.0',
+  version: '1.17.9',
+  date: '2026-04-06',
+  title: 'Novidades da Versão 1.17.9',
   items: [
+    {
+      id: 'badge-system',
+      icon: '🏅',
+      title: 'Sistema de Badges',
+      description: 'Seu perfil agora exibe conquistas como Fundador, Premium, Treinador e Alpha User. Toque em qualquer badge para ver o que ela significa!',
+      action: {
+        label: 'Ver meu Perfil',
+        route: '/profile'
+      }
+    }
+  ],
+  previousItems: [
     {
       id: 'trainer-student-flow',
       icon: '🧑‍🏫',
       title: 'Novo Fluxo Treinador/Aluno',
-      description: 'Agora você pode se conectar como treinador ou aluno, enviar solicitações com consentimento e gerenciar treinos por vínculo. O aluno pode ter mais de um treinador, com separação por criador.',
+      description: 'Conecte-se como treinador ou aluno, envie solicitações com consentimento e gerencie treinos por vínculo.',
       action: {
         label: 'Abrir Treinador/Aluno',
         route: '/profile/connections'
@@ -39,7 +53,7 @@ export const currentRelease: WhatsNewRelease = {
       id: 'friendships-kept',
       icon: '🤝',
       title: 'Amizades Mantidas',
-      description: 'O sistema de amizade continua ativo com solicitações, perfil de amigos e privacidade. Você segue acompanhando quem treina com você normalmente.',
+      description: 'O sistema de amizade continua ativo com solicitações, perfil de amigos e privacidade.',
       action: {
         label: 'Ver Amigos',
         route: '/friends'
@@ -49,7 +63,7 @@ export const currentRelease: WhatsNewRelease = {
       id: 'android-push-kept',
       icon: '📲',
       title: 'Push no Android Continua',
-      description: 'As notificações push para Android permanecem ativas no app. Você continua recebendo avisos importantes para não perder nada da sua rotina.'
+      description: 'As notificações push para Android permanecem ativas no app.'
     }
   ]
 }

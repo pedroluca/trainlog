@@ -134,35 +134,70 @@ export function WhatsNewModal({ isOpen, onClose, forceUpdateVersion, systemVersi
               </div>
             </div>
           ) : (
-            currentRelease.items.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => handleItemClick(item.action?.route)}
-                className={`bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] rounded-xl p-4 transition-all ${
-                  item.action
-                    ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-[#252525] hover:border-[#27AE60] dark:hover:border-[#27AE60] hover:shadow-md'
-                    : ''
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="text-3xl flex-shrink-0">{item.icon}</div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                      {item.description}
-                    </p>
-                    {item.action && (
-                      <div className="flex items-center gap-1 mt-2 text-[#27AE60] dark:text-[#2ecc71] text-sm font-medium">
-                        <span>{item.action.label}</span>
-                        <ChevronRight size={16} />
-                      </div>
-                    )}
+            <>
+              {currentRelease.items.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => handleItemClick(item.action?.route)}
+                  className={`bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] rounded-xl p-4 transition-all ${
+                    item.action
+                      ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-[#252525] hover:border-[#27AE60] dark:hover:border-[#27AE60] hover:shadow-md'
+                      : ''
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="text-3xl flex-shrink-0">{item.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        {item.description}
+                      </p>
+                      {item.action && (
+                        <div className="flex items-center gap-1 mt-2 text-[#27AE60] dark:text-[#2ecc71] text-sm font-medium">
+                          <span>{item.action.label}</span>
+                          <ChevronRight size={16} />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+
+              {currentRelease.previousItems && currentRelease.previousItems.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-[#404040]">
+                  <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 px-1">
+                    Destaques Anteriores
+                  </h4>
+                  <div className="space-y-3 opacity-90">
+                    {currentRelease.previousItems.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => handleItemClick(item.action?.route)}
+                        className={`bg-gray-50/50 dark:bg-[#1a1a1a]/50 border border-gray-200/50 dark:border-[#404040]/50 rounded-xl p-4 transition-all ${
+                          item.action
+                            ? 'cursor-pointer hover:opacity-100 hover:border-[#27AE60] dark:hover:border-[#27AE60]'
+                            : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="text-2xl flex-shrink-0 opacity-80">{item.icon}</div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                              {item.title}
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
