@@ -283,7 +283,7 @@ export function FriendProfile() {
 
         {/* Info Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {!priv.ocultarEmail && profile.email && (
+          {!(priv.ocultarEmail ?? true) && profile.email && (
             <div className="col-span-2 md:col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333]">
               <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Email</p>
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{profile.email}</p>

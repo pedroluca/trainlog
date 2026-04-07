@@ -47,16 +47,18 @@ export function Settings() {
   // const [notifLoading, setNotifLoading] = useState(false)
 
   // Privacy Settings
-  const [privacidade, setPrivacidade] = useState({
-    ocultarEmail: false,
-    ocultarNascimento: false,
-    ocultarAtividades: false,
-    ocultarTreinos: false,
-    ocultarAmigos: false,
-    ocultarStreak: false,
-    ocultarPeso: false,
-    ocultarAltura: false,
-    ocultarInstagram: false
+  const [privacidade, setPrivacidade] = useState<{
+    ocultarEmail?: boolean
+    ocultarNascimento?: boolean
+    ocultarAtividades?: boolean
+    ocultarTreinos?: boolean
+    ocultarAmigos?: boolean
+    ocultarStreak?: boolean
+    ocultarPeso?: boolean
+    ocultarAltura?: boolean
+    ocultarInstagram?: boolean
+  }>({
+    ocultarEmail: true
   })
   const [loadingPrivacy, setLoadingPrivacy] = useState(false)
   const [showPrivacySection, setShowPrivacySection] = useState(false)
@@ -106,7 +108,7 @@ export function Settings() {
 
           if (userData.privacidade) {
             setPrivacidade({
-              ocultarEmail: userData.privacidade.ocultarEmail || false,
+              ocultarEmail: userData.privacidade.ocultarEmail ?? true,
               ocultarNascimento: userData.privacidade.ocultarNascimento || false,
               ocultarAtividades: userData.privacidade.ocultarAtividades || false,
               ocultarTreinos: userData.privacidade.ocultarTreinos || false,

@@ -1,4 +1,4 @@
-import { BookUser, Dumbbell, TrendingUp, UsersRound } from 'lucide-react'
+import { Dumbbell, GraduationCap, TrendingUp, UsersRound } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { BottomBarItem } from './bottom-bar-item'
 
@@ -52,10 +52,10 @@ export function BottomBar() {
             <Dumbbell size={28} />
           </BottomBarItem>
           <BottomBarItem to='/friends'>
-            <BookUser size={28} />
+            <UsersRound size={28} />
           </BottomBarItem>
           <BottomBarItem to='/profile/connections'>
-            <UsersRound size={28} />
+            <GraduationCap size={28} />
           </BottomBarItem>
           <BottomBarItem to='/progress'>
             <TrendingUp size={28} />
