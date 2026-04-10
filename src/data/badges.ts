@@ -2,7 +2,7 @@
 // Add new badges here; the UI will pick them up automatically.
 
 import type { LucideIcon } from 'lucide-react'
-import { Crown, Gem, GraduationCap, Rocket, Flame } from 'lucide-react'
+import { Crown, Laptop, GraduationCap, Rocket, Flame } from 'lucide-react'
 
 export interface BadgeDefinition {
   id: string
@@ -28,7 +28,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     id: 'founder',
     title: 'Fundador',
     description: 'Desenvolvedor que fundou o TrainLog. Obrigado por acreditar desde o início!',
-    Icon: Gem,
+    Icon: Laptop,
     order: 0,
     hasImageBorder: true,
     ringClass: 'ring-4 ring-purple-500 dark:ring-purple-400',
