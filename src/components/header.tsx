@@ -117,7 +117,7 @@ export function Header() {
         {/* ── Direita: streak ── */}
         {usuarioID && (
           <Link
-            to='/profile'
+            to={`${isPremium ? '/profile/streak-calendar' : '/profile'}`}
             className={`flex items-center gap-2 ${treinouHoje ? 'bg-orange-400/50 hover:bg-orange-500/50' : 'bg-white/10 hover:bg-white/20'} pr-4 pl-3 py-2 rounded-full transition-colors z-10`}
             title='Seu streak de treinos'
           >
