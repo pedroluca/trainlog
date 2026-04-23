@@ -467,9 +467,9 @@ export function Training() {
                             key={index}
                             className={`h-2 rounded-full transition-all ${
                               index === currentExerciseIndex
-                                ? 'bg-[#27AE60] w-6'
+                                ? 'bg-primary w-6'
                                 : exercises[index].isFeito
-                                ? 'bg-green-300 dark:bg-green-600 w-2'
+                                ? 'bg-primary-dark w-2'
                                 : 'bg-gray-300 dark:bg-gray-600 w-2'
                             }`}
                             onClick={() => scrollToSlide(index)}

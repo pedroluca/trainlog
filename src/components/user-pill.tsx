@@ -16,7 +16,7 @@ export function UserPill({ nome, photoURL, username, isTrainer, children, onClic
     <div 
       onClick={onClick}
       className={`flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#333] bg-white dark:bg-[#252525] transition-all shadow-sm ${
-        onClick ? 'cursor-pointer hover:shadow-md hover:border-[#27AE60]/50 dark:hover:border-[#27AE60]/50' : ''
+        onClick ? 'cursor-pointer hover:shadow-md hover:border-primary/50 dark:hover:border-primary/50' : ''
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">

@@ -192,7 +192,7 @@ export function TrainingCard(props: TrainingCardProps) {
     <div
       className={`shadow-lg lg:shadow-xl w-full max-w-sm md:max-w-xl lg:max-w-2xl relative rounded-2xl overflow-hidden p-6 md:p-8 mx-auto transition-all duration-300 min-h-[375px] max-h-[500px] md:max-h-[600px] lg:max-h-[450px] flex flex-col ${
         isFinished 
-          ? 'bg-gradient-to-br from-[#27AE60] to-[#1E8449] border-green-500 shadow-green-900/20' 
+          ? 'bg-gradient-to-br from-primary to-primary-dark border-primary shadow-primary/20' 
           : 'bg-white dark:bg-[#1e1e1e] border border-gray-100 dark:border-[#2a2a2a] shadow-black/5 dark:shadow-black/20'
       }`}
     >
@@ -293,7 +293,7 @@ export function TrainingCard(props: TrainingCardProps) {
           <Button 
             onClick={handleStartSet} 
             disabled={isFinished || isExecutionLocked} 
-            bgColor={'bg-[#27AE60] hover:bg-[#219150] disabled:bg-[#219150]'}
+            bgColor={'bg-primary hover:bg-primary-dark disabled:bg-primary-dark'}
             className='w-full py-4 text-lg md:text-2xl lg:text-xl font-bold mt-4'
           >
             {isExecutionLocked ? 'Execução desativada' : isFinished ? 'Concluído' : ('Finalizar ' + (setsDone + 1) + 'ª série')}
