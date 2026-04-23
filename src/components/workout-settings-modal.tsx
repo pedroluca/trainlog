@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
+import { doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
 import { Toast, ToastState } from './toast'
-import { ChevronDown, ChevronUp, IterationCw, Plus, Trash2, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, IterationCw, Pen, Plus, Trash2, X } from 'lucide-react'
 import { Exercicio } from '../data/get-workout-exercises'
 import { Treino } from '../data/get-user-workouts'
+import { EditExerciseModal } from './edit-exercise-modal'
 
 type WorkoutSettingsModalProps = {
   workout: Treino
@@ -36,6 +37,7 @@ export function WorkoutSettingsModal({
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleteWorkoutModalOpen, setIsDeleteWorkoutModalOpen] = useState(false)
   const [exerciseToDelete, setExerciseToDelete] = useState<string | null>(null)
+  const [exerciseToEdit, setExerciseToEdit] = useState<Exercicio | null>(null)
 
   const handleMoveUp = (index: number) => {
     if (index === 0) return
@@ -81,6 +83,24 @@ export function WorkoutSettingsModal({
       setToast({ show: true, message: 'Erro ao excluir.', type: 'error' })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleEditExerciseFinished = async () => {
+    if (!exerciseToEdit) return
+    try {
+      setIsLoading(true)
+      const docRef = doc(db, 'treinos', workout.id, 'exercicios', exerciseToEdit.id)
+      const snap = await getDoc(docRef)
+      if (snap.exists()) {
+        const updatedData = snap.data()
+        setOrderedExercises(prev => prev.map(ex => ex.id === exerciseToEdit.id ? { ...ex, ...updatedData } as Exercicio : ex))
+      }
+    } catch (err) {
+      console.error('Erro ao recarregar exercício atualizado:', err)
+    } finally {
+      setIsLoading(false)
+      setExerciseToEdit(null)
     }
   }
 
@@ -210,7 +230,15 @@ export function WorkoutSettingsModal({
                         {ex.series}s × {ex.repeticoes}r - {ex.peso}kg
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 md:gap-3">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setExerciseToEdit(ex)}
+                        className="p-1.5 md:p-2 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                        title="Editar exercício"
+                      >
+                        <Pen size={18} />
+                      </button>
                       <button
                         type="button"
                         onClick={() => setExerciseToDelete(ex.id)}
@@ -269,7 +297,8 @@ export function WorkoutSettingsModal({
           </Button>
           <Button
             type="button"
-            className="flex-1 bg-primary hover:bg-[#219150] flex items-center justify-center gap-2 disabled:opacity-75"
+            className="flex-1 flex items-center justify-center gap-2 disabled:opacity-75"
+            bgColor='bg-[#27AE60] hover:bg-[#219150]'
             onClick={handleSave}
             disabled={isLoading}
           >
@@ -340,6 +369,24 @@ export function WorkoutSettingsModal({
             </div>
           </div>
         </div>
+      )}
+
+      {exerciseToEdit && (
+        <EditExerciseModal
+          workoutId={workout.id}
+          exerciseId={exerciseToEdit.id}
+          initialData={{
+            title: exerciseToEdit.titulo || '',
+            sets: exerciseToEdit.series || 0,
+            reps: exerciseToEdit.repeticoes || 0,
+            weight: exerciseToEdit.peso || 0,
+            breakTime: exerciseToEdit.tempoIntervalo || 0,
+            usesProgressiveWeight: exerciseToEdit.usesProgressiveWeight || false,
+            progressiveSets: exerciseToEdit.progressiveSets || []
+          }}
+          onClose={() => setExerciseToEdit(null)}
+          onEdit={handleEditExerciseFinished}
+        />
       )}
     </div>
   )
