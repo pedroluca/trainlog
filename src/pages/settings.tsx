@@ -224,7 +224,7 @@ export function Settings() {
         />
 
         <SettingsCard
-          title="Notificações Sonoras"
+          title="Alertas Sonoros"
           description="Toca um som quando o timer de descanso termina"
           icon={audioEnabled ? Volume2 : VolumeX}
           action={<AudioToggle />}
