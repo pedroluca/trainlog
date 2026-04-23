@@ -1,33 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { auth, db } from '../firebaseConfig'
+import { db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
-import { Button } from '../components/button'
-import { ArrowLeft, Eye, EyeOff, Headset, Lock, Moon, Shield, Sun, Volume2, VolumeX, Mail } from 'lucide-react'
+import { ArrowLeft, Moon, Sun, Shield, Lock, Headset, Volume2, VolumeX, Mail, Gem, ChevronRight } from 'lucide-react'
 import { useTheme } from '../contexts/theme-context'
 import { Toast, ToastState } from '../components/toast'
-import { ReportBugModal } from '../components/report-bug-modal'
 import { Footer } from '../components/footer'
-// import { syncOneSignalUser } from '../utils/onesignal'
+import { SettingsCard } from '../components/settings-card'
+import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
 
 export function Settings() {
   const navigate = useNavigate()
   const usuarioID = localStorage.getItem('usuarioId')
   const { theme, toggleTheme } = useTheme()
 
-  const getEffectiveUserId = () => {
-    const authUid = auth.currentUser?.uid || null
-    const localUid = localStorage.getItem('usuarioId')
-
-    if (authUid && authUid !== localUid) {
-      localStorage.setItem('usuarioId', authUid)
-      return authUid
-    }
-
-    return authUid || localUid
-  }
-  
   // Audio settings
   const [audioEnabled, setAudioEnabled] = useState(false)
   const [loadingAudio, setLoadingAudio] = useState(false)
@@ -36,46 +22,12 @@ export function Settings() {
   const [emailEnabled, setEmailEnabled] = useState(true)
   const [loadingEmail, setLoadingEmail] = useState(false)
 
-  // User Info & Modals
+  // Modals & User info
   const [nome, setNome] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
-  const [username, setUsername] = useState<string | null>(null)
-  const [isBugModalOpen, setIsBugModalOpen] = useState(false)
-
-  // Push Notifications
-  // const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default')
-  // const [notifLoading, setNotifLoading] = useState(false)
-
-  // Privacy Settings
-  const [privacidade, setPrivacidade] = useState<{
-    ocultarEmail?: boolean
-    ocultarNascimento?: boolean
-    ocultarAtividades?: boolean
-    ocultarTreinos?: boolean
-    ocultarAmigos?: boolean
-    ocultarStreak?: boolean
-    ocultarPeso?: boolean
-    ocultarAltura?: boolean
-    ocultarInstagram?: boolean
-  }>({
-    ocultarEmail: true
-  })
-  const [loadingPrivacy, setLoadingPrivacy] = useState(false)
-  const [showPrivacySection, setShowPrivacySection] = useState(false)
-
-  // Password change
-  const [showPasswordSection, setShowPasswordSection] = useState(false)
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordError, setPasswordError] = useState('')
-  const [passwordSuccess, setPasswordSuccess] = useState('')
-  const [loadingPassword, setLoadingPassword] = useState(false)
-
-  // Password visibility toggles
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [telefone, setTelefone] = useState<string | null>(null)
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false)
+  
   const [toast, setToast] = useState<ToastState>({
     show: false,
     message: '',
@@ -83,42 +35,24 @@ export function Settings() {
   })
 
   useEffect(() => {
-    const effectiveUserId = getEffectiveUserId()
-    if (!effectiveUserId) {
+    if (!usuarioID) {
       navigate('/login')
       return
     }
 
     const fetchSettings = async () => {
       try {
-        const userDocRef = doc(db, 'usuarios', effectiveUserId)
+        const userDocRef = doc(db, 'usuarios', usuarioID)
         const userDoc = await getDoc(userDocRef)
 
         if (userDoc.exists()) {
           const userData = userDoc.data()
-          // User info for bug reports
           setNome(userData.nome || null)
           setEmail(userData.email || null)
-          setUsername(userData.username || null)
+          setTelefone(userData.telefone || null)
           
-          // Audio is disabled by default
           setAudioEnabled(userData.audioEnabled === true)
-          // Email is enabled by default
           setEmailEnabled(userData.emailNotifications !== false)
-
-          if (userData.privacidade) {
-            setPrivacidade({
-              ocultarEmail: userData.privacidade.ocultarEmail ?? true,
-              ocultarNascimento: userData.privacidade.ocultarNascimento || false,
-              ocultarAtividades: userData.privacidade.ocultarAtividades || false,
-              ocultarTreinos: userData.privacidade.ocultarTreinos || false,
-              ocultarAmigos: userData.privacidade.ocultarAmigos || false,
-              ocultarStreak: userData.privacidade.ocultarStreak || false,
-              ocultarPeso: userData.privacidade.ocultarPeso || false,
-              ocultarAltura: userData.privacidade.ocultarAltura || false,
-              ocultarInstagram: userData.privacidade.ocultarInstagram || false,
-            })
-          }
         }
       } catch (err) {
         console.error('Erro ao buscar configurações:', err)
@@ -126,91 +60,10 @@ export function Settings() {
     }
 
     fetchSettings()
-    
-    // Check current notification permission state
-    // if ('Notification' in window) {
-    //   setNotifPermission(Notification.permission)
-    // }
   }, [usuarioID, navigate])
 
-  // useEffect(() => {
-  //   const syncOneSignalForCurrentUser = async () => {
-  //     const effectiveUserId = getEffectiveUserId()
-  //     if (!effectiveUserId) return
-
-  //     const result = await syncOneSignalUser(effectiveUserId)
-  //     if (result.permission !== 'unsupported') {
-  //       setNotifPermission(result.permission)
-  //     }
-
-  //     if (result.success) {
-  //       await updateDoc(doc(db, 'usuarios', effectiveUserId), {
-  //         pushProvider: 'onesignal',
-  //         oneSignalExternalId: effectiveUserId,
-  //         oneSignalSubscriptionId: result.subscriptionId || ''
-  //       })
-  //     }
-  //   }
-
-  //   syncOneSignalForCurrentUser().catch((error) => {
-  //     console.error('Erro ao sincronizar OneSignal no settings:', error)
-  //   })
-  // }, [usuarioID])
-
-  // const handleEnableNotifications = async () => {
-  //   const effectiveUserId = getEffectiveUserId()
-  //   if (!effectiveUserId) return
-
-  //   setNotifLoading(true)
-  //   try {
-  //     const result = await requestOneSignalPermission(effectiveUserId)
-  //     if (result.permission !== 'unsupported') {
-  //       setNotifPermission(result.permission)
-  //     }
-
-  //     if (result.success) {
-  //       await updateDoc(doc(db, 'usuarios', effectiveUserId), {
-  //         pushProvider: 'onesignal',
-  //         oneSignalExternalId: effectiveUserId,
-  //         oneSignalSubscriptionId: result.subscriptionId || ''
-  //       })
-  //       setToast({ show: true, message: 'Notificações ativadas com OneSignal! 🔔', type: 'success' })
-  //     } else {
-  //       const message = result.permission === 'denied'
-  //         ? 'Permissão negada. Ative nas configurações do navegador/iOS.'
-  //         : result.errorMessage || 'Não foi possível ativar notificações com OneSignal.'
-  //       setToast({ show: true, message, type: 'error' })
-  //     }
-  //   } catch (error) {
-  //     console.error('Erro ao ativar OneSignal:', error)
-  //     setToast({ show: true, message: 'Erro ao ativar OneSignal.', type: 'error' })
-  //   } finally {
-  //     setNotifLoading(false)
-  //   }
-  // }
-
-  const handlePrivacyToggle = async (key: keyof typeof privacidade) => {
-    if (!usuarioID) return
-    try {
-      setLoadingPrivacy(true)
-      const newPrivacy = {
-        ...privacidade,
-        [key]: !privacidade[key]
-      }
-      const userDocRef = doc(db, 'usuarios', usuarioID)
-      await updateDoc(userDocRef, {
-        privacidade: newPrivacy
-      })
-      setPrivacidade(newPrivacy)
-    } catch (err) {
-      console.error('Erro ao atualizar privacidade:', err)
-      setToast({ show: true, message: 'Erro ao atualizar preferências de privacidade.', type: 'error' })
-    } finally {
-      setLoadingPrivacy(false)
-    }
-  }
-
-  const handleAudioToggle = async () => {
+  const handleAudioToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation()
     if (!usuarioID) return
 
     try {
@@ -231,7 +84,8 @@ export function Settings() {
     }
   }
 
-  const handleEmailToggle = async () => {
+  const handleEmailToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation()
     if (!usuarioID) return
 
     try {
@@ -252,82 +106,58 @@ export function Settings() {
     }
   }
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setPasswordError('')
-    setPasswordSuccess('')
+  const ThemeToggle = () => (
+    <button
+      onClick={(e) => {
+        e.stopPropagation()
+        toggleTheme()
+      }}
+      className={`cursor-pointer relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${
+        theme === 'dark' ? 'bg-[#27AE60]' : 'bg-gray-300'
+      }`}
+    >
+      <span
+        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+          theme === 'dark' ? 'translate-x-7' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  )
 
-    // Validation
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError('Preencha todos os campos')
-      return
-    }
+  const EmailToggle = () => (
+    <button
+      onClick={handleEmailToggle}
+      disabled={loadingEmail}
+      className={`cursor-pointer relative inline-flex h-8 w-14 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+        emailEnabled ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
+      } ${loadingEmail ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      <span
+        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+          emailEnabled ? 'translate-x-7' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  )
 
-    if (newPassword.length < 6) {
-      setPasswordError('A nova senha deve ter no mínimo 6 caracteres')
-      return
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError('As senhas não coincidem')
-      return
-    }
-
-    if (currentPassword === newPassword) {
-      setPasswordError('A nova senha deve ser diferente da atual')
-      return
-    }
-
-    try {
-      setLoadingPassword(true)
-      const user = auth.currentUser
-
-      if (!user || !user.email) {
-        setPasswordError('Usuário não autenticado')
-        return
-      }
-
-      // Re-authenticate user before changing password
-      const credential = EmailAuthProvider.credential(user.email, currentPassword)
-      await reauthenticateWithCredential(user, credential)
-
-      // Update password
-      await updatePassword(user, newPassword)
-
-      setPasswordSuccess('Senha alterada com sucesso!')
-      setCurrentPassword('')
-      setNewPassword('')
-      setConfirmPassword('')
-      setShowPasswordSection(false)
-
-      // Auto-hide success message after 3 seconds
-      setTimeout(() => {
-        setPasswordSuccess('')
-      }, 3000)
-    } catch (err) {
-      console.error('Erro ao alterar senha:', err)
-      
-      if (err instanceof Error && 'code' in err) {
-        const firebaseError = err as { code: string }
-        
-        if (firebaseError.code === 'auth/wrong-password') {
-          setPasswordError('Senha atual incorreta')
-        } else if (firebaseError.code === 'auth/too-many-requests') {
-          setPasswordError('Muitas tentativas. Tente novamente mais tarde.')
-        } else {
-          setPasswordError('Erro ao alterar senha. Tente novamente.')
-        }
-      } else {
-        setPasswordError('Erro ao alterar senha. Tente novamente.')
-      }
-    } finally {
-      setLoadingPassword(false)
-    }
-  }
+  const AudioToggle = () => (
+    <button
+      onClick={handleAudioToggle}
+      disabled={loadingAudio}
+      className={`cursor-pointer relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${
+        audioEnabled ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
+      } ${loadingAudio ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      <span
+        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+          audioEnabled ? 'translate-x-7' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  )
 
   return (
     <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
-      {/* Header */}
       <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl mb-6">
         <button
           onClick={() => navigate('/profile')}
@@ -339,381 +169,74 @@ export function Settings() {
         <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Configurações</h1>
       </div>
 
-      {/* Dark Mode Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          {theme === 'dark' ? <Moon className="text-blue-400" /> : <Sun className="text-yellow-500" />}
-          Modo Escuro
-        </h2>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <p className="text-gray-700 dark:text-gray-300 mb-1">
-              Tema escuro
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Reduz o brilho da tela e economiza bateria
-            </p>
-          </div>
-          
-          <button
-            onClick={toggleTheme}
-            className={`cursor-pointer relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${
-              theme === 'dark' ? 'bg-[#27AE60]' : 'bg-gray-300'
-            }`}
-          >
-            <span
-              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                theme === 'dark' ? 'translate-x-7' : 'translate-x-1'
-              }`}
-            />
-          </button>
-        </div>
-      </div>
+      <div className="w-full max-w-2xl flex flex-col">
+        <SettingsCard
+          title="Upgrade para Premium"
+          description="Desbloqueie todos os recursos com uma assinatura vitalícia!"
+          icon={Gem}
+          action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
+          onClick={() => setIsPremiumModalOpen(true)}
+        />
 
-      {/* Push Notifications Section */}
-      {/* <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          {notifPermission === 'granted' ? <Bell className="text-[#27AE60]" /> : <BellOff className="text-gray-400" />}
-          Notificações Push
-        </h2>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex-1 pr-4">
-            {notifPermission === 'granted' ? (
-              <>
-                <p className="text-[#27AE60] font-semibold mb-1">OneSignal ativo ✓</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Você receberá lembretes de treino e novidades do app.
-                </p>
-              </>
-            ) : notifPermission === 'denied' ? (
-              <>
-                <p className="text-red-500 font-semibold mb-1">Notificações bloqueadas</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  No iPhone: ajuste em Ajustes do iOS/Safari. No desktop: permita notificações para este site.
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-amber-600 dark:text-amber-400 font-semibold mb-1">OneSignal pronto para ativar</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Toque em ativar para receber lembretes de treino.
-                </p>
-              </>
-            )}
-          </div>
+        <SettingsCard
+          title="Modo Escuro"
+          description="Reduz o brilho da tela e economiza bateria"
+          icon={theme === 'dark' ? Moon : Sun}
+          action={<ThemeToggle />}
+          onClick={toggleTheme}
+        />
 
-          {notifPermission !== 'granted' && (
-            <Button
-              onClick={handleEnableNotifications}
-              className="bg-[#27AE60] hover:bg-[#219150] text-white px-4 py-2 shrink-0 ml-2"
-              disabled={notifLoading}
-            >
-              {notifLoading ? 'Ativando...' : 'Ativar'}
-            </Button>
-          )}
+        <SettingsCard
+          title="Privacidade do Perfil"
+          description="Controle o que seus amigos podem ver no seu perfil"
+          icon={Shield}
+          action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
+          onClick={() => navigate('/profile/settings/privacy')}
+        />
 
-          {notifPermission === 'granted' && (
-            <div className="shrink-0 ml-4 w-10 h-10 rounded-full bg-[#27AE60]/10 flex items-center justify-center border border-[#27AE60]/30">
-              <Bell size={20} className="text-[#27AE60]" />
-            </div>
-          )}
-        </div>
+        <SettingsCard
+          title="E-mails do Sistema"
+          description="Receba um resumo dos seus treinos no seu e-mail aos domingos"
+          icon={Mail}
+          action={<EmailToggle />}
+          onClick={(e: any) => handleEmailToggle(e)}
+        />
 
-      </div> */}
+        <SettingsCard
+          title="Notificações Sonoras"
+          description="Toca um som quando o timer de descanso termina"
+          icon={audioEnabled ? Volume2 : VolumeX}
+          action={<AudioToggle />}
+          onClick={(e: any) => handleAudioToggle(e)}
+        />
 
-      {/* Privacy Settings Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
-        <div 
-          className="flex items-center justify-between cursor-pointer"
-          onClick={() => setShowPrivacySection(!showPrivacySection)}
-        >
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 m-0 flex items-center gap-2">
-            <Shield className="text-[#2980B9]" />
-            Privacidade do Perfil
-          </h2>
-          <Button
-            type="button"
-            buttonTextColor='text-gray-500 dark:text-gray-300'
-            className="bg-gray-100 hover:bg-gray-200 dark:bg-[#404040] dark:hover:bg-[#505050] px-4 py-1.5 text-sm"
-          >
-            {showPrivacySection ? 'Ocultar' : 'Configurar'}
-          </Button>
-        </div>
+        <SettingsCard
+          title="Alterar Senha"
+          description="Altere sua senha de acesso à conta"
+          icon={Lock}
+          action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
+          onClick={() => navigate('/profile/settings/password')}
+        />
 
-        {showPrivacySection && (
-          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#404040] animate-in fade-in slide-in-from-top-4 duration-300">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 pb-4 border-b border-gray-100 dark:border-[#404040]">
-              Controle o que seus amigos podem ver quando acessarem o seu perfil. Ative as opções abaixo para ocultar a informação correspondente.
-            </p>
-            
-            <div className="space-y-4">
-          {[
-            { key: 'ocultarEmail', label: 'Email', desc: 'Oculta seu endereço de email' },
-            { key: 'ocultarNascimento', label: 'Data de Nascimento', desc: 'Oculta sua data e idade' },
-            { key: 'ocultarInstagram', label: 'Instagram', desc: 'Oculta o link do seu perfil' },
-            { key: 'ocultarPeso', label: 'Peso Corporal', desc: 'Oculta sua medição de peso' },
-            { key: 'ocultarAltura', label: 'Altura', desc: 'Oculta sua medição de altura' },
-            { key: 'ocultarAmigos', label: 'Lista de Amigos', desc: 'Impede verem quem você adicionou' },
-            { key: 'ocultarStreak', label: 'Sequência (Streak)', desc: 'Oculta seus dias seguidos treinando' },
-            { key: 'ocultarAtividades', label: 'Atividades (Logs)', desc: 'Oculta o feed de atividades recentes' },
-            { key: 'ocultarTreinos', label: 'Meus Treinos', desc: 'Oculta suas rotinas de exercícios' },
-          ].map(item => (
-            <div key={item.key} className="flex items-center justify-between">
-              <div className="flex-1 pr-4">
-                <p className="text-gray-700 dark:text-gray-300 font-medium">Ocultar {item.label}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{item.desc}</p>
-              </div>
-              <button
-                onClick={() => handlePrivacyToggle(item.key as keyof typeof privacidade)}
-                disabled={loadingPrivacy}
-                className={`cursor-pointer relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
-                  privacidade[item.key as keyof typeof privacidade] ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
-                } ${loadingPrivacy ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <span
-                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                    privacidade[item.key as keyof typeof privacidade] ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-          ))}
-            </div>
-          </div>
-        )}
-      </div>
+        <SettingsCard
+          title="Ajuda e Suporte"
+          description="Encontrou um problema ou tem uma sugestão? Reporte para nós!"
+          icon={Headset}
+          action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
+          onClick={() => navigate('/profile/settings/support')}
+        />
 
-      {/* Email Notifications Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <Mail className={emailEnabled ? "text-[#27AE60]" : "text-gray-400"} />
-          E-mails do Sistema
-        </h2>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex-1 pr-4">
-            <p className="text-gray-700 dark:text-gray-300 font-medium mb-1">
-              Relatórios da Semana
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Receba um resumo dos seus treinos no seu e-mail aos domingos
-            </p>
-          </div>
-          
-          <button
-            onClick={handleEmailToggle}
-            disabled={loadingEmail}
-            className={`cursor-pointer relative inline-flex h-8 w-14 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
-              emailEnabled ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
-            } ${loadingEmail ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <span
-              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                emailEnabled ? 'translate-x-7' : 'translate-x-1'
-              }`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Audio Settings Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          {audioEnabled ? <Volume2 className="text-[#27AE60]" /> : <VolumeX className="text-gray-400" />}
-          Notificações Sonoras
-        </h2>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <p className="text-gray-700 dark:text-gray-300 mb-1">
-              Som ao final do descanso
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Toca um som quando o timer de descanso termina
-            </p>
-          </div>
-          
-          <button
-            onClick={handleAudioToggle}
-            disabled={loadingAudio}
-            className={`cursor-pointer relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${
-              audioEnabled ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
-            } ${loadingAudio ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <span
-              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                audioEnabled ? 'translate-x-7' : 'translate-x-1'
-              }`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Password Change Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <Lock className="text-gray-700 dark:text-gray-300" />
-          Alterar Senha
-        </h2>
-
-        {!showPasswordSection ? (
-          <div>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Altere sua senha de acesso à conta
-            </p>
-            <Button
-              onClick={() => setShowPasswordSection(true)}
-              className="bg-[#27AE60] hover:bg-[#219150] text-white px-6 py-2"
-            >
-              Alterar Senha
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                Senha Atual
-              </label>
-              <div className="relative">
-                <input
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-[#27AE60]"
-                  placeholder="Digite sua senha atual"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                >
-                  {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                Nova Senha
-              </label>
-              <div className="relative">
-                <input
-                  type={showNewPassword ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-[#27AE60]"
-                  placeholder="Digite sua nova senha (mín. 6 caracteres)"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                >
-                  {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
-                Confirmar Nova Senha
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-[#27AE60]"
-                  placeholder="Digite novamente sua nova senha"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            </div>
-
-            {passwordError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {passwordError}
-              </div>
-            )}
-
-            {passwordSuccess && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                {passwordSuccess}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                onClick={() => {
-                  setShowPasswordSection(false)
-                  setCurrentPassword('')
-                  setNewPassword('')
-                  setConfirmPassword('')
-                  setPasswordError('')
-                }}
-                buttonTextColor="text-gray-800"
-                className="bg-gray-300 hover:bg-gray-400"
-                disabled={loadingPassword}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                className="bg-[#27AE60] hover:bg-[#219150] text-white"
-                disabled={loadingPassword}
-              >
-                {loadingPassword ? 'Alterando...' : 'Confirmar Alteração'}
-              </Button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* Bug Report Section */}
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <Headset className="text-blue-500" />
-          Ajuda e Suporte
-        </h2>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <p className="text-gray-700 dark:text-gray-300 mb-1 font-medium">
-              Encontrou um problema ou tem uma sugestão?
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Ajude-nos a melhorar o aplicativo relatando bugs ou enviando ideias.
-            </p>
-          </div>
-          
-          <Button
-            onClick={() => setIsBugModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 shrink-0 ml-4"
-          >
-            Reportar
-          </Button>
-        </div>
-      </div>
-
-      {/* Future Settings Placeholder */}
-      <div className="bg-gray-50 dark:bg-[#2d2d2d] shadow rounded-xl p-6 mb-4 w-full max-w-2xl border border-gray-200 dark:border-[#404040]">
-        <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
-          Mais configurações em breve...
-        </h3>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          • Unidades de medida<br />
-          • Notificações personalizadas<br />
-          • E muito mais!
-        </p>
+        {/* Future Settings Placeholder */}
+        {/* <div className="bg-gray-50 dark:bg-[#2d2d2d] shadow rounded-xl p-6 mt-4 w-full border border-gray-200 dark:border-[#404040]">
+          <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
+            Mais configurações em breve...
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            • Unidades de medida<br />
+            • Notificações personalizadas<br />
+            • E muito mais!
+          </p>
+        </div> */}
       </div>
 
       <Footer />
@@ -726,13 +249,14 @@ export function Settings() {
         />
       )}
 
-      {isBugModalOpen && usuarioID && (
-        <ReportBugModal
-          onClose={() => setIsBugModalOpen(false)}
-          usuarioID={usuarioID || ''}
-          nome={nome}
-          email={email}
-          username={username}
+      {isPremiumModalOpen && usuarioID && (
+        <PremiumUpgradeModal
+          isOpen={isPremiumModalOpen}
+          onClose={() => setIsPremiumModalOpen(false)}
+          userId={usuarioID}
+          userName={nome || ''}
+          userEmail={email || ''}
+          userPhone={telefone || ''}
         />
       )}
     </main>
