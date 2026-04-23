@@ -5,6 +5,7 @@ import { doc, getDoc, collection, getDocs, query, where, orderBy, limit } from '
 import { ArrowLeft, Lock, UsersRound, Dumbbell, Activity } from 'lucide-react'
 import { BadgeList } from '../components/badge-chip'
 import { resolveUserBadges, resolveAvatarRing } from '../data/badges'
+import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
 
 // Types
 interface Privacidade {
@@ -82,6 +83,36 @@ export function FriendProfile() {
   const [treinos, setTreinos] = useState<TreinoListItem[]>([])
   const [loadingTreinos, setLoadingTreinos] = useState(false)
   const [logsLimit, setLogsLimit] = useState(7) // Start with 7 days approx
+
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
+  const [isPremium, setIsPremium] = useState(false)
+  const [nome, setNome] = useState<string | null>(null)
+  const [email, setEmail] = useState<string | null>(null)
+  const [telefone, setTelefone] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!currentUserId) {
+      navigate('/login')
+    } else {
+      const fetchUserData = async () => {
+        try {
+          const userDocRef = doc(db, 'usuarios', currentUserId)
+          const userDoc = await getDoc(userDocRef)
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data()
+            setNome(userData.nome || 'Não disponível')
+            setEmail(userData.email || 'Não disponível')
+            setTelefone(userData.telefone || null)
+            setIsPremium(userData.isPremium === true)
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+        }
+      } 
+      fetchUserData()
+    }
+  }, [currentUserId, navigate])
 
   useEffect(() => {
     // Determine if the *viewer* is premium
@@ -217,6 +248,14 @@ export function FriendProfile() {
     setLogsLimit(prev => prev + 10)
   }
 
+  const handleOpenUpgradeModal = () => {
+    setIsUpgradeModalOpen(true)
+  }
+
+  const handleCloseUpgradeModal = () => {
+    setIsUpgradeModalOpen(false)
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212]">
@@ -278,7 +317,7 @@ export function FriendProfile() {
           )}
 
           {/* Badges */}
-          <BadgeList badges={resolveUserBadges(profile)} />
+          <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} />
         </div>
 
         {/* Info Grid */}
@@ -488,6 +527,17 @@ export function FriendProfile() {
           )}
         </div>
       </div>
+
+      {isUpgradeModalOpen && (
+        <PremiumUpgradeModal  
+          isOpen={isUpgradeModalOpen}
+          onClose={handleCloseUpgradeModal}
+          userEmail={email || ''}
+          userName={nome || ''}
+          userId={currentUserId || ''}
+          userPhone={telefone || ''}
+        />
+      )}
     </main>
   )
 }

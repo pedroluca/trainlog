@@ -7,11 +7,12 @@ import { type BadgeDefinition } from '../data/badges'
 type BadgeModalProps = {
   badge: BadgeDefinition
   onClose: () => void
-  onUpgrade?: () => void
+  onUpgrade: () => void
+  userIsPremium?: boolean
 }
 
-export function BadgeModal({ badge, onClose, onUpgrade }: BadgeModalProps) {
-  const { Icon, title, description, chipClass, upgradeLink } = badge
+export function BadgeModal({ badge, onClose, onUpgrade, userIsPremium = false }: BadgeModalProps) {
+  const { Icon, title, description, chipClass } = badge
 
   return (
     <div
@@ -42,7 +43,7 @@ export function BadgeModal({ badge, onClose, onUpgrade }: BadgeModalProps) {
         <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{description}</p>
 
         {/* Upgrade CTA */}
-        {upgradeLink && onUpgrade && (
+        {!userIsPremium && title === 'Premium' && (
           <button
             onClick={() => { onUpgrade(); onClose() }}
             className="mt-5 flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors border border-amber-300 dark:border-amber-600/50 rounded-full px-4 py-1.5 hover:bg-amber-50 dark:hover:bg-amber-900/10"
@@ -86,11 +87,11 @@ export function BadgeChip({ badge, onClick }: BadgeChipProps) {
 
 type BadgeListProps = {
   badges: BadgeDefinition[]
-  /** Called when user taps "Torne-se Premium" inside the modal */
-  onUpgrade?: () => void
+  userIsPremium?: boolean
+  onUpgrade: () => void
 }
 
-export function BadgeList({ badges, onUpgrade }: BadgeListProps) {
+export function BadgeList({ badges, userIsPremium = false, onUpgrade }: BadgeListProps) {
   const [activeBadge, setActiveBadge] = useState<BadgeDefinition | null>(null)
 
   if (badges.length === 0) return null
@@ -112,6 +113,7 @@ export function BadgeList({ badges, onUpgrade }: BadgeListProps) {
           badge={activeBadge}
           onClose={() => setActiveBadge(null)}
           onUpgrade={onUpgrade}
+          userIsPremium={userIsPremium}
         />
       )}
     </>

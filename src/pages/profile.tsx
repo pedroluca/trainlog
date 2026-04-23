@@ -475,7 +475,7 @@ export function Profile() {
           <p className="text-sm md:text-base font-bold text-gray-500 dark:text-gray-400">{username ? '@' + username : ''}</p>
 
           {/* Badges */}
-          <BadgeList badges={userBadges} onUpgrade={handleOpenUpgradeModal} />
+          <BadgeList onUpgrade={handleOpenUpgradeModal} badges={userBadges} userIsPremium={isPremium} />
         </div>
         
         {/* Personal Info Fields */}
