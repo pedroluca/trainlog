@@ -1,5 +1,5 @@
 interface SettingsCardProps {
-  action: React.ReactNode
+  action?: React.ReactNode
   title?: string
   description?: string
   icon?: React.ElementType

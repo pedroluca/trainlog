@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
-import { ArrowLeft, Shield } from 'lucide-react'
 import { Toast, ToastState } from '../components/toast'
+import { BackArrowButton } from '../components/back-arrow-button'
 
 export function SettingsPrivacy() {
   const navigate = useNavigate()
@@ -86,23 +86,8 @@ export function SettingsPrivacy() {
   }
 
   return (
-    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
-      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="cursor-pointer flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
-        >
-          <ArrowLeft size={20} />
-          <span>Voltar</span>
-        </button>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-          <Shield className="text-[#2980B9]" size={32} />
-          Privacidade
-</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Controle o que seus amigos podem ver quando acessarem o seu perfil. Ative as opções abaixo para ocultar a informação correspondente.
-        </p>
-      </div>
+    <main className="flex flex-col items-center min-h-screen bg-gray-100 dark:bg-[#121212] p-4 pb-24">
+      <BackArrowButton title="Privacidade" route="/profile/settings" />
 
       <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
         <div className="space-y-6">

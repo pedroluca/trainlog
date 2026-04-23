@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Upload, CheckCircle2, Headset, X } from 'lucide-react'
+import { Upload, CheckCircle2, X } from 'lucide-react'
 import { Button } from '../components/button'
 import { addDoc, collection, serverTimestamp, doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { notifyAdmins } from '../utils/admin-notifications'
+import { BackArrowButton } from '../components/back-arrow-button'
 
 export function SettingsSupport() {
   const navigate = useNavigate()
@@ -158,22 +159,7 @@ export function SettingsSupport() {
 
   return (
     <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
-      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="cursor-pointer flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
-        >
-          <ArrowLeft size={20} />
-          <span>Voltar</span>
-        </button>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-          <Headset className="text-blue-500" size={32} />
-          Ajuda e Suporte
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Encontrou um problema ou tem uma sugestão? Relate bugs ou envie ideias.
-        </p>
-      </div>
+      <BackArrowButton title="Ajuda e Suporte" route="/profile/settings" />
 
       <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
         <form onSubmit={handleSubmit} className="space-y-4">

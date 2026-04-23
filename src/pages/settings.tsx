@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { ArrowLeft, Palette, Shield, Lock, Headset, Volume2, VolumeX, Mail, ChevronRight, Crown } from 'lucide-react'
+import { Palette, Shield, Lock, Headset, Volume2, VolumeX, Mail, ChevronRight, Crown, Box, ShieldUser, UserRound, ExternalLink } from 'lucide-react'
 import { Toast, ToastState } from '../components/toast'
 import { Footer } from '../components/footer'
 import { SettingsCard } from '../components/settings-card'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
+import { BackArrowButton } from '../components/back-arrow-button'
+import { getVersion } from '../version'
 
 export function Settings() {
   const navigate = useNavigate()
@@ -26,6 +28,7 @@ export function Settings() {
   const [telefone, setTelefone] = useState<string | null>(null)
   const [isPremium, setIsPremium] = useState(false)
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false)
+  const [loadingUser, setLoadingUser] = useState(true)
   
   const [toast, setToast] = useState<ToastState>({
     show: false,
@@ -39,7 +42,8 @@ export function Settings() {
       return
     }
 
-    const fetchUserData = async () => {
+    const fetchUserDataAndSettings = async () => {
+      setLoadingUser(true)
       try {
         const userDocRef = doc(db, 'usuarios', usuarioID)
         const userDoc = await getDoc(userDocRef)
@@ -49,36 +53,21 @@ export function Settings() {
           setNome(userData.nome || 'Não disponível')
           setEmail(userData.email || 'Não disponível')
           setTelefone(userData.telefone || null)
-          setIsPremium(userData.isPremium || false)
+          setIsPremium(userData.isPremium === true)
+          
+          setAudioEnabled(userData.audioEnabled === true)
+          setEmailEnabled(userData.emailNotifications !== false)
         } else {
           console.error('Usuário não encontrado no Firestore')
         }
       } catch (err) {
-        console.error('Erro ao buscar dados do usuário:', err)
-      }
-    }
-    fetchUserData()
-
-    const fetchSettings = async () => {
-      try {
-        const userDocRef = doc(db, 'usuarios', usuarioID)
-        const userDoc = await getDoc(userDocRef)
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data()
-          setNome(userData.nome || null)
-          setEmail(userData.email || null)
-          setTelefone(userData.telefone || null)
-          
-          setAudioEnabled(userData.audioEnabled === true)
-          setEmailEnabled(userData.emailNotifications !== false)
-        }
-      } catch (err) {
-        console.error('Erro ao buscar configurações:', err)
+        console.error('Erro ao buscar dados e configurações do usuário:', err)
+      } finally {
+        setLoadingUser(false)
       }
     }
 
-    fetchSettings()
+    fetchUserDataAndSettings()
   }, [usuarioID, navigate])
 
   const handleAudioToggle = async (e: React.MouseEvent) => {
@@ -125,6 +114,21 @@ export function Settings() {
     }
   }
 
+  const SettingsCardSkeleton = () => (
+    <div className="flex gap-3 items-center bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-4 w-full mb-4 border border-gray-200 dark:border-[#404040]">
+      <div className="flex-shrink-0 w-10 flex items-center justify-center">
+        <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse" />
+      </div>
+      <div className="flex-1">
+        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2 animate-pulse" />
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse" />
+      </div>
+      <div className="flex-shrink-0 flex items-center justify-end">
+        <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+      </div>
+    </div>
+  )
+
   const EmailToggle = () => (
     <button
       onClick={handleEmailToggle}
@@ -159,25 +163,22 @@ export function Settings() {
 
   return (
     <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
-      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl mb-6">
-        <button
-          onClick={() => navigate('/profile')}
-          className="cursor-pointer flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
-        >
-          <ArrowLeft size={20} />
-          <span>Voltar ao Perfil</span>
-        </button>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Configurações</h1>
-      </div>
+      <BackArrowButton title="Configurações" route="/profile" />
 
       <div className="w-full max-w-2xl flex flex-col">
-        {!isPremium && !!usuarioID && <SettingsCard
-          title="Upgrade para Premium"
-          description="Desbloqueie todos os recursos com uma assinatura vitalícia!"
-          icon={Crown}
-          action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
-          onClick={() => setIsPremiumModalOpen(true)}
-        />}
+        {loadingUser ? (
+          <SettingsCardSkeleton />
+        ) : (
+          <>
+            {!isPremium && <SettingsCard
+              title="Upgrade para Premium"
+              description="Desbloqueie todos os recursos com uma assinatura vitalícia!"
+              icon={Crown}
+              action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
+              onClick={() => setIsPremiumModalOpen(true)}
+            />}
+          </>
+        )}
 
         <SettingsCard
           title="Aparência"
@@ -227,20 +228,34 @@ export function Settings() {
           onClick={() => navigate('/profile/settings/support')}
         />
 
-        {/* Future Settings Placeholder */}
-        {/* <div className="bg-gray-50 dark:bg-[#2d2d2d] shadow rounded-xl p-6 mt-4 w-full border border-gray-200 dark:border-[#404040]">
-          <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
-            Mais configurações em breve...
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
-            • Unidades de medida<br />
-            • Notificações personalizadas<br />
-            • E muito mais!
-          </p>
-        </div> */}
+        <h2 className='w-full max-w-2xl text-left text-xl text-gray-800 dark:text-gray-100 mb-2'>
+          Sobre
+        </h2>
+
+        <SettingsCard
+          title="Versão do app"
+          description={getVersion()}
+          icon={Box}
+        />
+
+        <SettingsCard
+          title="Política de Privacidade"
+          description="Leia nossa política de privacidade"
+          icon={ShieldUser}
+          action={<ExternalLink className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
+          onClick={() => window.open('/privacy', '_blank')}
+        />
+
+        <SettingsCard
+          title="Desenvolvedor"
+          description="Pedro Luca Prates"
+          icon={UserRound}
+          action={<ExternalLink className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
+          onClick={() => window.open('https://pedroluca.dev.br', '_blank')}
+        />
       </div>
 
-      <Footer />
+      <Footer showInformation={false} />
       
       {toast.show && (
         <Toast

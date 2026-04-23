@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Sun, Moon, Monitor, Check, Lock } from 'lucide-react'
+import { Sun, Moon, Monitor, Check, Lock } from 'lucide-react'
 import { useTheme, PRIMARY_COLORS, PrimaryColorHex } from '../contexts/theme-context'
 import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
+import { BackArrowButton } from '../components/back-arrow-button'
 
 export function SettingsAppearance() {
-  const navigate = useNavigate()
   const { themeMode, setThemeMode, primaryColor, setPrimaryColor } = useTheme()
   const [isPremium, setIsPremium] = useState(false)
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false)
@@ -38,17 +37,7 @@ export function SettingsAppearance() {
   return (
     <main className="flex flex-col items-center min-h-screen bg-gray-100 dark:bg-[#121212] p-4 pb-24">
       {/* Header */}
-      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="cursor-pointer flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
-        >
-          <ArrowLeft size={20} />
-          <span>Voltar</span>
-        </button>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Aparência</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Personalize o visual do aplicativo.</p>
-      </div>
+      <BackArrowButton title="Aparência" route="/profile/settings" />
 
       {/* Theme Mode */}
       <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
@@ -113,14 +102,13 @@ export function SettingsAppearance() {
             return (
               <button
                 key={color.hex}
-                onClick={() => !isDisabled && setPrimaryColor(color.hex as PrimaryColorHex)}
+                onClick={() => { isDisabled ? setIsPremiumModalOpen(true) : setPrimaryColor(color.hex as PrimaryColorHex)}}
                 title={color.name}
-                disabled={isDisabled}
                 className={`relative w-full aspect-square rounded-full border-4 transition-all cursor-pointer ${
                   isSelected
                     ? 'border-gray-800 dark:border-white scale-110 shadow-lg'
                     : 'border-transparent hover:scale-105'
-                } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                } ${isDisabled ? 'opacity-40' : ''}`}
                 style={{ backgroundColor: color.hex }}
               >
                 {isSelected && (
@@ -137,15 +125,6 @@ export function SettingsAppearance() {
             )
           })}
         </div>
-
-        {!isPremium && (
-          <button
-            onClick={() => setIsPremiumModalOpen(true)}
-            className="mt-5 w-full py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-semibold shadow hover:opacity-90 transition-opacity cursor-pointer"
-          >
-            ✨ Fazer Upgrade para Premium
-          </button>
-        )}
       </div>
 
       {isPremiumModalOpen && usuarioID && (

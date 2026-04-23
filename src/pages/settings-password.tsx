@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { auth } from '../firebaseConfig'
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { Button } from '../components/button'
-import { ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
+import { BackArrowButton } from '../components/back-arrow-button'
 
 export function SettingsPassword() {
   const navigate = useNavigate()
@@ -87,23 +88,8 @@ export function SettingsPassword() {
   }
 
   return (
-    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
-      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="cursor-pointer flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4"
-        >
-          <ArrowLeft size={20} />
-          <span>Voltar</span>
-        </button>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-          <Lock className="text-gray-700 dark:text-gray-300" size={32} />
-          Alterar Senha
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Crie uma nova senha de acesso à sua conta.
-        </p>
-      </div>
+    <main className="flex flex-col items-center min-h-screen bg-gray-100 dark:bg-[#121212] p-4 pb-24">
+      <BackArrowButton title="Alterar Senha" route="/profile/settings" />
 
       <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
         <form onSubmit={handlePasswordChange} className="space-y-4">
