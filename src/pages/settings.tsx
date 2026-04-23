@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { ArrowLeft, Palette, Shield, Lock, Headset, Volume2, VolumeX, Mail, Gem, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Palette, Shield, Lock, Headset, Volume2, VolumeX, Mail, ChevronRight, Crown } from 'lucide-react'
 import { Toast, ToastState } from '../components/toast'
 import { Footer } from '../components/footer'
 import { SettingsCard } from '../components/settings-card'
@@ -171,10 +171,10 @@ export function Settings() {
       </div>
 
       <div className="w-full max-w-2xl flex flex-col">
-        {!isPremium && <SettingsCard
+        {!isPremium && !!usuarioID && <SettingsCard
           title="Upgrade para Premium"
           description="Desbloqueie todos os recursos com uma assinatura vitalícia!"
-          icon={Gem}
+          icon={Crown}
           action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
           onClick={() => setIsPremiumModalOpen(true)}
         />}

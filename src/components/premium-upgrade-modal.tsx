@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from './button'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
-import { X, Sparkles, Calendar, TrendingUp, Crown, Eye, Star } from 'lucide-react'
+import { X, Sparkles, Calendar, TrendingUp, Crown, Eye, Star, Palette } from 'lucide-react'
 import { trackPremiumUpgradeModalOpened, trackPremiumUpgradeRequested } from '../utils/analytics'
 import { notifyAdmins } from '../utils/admin-notifications'
 import QRCode from '../assets/qr-code-upgrade.jpg'
@@ -29,7 +29,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
 
   // PIX Configuration (UPDATE WITH YOUR PIX KEY!)
   const PIX_KEY = 'suporte@trainlog.site' // TROCAR PELA SUA CHAVE PIX
-  const PIX_VALUE = '9.90' // Upgrade Premium fee (registration is R$ 14,90)
+  const PIX_VALUE = '9.90' // Upgrade Premium fee
   const ADMIN_WHATSAPP = '5571982434416' // TROCAR PELO SEU WHATSAPP (com DDD, sem espaços)
 
   const copyPixKey = () => {
@@ -237,6 +237,20 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
 
           <div className='flex items-center gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3'>
             <div className='flex-shrink-0 w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center'>
+              <Palette className='text-white' size={18} />
+            </div>
+            <div>
+              <h3 className='font-bold text-gray-800 dark:text-gray-100 text-sm'>
+                Personalização de Cores
+              </h3>
+              <p className='text-xs text-gray-600 dark:text-gray-400 leading-tight'>
+                Altere a cor principal do aplicativo para deixar com a sua cara.
+              </p>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3'>
+            <div className='flex-shrink-0 w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center'>
               <TrendingUp className='text-white' size={18} />
             </div>
             <div>
@@ -278,36 +292,20 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
           </div>
         </div>
 
-        {/* User Info Display */}
-        <div className='mb-6 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#404040] rounded-lg p-3 text-center'>
-          <p className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
-            Solicitação será registrada como:
-          </p>
-          <p className='text-sm font-bold text-gray-800 dark:text-gray-100'>
-            {userName}
-          </p>
-        </div>
-
         {/* Pricing Info */}
         <div className='bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-2 border-amber-300 dark:border-amber-700 rounded-lg p-4 mb-6'>
           <div className='flex items-center justify-between mb-2'>
             <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-              Investimento Premium:
+              Investimento único:
             </span>
             <div className='text-right'>
               <span className='text-2xl font-bold text-amber-600 dark:text-amber-400'>
                 R$ 9,90
               </span>
-              <span className='text-xs text-gray-600 dark:text-gray-400 ml-1'>
-                / upgrade
-              </span>
             </div>
           </div>
           <p className='text-xs text-gray-600 dark:text-gray-400 text-center'>
-            💳 Pagamento via PIX • Acesso vitalício aos recursos Premium
-          </p>
-          <p className='text-xs text-gray-500 dark:text-gray-500 text-center mt-1'>
-            (Você já pagou R$ 14,90 no cadastro)
+            Pagamento via PIX • Acesso vitalício aos recursos Premium
           </p>
         </div>
 
@@ -318,7 +316,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
             className='flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100'
             disabled={loading}
           >
-            Cancelar
+            Em outro momento
           </Button>
           <Button
             onClick={handleUpgradeRequest}
@@ -341,7 +339,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
 
         {/* Footer Note */}
         <p className='text-xs text-center text-gray-500 dark:text-gray-400 mt-4'>
-          Após aprovação, você receberá instruções de pagamento por email
+          Após confirmação do pagamento, você receberá automaticamente a liberação dos recursos Premium
         </p>
       </div>
       

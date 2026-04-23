@@ -4,19 +4,30 @@ import { ArrowLeft, Sun, Moon, Monitor, Check, Lock } from 'lucide-react'
 import { useTheme, PRIMARY_COLORS, PrimaryColorHex } from '../contexts/theme-context'
 import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
+import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
 
 export function SettingsAppearance() {
   const navigate = useNavigate()
   const { themeMode, setThemeMode, primaryColor, setPrimaryColor } = useTheme()
   const [isPremium, setIsPremium] = useState(false)
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false)
+  const [nome, setNome] = useState<string | null>(null)
+  const [email, setEmail] = useState<string | null>(null)
+  const [telefone, setTelefone] = useState<string | null>(null)
+  const usuarioID = localStorage.getItem('usuarioId')
 
   useEffect(() => {
-    const usuarioID = localStorage.getItem('usuarioId')
     if (!usuarioID) return
     getDoc(doc(db, 'usuarios', usuarioID)).then(snap => {
-      if (snap.exists()) setIsPremium(snap.data().isPremium === true)
+      if (snap.exists()) {
+        const data = snap.data()
+        setIsPremium(data.isPremium === true)
+        setNome(data.nome || null)
+        setEmail(data.email || null)
+        setTelefone(data.telefone || null)
+      }
     }).catch(console.error)
-  }, [])
+  }, [usuarioID])
 
   const themeModes = [
     { id: 'light' as const, label: 'Claro', icon: Sun },
@@ -129,13 +140,24 @@ export function SettingsAppearance() {
 
         {!isPremium && (
           <button
-            onClick={() => navigate('/profile/settings')}
+            onClick={() => setIsPremiumModalOpen(true)}
             className="mt-5 w-full py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-semibold shadow hover:opacity-90 transition-opacity cursor-pointer"
           >
             ✨ Fazer Upgrade para Premium
           </button>
         )}
       </div>
+
+      {isPremiumModalOpen && usuarioID && (
+        <PremiumUpgradeModal
+          isOpen={isPremiumModalOpen}
+          onClose={() => setIsPremiumModalOpen(false)}
+          userId={usuarioID}
+          userName={nome || ''}
+          userEmail={email || ''}
+          userPhone={telefone || ''}
+        />
+      )}
     </main>
   )
 }
