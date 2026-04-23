@@ -25,6 +25,10 @@ const TrainerConnections = lazy(() => import('./pages/trainer-connections').then
 const PrivacyPolicy = lazy(() => import('./pages/privacy-policy').then(m => ({ default: m.PrivacyPolicy })))
 const DeleteAccount = lazy(() => import('./pages/delete-account').then(m => ({ default: m.DeleteAccount })))
 
+const SettingsPrivacy = lazy(() => import('./pages/settings-privacy').then(m => ({ default: m.SettingsPrivacy })))
+const SettingsPassword = lazy(() => import('./pages/settings-password').then(m => ({ default: m.SettingsPassword })))
+const SettingsSupport = lazy(() => import('./pages/settings-support').then(m => ({ default: m.SettingsSupport })))
+
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
 import { WhatsNewModal } from './components/whats-new-modal'
@@ -283,6 +287,9 @@ export function App() {
               <Route path='/profile'>
                 <Route index element={<Profile />} />
                 <Route path='settings' element={<Settings />} />
+                <Route path='settings/privacy' element={<SettingsPrivacy />} />
+                <Route path='settings/password' element={<SettingsPassword />} />
+                <Route path='settings/support' element={<SettingsSupport />} />
                 <Route path='body-metrics' element={<BodyMetrics />} />
                 <Route path='streak-calendar' element={<StreakCalendar />} />
                 <Route path='log' element={<LogPage />} />

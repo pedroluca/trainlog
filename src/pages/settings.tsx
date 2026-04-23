@@ -26,6 +26,7 @@ export function Settings() {
   const [nome, setNome] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
   const [telefone, setTelefone] = useState<string | null>(null)
+  const [isPremium, setIsPremium] = useState(false)
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false)
   
   const [toast, setToast] = useState<ToastState>({
@@ -39,6 +40,26 @@ export function Settings() {
       navigate('/login')
       return
     }
+
+    const fetchUserData = async () => {
+      try {
+        const userDocRef = doc(db, 'usuarios', usuarioID)
+        const userDoc = await getDoc(userDocRef)
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data()
+          setNome(userData.nome || 'Não disponível')
+          setEmail(userData.email || 'Não disponível')
+          setTelefone(userData.telefone || null)
+          setIsPremium(userData.isPremium || false)
+        } else {
+          console.error('Usuário não encontrado no Firestore')
+        }
+      } catch (err) {
+        console.error('Erro ao buscar dados do usuário:', err)
+      }
+    }
+    fetchUserData()
 
     const fetchSettings = async () => {
       try {
@@ -170,13 +191,13 @@ export function Settings() {
       </div>
 
       <div className="w-full max-w-2xl flex flex-col">
-        <SettingsCard
+        {!isPremium && <SettingsCard
           title="Upgrade para Premium"
           description="Desbloqueie todos os recursos com uma assinatura vitalícia!"
           icon={Gem}
           action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
           onClick={() => setIsPremiumModalOpen(true)}
-        />
+        />}
 
         <SettingsCard
           title="Modo Escuro"
