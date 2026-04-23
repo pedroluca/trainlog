@@ -744,7 +744,7 @@ export function Profile() {
             <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">Você ainda não tem treinos cadastrados</p>
             <Button
               onClick={() => navigate('/train')}
-              className="bg-[#27AE60] hover:bg-[#219150] text-white px-6 py-2"
+              className="bg-primary hover:bg-[#219150] text-white px-6 py-2"
             >
               Criar Primeiro Treino
             </Button>
@@ -906,7 +906,7 @@ export function Profile() {
                   value={editedNome}
                   onChange={(e) => setEditedNome(e.target.value)}
                   placeholder="Seu nome"
-                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50"
+                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
               <div>
@@ -916,7 +916,7 @@ export function Profile() {
                   value={editedUsername}
                   onChange={(e) => setEditedUsername(e.target.value)}
                   placeholder="seu_username"
-                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50"
+                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
               <div>
@@ -925,12 +925,12 @@ export function Profile() {
                   type="date"
                   value={editedDataNascimento}
                   onChange={(e) => setEditedDataNascimento(e.target.value)}
-                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50"
+                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Instagram</label>
-                <div className="flex items-center border border-gray-200 dark:border-[#404040] rounded-lg overflow-hidden bg-gray-50 dark:bg-[#1a1a1a] focus-within:ring-2 focus-within:ring-[#27AE60]/50">
+                <div className="flex items-center border border-gray-200 dark:border-[#404040] rounded-lg overflow-hidden bg-gray-50 dark:bg-[#1a1a1a] focus-within:ring-2 focus-within:ring-primary/50">
                   <span className="px-3 text-sm text-gray-400 dark:text-gray-500 select-none">@</span>
                   <input
                     type="text"
@@ -962,7 +962,7 @@ export function Profile() {
                     onChange={(e) => setEditedCref(e.target.value.toUpperCase())}
                     placeholder="Ex: CREF 123456-G/SP"
                     maxLength={30}
-                    className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50"
+                    className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
               )}
@@ -998,14 +998,14 @@ export function Profile() {
             href='https://pedroluca.dev.br' 
             target='_blank' 
             rel='noopener noreferrer' 
-            className='text-[#27AE60] hover:text-[#219150] font-medium transition-colors'
+            className='text-primary hover:text-[#219150] font-medium transition-colors'
           >
             Pedro Luca Prates
           </a>
         </p>
         <button
           onClick={() => setIsWhatsNewModalOpen(true)}
-          className="text-xs text-gray-400 dark:text-gray-500 hover:text-[#27AE60] dark:hover:text-[#27AE60] transition-colors cursor-pointer underline"
+          className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer underline"
         >
           {getVersionWithPrefix()}
         </button>

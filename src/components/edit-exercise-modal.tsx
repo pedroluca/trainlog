@@ -127,7 +127,7 @@ export function EditExerciseModal({
     }
   }
 
-  const inputClass = 'flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 text-center w-4/6 focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all shadow-sm'
+  const inputClass = 'flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 text-center w-4/6 focus:outline-none focus:ring-2 focus:ring-primary/50 font-medium transition-all shadow-sm'
   const stepBtnClass = 'bg-gray-100 border border-gray-200 dark:border-[#404040] dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#3a3a3a] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-[46px] rounded-lg flex items-center justify-center transition-all shadow-sm'
 
   return (
@@ -141,7 +141,7 @@ export function EditExerciseModal({
               type='text'
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
-              className='w-full border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all shadow-sm'
+              className='w-full border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 font-medium transition-all shadow-sm'
             />
           </div>
           <div>
@@ -186,7 +186,7 @@ export function EditExerciseModal({
                 }
               }}
               className={`cursor-pointer relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
-                editedUsesProgressiveWeight ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
+                editedUsesProgressiveWeight ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
               }`}
             >
               <span
@@ -211,7 +211,7 @@ export function EditExerciseModal({
                       newSets[index].reps = Number(e.target.value)
                       setEditedProgressiveSets(newSets)
                     }}
-                    className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 transition-all shadow-sm'
+                    className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-sm'
                     placeholder='Reps'
                   />
                   <span className='text-gray-600 dark:text-gray-400 text-sm font-medium'>x</span>
@@ -223,7 +223,7 @@ export function EditExerciseModal({
                       newSets[index].weight = Number(e.target.value)
                       setEditedProgressiveSets(newSets)
                     }}
-                    className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 transition-all shadow-sm'
+                    className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-sm'
                     placeholder='Peso'
                   />
                   <span className='text-gray-600 dark:text-gray-400 text-sm font-medium'>kg</span>

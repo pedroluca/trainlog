@@ -160,7 +160,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
               disabled={isSubmitting}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedCategory === 'all'
-                  ? 'bg-[#27AE60] text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
@@ -173,7 +173,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
                 disabled={isSubmitting}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === cat.value
-                    ? 'bg-[#27AE60] text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -188,7 +188,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
               <div
                 key={template.id}
                 className={`border-2 border-gray-200 dark:border-[#404040] dark:bg-[#1a1a1a] rounded-lg p-4 transition-all ${
-                  isSubmitting ? 'opacity-60 cursor-not-allowed' : 'hover:border-[#27AE60] cursor-pointer hover:shadow-md'
+                  isSubmitting ? 'opacity-60 cursor-not-allowed' : 'hover:border-primary cursor-pointer hover:shadow-md'
                 }`}
                 onClick={() => !isSubmitting && handleSelectTemplate(template)}
               >
@@ -246,7 +246,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
         <Button
           type="button"
           className="w-full text-white mb-6 flex items-center justify-center gap-2"
-          bgColor='bg-[#27AE60] hover:bg-[#229954]'
+          bgColor='bg-primary hover:bg-[#229954]'
           onClick={() => setShowTemplates(true)}
           disabled={isSubmitting}
         >

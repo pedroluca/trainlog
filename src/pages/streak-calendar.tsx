@@ -232,7 +232,7 @@ export function StreakCalendar() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#121212]">
-        <div className="w-12 h-12 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -335,7 +335,7 @@ export function StreakCalendar() {
               {!isCurrentMonth && (
                 <button
                   onClick={goToCurrentMonth}
-                  className="cursor-pointer text-xs md:text-sm font-bold text-[#27AE60] hover:text-[#219150] dark:text-green-400 dark:hover:text-green-300 mt-1.5 transition-colors uppercase tracking-wider bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full"
+                  className="cursor-pointer text-xs md:text-sm font-bold text-primary hover:text-[#219150] dark:text-green-400 dark:hover:text-green-300 mt-1.5 transition-colors uppercase tracking-wider bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full"
                 >
                   Hoje
                 </button>

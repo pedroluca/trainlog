@@ -28,6 +28,7 @@ const DeleteAccount = lazy(() => import('./pages/delete-account').then(m => ({ d
 const SettingsPrivacy = lazy(() => import('./pages/settings-privacy').then(m => ({ default: m.SettingsPrivacy })))
 const SettingsPassword = lazy(() => import('./pages/settings-password').then(m => ({ default: m.SettingsPassword })))
 const SettingsSupport = lazy(() => import('./pages/settings-support').then(m => ({ default: m.SettingsSupport })))
+const SettingsAppearance = lazy(() => import('./pages/settings-appearance').then(m => ({ default: m.SettingsAppearance })))
 
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
@@ -48,7 +49,7 @@ import { ResetPassword } from './pages/reset-password'
 
 const PageLoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-900">
-    <div className="w-12 h-12 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div>
+    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
   </div>
 )
 // import { Teste } from './pages/teste'
@@ -290,6 +291,7 @@ export function App() {
                 <Route path='settings/privacy' element={<SettingsPrivacy />} />
                 <Route path='settings/password' element={<SettingsPassword />} />
                 <Route path='settings/support' element={<SettingsSupport />} />
+                <Route path='settings/appearance' element={<SettingsAppearance />} />
                 <Route path='body-metrics' element={<BodyMetrics />} />
                 <Route path='streak-calendar' element={<StreakCalendar />} />
                 <Route path='log' element={<LogPage />} />

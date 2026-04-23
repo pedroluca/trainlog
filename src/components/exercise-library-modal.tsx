@@ -51,7 +51,7 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nome, músculo ou equipamento..."
-            className="w-full border-2 border-gray-300 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#27AE60] focus:border-transparent"
+            className="w-full border-2 border-gray-300 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             autoFocus
           />
         </div>
@@ -63,7 +63,7 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
               onClick={() => setSelectedMuscle('all')}
               className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                 selectedMuscle === 'all'
-                  ? 'bg-[#27AE60] text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -75,7 +75,7 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
                 onClick={() => setSelectedMuscle(muscle)}
                 className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                   selectedMuscle === muscle
-                    ? 'bg-[#27AE60] text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -99,10 +99,10 @@ export function ExerciseLibraryModal({ onClose, onSelectExercise }: ExerciseLibr
                 <button
                   key={exercise.id}
                   onClick={() => handleSelectExercise(exercise)}
-                  className="text-left border-2 border-gray-200 rounded-lg overflow-hidden hover:border-[#27AE60] hover:bg-green-50 transition-all group p-4"
+                  className="text-left border-2 border-gray-200 rounded-lg overflow-hidden hover:border-primary hover:bg-green-50 transition-all group p-4"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-bold text-gray-800 group-hover:text-[#27AE60] transition-colors">
+                    <h3 className="font-bold text-gray-800 group-hover:text-primary transition-colors">
                       {exercise.nome}
                     </h3>
                     <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2 ${difficultyStyles[exercise.dificuldade]}`}>

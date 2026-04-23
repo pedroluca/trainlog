@@ -149,7 +149,7 @@ export function Progress() {
     return (
       <main className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Carregando progresso...</p>
         </div>
       </main>
@@ -167,7 +167,7 @@ export function Progress() {
           </p>
           <button
             onClick={() => navigate('/train')}
-            className="bg-[#27AE60] hover:bg-[#229954] text-white px-6 py-3 rounded-lg font-bold transition-all"
+            className="bg-primary hover:bg-[#229954] text-white px-6 py-3 rounded-lg font-bold transition-all"
           >
             Ir para Treinos
           </button>
@@ -182,7 +182,7 @@ export function Progress() {
         {/* Header Section */}
         <div className="flex flex-col mb-6">
           <div className="flex items-center gap-2 text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">
-            <TrendingUp size={32} className="text-[#27AE60]" />
+            <TrendingUp size={32} className="text-primary" />
             <h2>Progresso</h2>
           </div>
           <p className="text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wide uppercase ml-[42px]">Acompanhe sua evolução</p>
@@ -225,7 +225,7 @@ export function Progress() {
           <select
             value={selectedExercise}
             onChange={(e) => setSelectedExercise(e.target.value)}
-            className="w-full border-2 border-gray-300 dark:border-[#404040] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#27AE60] focus:border-transparent transition-all dark:bg-[#1a1a1a] dark:text-gray-100"
+            className="w-full border-2 border-gray-300 dark:border-[#404040] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all dark:bg-[#1a1a1a] dark:text-gray-100"
           >
             {exercisesList.map((exercise) => (
               <option key={exercise} value={exercise}>
@@ -242,7 +242,7 @@ export function Progress() {
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm p-4 text-center">
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Recorde Pessoal</p>
-                <p className="text-2xl font-bold text-[#27AE60]">{exerciseData.personalRecord}kg</p>
+                <p className="text-2xl font-bold text-primary">{exerciseData.personalRecord}kg</p>
               </div>
               <div className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] rounded-xl shadow-sm p-4 text-center">
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Último Peso</p>
@@ -316,7 +316,7 @@ export function Progress() {
               {exerciseData.history.length > 1 && (
                 <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#27AE60]"></div>
+                    <div className="w-3 h-3 rounded-full bg-primary"></div>
                     <span>Progressão de Peso</span>
                   </div>
                   <div className="flex items-center gap-2 ml-4">

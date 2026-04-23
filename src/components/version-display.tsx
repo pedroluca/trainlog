@@ -37,7 +37,7 @@ export function VersionDisplay({ theme = 'dark' }: VersionDisplayProps) {
             
             <div className="space-y-6">
               {VERSION_HISTORY.map((entry) => (
-                <div key={entry.version} className="border-l-4 border-[#27AE60] pl-4">
+                <div key={entry.version} className="border-l-4 border-primary pl-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xl font-bold">v{entry.version}</span>
                     <span className={`px-2 py-1 text-xs rounded ${

@@ -44,7 +44,7 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
         <form className="space-y-4">
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-bold mb-2">
-              Dia da Semana: <span className="text-[#27AE60] font-normal">{day}</span>
+              Dia da Semana: <span className="text-primary font-normal">{day}</span>
             </label>
             <div className="flex gap-1.5">
               {daysOfWeek.map((dayOption) => {
@@ -58,7 +58,7 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
                     onClick={() => !isDisabled && setDay(dayOption)}
                     className={`flex-1 aspect-square rounded-lg text-xs font-bold transition-all flex items-center justify-center
                       ${isSelected
-                        ? 'bg-[#27AE60] text-white ring-2 ring-[#27AE60] ring-offset-2 dark:ring-offset-[#2d2d2d] shadow-md'
+                        ? 'bg-primary text-white ring-2 ring-primary ring-offset-2 dark:ring-offset-[#2d2d2d] shadow-md'
                         : isDisabled
                           ? 'bg-gray-100 dark:bg-[#1a1a1a] text-gray-300 dark:text-gray-600 cursor-not-allowed'
                           : 'bg-gray-100 dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#404040] cursor-pointer'

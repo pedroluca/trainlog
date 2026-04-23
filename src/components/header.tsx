@@ -50,16 +50,16 @@ export function Header() {
 
   // Borda do avatar: founder > premium > padrão
   const avatarRing = isFounder
-    ? 'ring-2 ring-offset-1 ring-offset-[#27AE60] ring-purple-400'
+    ? 'ring-2 ring-offset-1 ring-offset-primary ring-purple-400'
     : isPremium
-      ? 'ring-2 ring-offset-1 ring-offset-[#27AE60] ring-yellow-400'
-      : 'ring-2 ring-offset-1 ring-offset-[#27AE60] ring-white/40'
+      ? 'ring-2 ring-offset-1 ring-offset-primary ring-yellow-400'
+      : 'ring-2 ring-offset-1 ring-offset-primary ring-white/40'
 
   const firstName = nome.split(' ')[0]
   const lastName = nome.split(' ')[1]
 
   return (
-    <header className={`bg-[#27AE60] text-white shadow-lg fixed top-0 left-0 right-0 z-20`}>
+    <header className={`bg-primary text-white shadow-lg fixed top-0 left-0 right-0 z-20`}>
       <main className='relative py-2.5 px-4 flex items-center justify-between border-b border-white/10'>
 
         {/* ── Esquerda: avatar + nome (logado) ou logo (deslogado) ── */}

@@ -12,12 +12,12 @@ export function Footer() {
           href='https://pedroluca.dev.br' 
           target='_blank' 
           rel='noopener noreferrer' 
-          className='text-[#27AE60] hover:text-[#219150] font-medium transition-colors'
+          className='text-primary hover:text-[#219150] font-medium transition-colors'
         >
           Pedro Luca Prates
         </a>
       </p>
-      <p className="text-xs text-gray-400 dark:text-gray-500 hover:text-[#27AE60] dark:hover:text-[#27AE60] transition-colors cursor-pointer underline">
+      <p className="text-xs text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors cursor-pointer underline">
         {getVersionWithPrefix()}
       </p>
     </footer>

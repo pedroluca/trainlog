@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+/* ================================
+   Primary Color CSS Variable
+   ================================ */
+:root {
+  --color-primary: #27AE60;
+  --color-primary-dark: #219150;
+}
+
+/* Utility classes that consume --color-primary */
+.bg-primary          { background-color: var(--color-primary) !important; }
+.bg-primary-dark     { background-color: var(--color-primary-dark) !important; }
+.text-primary        { color: var(--color-primary) !important; }
+.border-primary      { border-color: var(--color-primary) !important; }
+.ring-primary        { --tw-ring-color: var(--color-primary) !important; }
+.ring-offset-primary { --tw-ring-offset-color: var(--color-primary) !important; }
+.hover\:bg-primary:hover      { background-color: var(--color-primary) !important; }
+.hover\:bg-primary-dark:hover { background-color: var(--color-primary-dark) !important; }
+.hover\:text-primary:hover    { color: var(--color-primary) !important; }
+.focus\:ring-primary:focus    { --tw-ring-color: var(--color-primary) !important; }
+
 /* Dark mode custom variant */
 @custom-variant dark (&:is(.dark *));
 

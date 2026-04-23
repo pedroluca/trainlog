@@ -156,7 +156,7 @@ export function FriendFriends() {
               <input
                 type="text"
                 placeholder="Buscar amigo por nome ou username..."
-                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-[#252525] border border-gray-200 dark:border-[#404040] rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#27AE60] dark:focus:ring-[#27AE60] transition-all"
+                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-[#252525] border border-gray-200 dark:border-[#404040] rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -165,7 +165,7 @@ export function FriendFriends() {
             <div className="min-h-[300px]">
               {loading ? (
                 <div className="flex justify-center items-center h-[200px]">
-                  <div className="w-10 h-10 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 </div>
               ) : amigos.length === 0 ? (
                 <div className="text-center py-16 text-gray-500 dark:text-gray-400 flex flex-col items-center bg-gray-50/50 dark:bg-[#1a1a1a]/50 rounded-xl border border-dashed border-gray-200 dark:border-[#333]">

@@ -229,7 +229,7 @@ export function BodyMetrics() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#121212]">
-        <div className="w-12 h-12 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -367,7 +367,7 @@ export function BodyMetrics() {
                 <select
                   value={selectedHistoryId}
                   onChange={(e) => setSelectedHistoryId(e.target.value)}
-                  className="cursor-pointer appearance-none bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] text-gray-700 dark:text-gray-300 text-sm font-bold rounded-xl px-4 py-2.5 pr-10 w-full sm:w-auto outline-none transition-all focus:ring-2 focus:ring-[#27AE60]/20 focus:border-[#27AE60] dark:focus:border-emerald-500 shadow-sm"
+                  className="cursor-pointer appearance-none bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] text-gray-700 dark:text-gray-300 text-sm font-bold rounded-xl px-4 py-2.5 pr-10 w-full sm:w-auto outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-emerald-500 shadow-sm"
                 >
                   {measurements.map(m => (
                     <option key={m.id} value={m.id}>
@@ -384,14 +384,14 @@ export function BodyMetrics() {
           
           {measurements.length === 0 ? (
             <div className="text-center py-12 px-4 bg-gray-50 dark:bg-[#252525] rounded-2xl border border-dashed border-gray-300 dark:border-[#404040]">
-              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-[#27AE60] dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-primary dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Activity size={32} />
               </div>
               <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">Nenhuma medição registrada</h3>
               <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">Registre seu peso e altura para acompanhar sua evolução.</p>
               <Button
                 onClick={openAddModal}
-                className="bg-[#27AE60] hover:bg-[#219150] shadow-md shadow-emerald-600/20 text-white px-6 py-3"
+                className="bg-primary hover:bg-[#219150] shadow-md shadow-emerald-600/20 text-white px-6 py-3"
               >
                 Adicionar Primeira Medição
               </Button>
@@ -490,7 +490,7 @@ export function BodyMetrics() {
                   value={newDate}
                   onChange={(e) => setNewDate(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
-                  className="w-full bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] focus:ring-2 focus:ring-[#27AE60]/20 focus:border-[#27AE60] dark:focus:border-emerald-500 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-medium transition-all outline-none"
+                  className="w-full bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-emerald-500 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-medium transition-all outline-none"
                 />
               </div>
 
@@ -509,7 +509,7 @@ export function BodyMetrics() {
                     step="0.01"
                     value={newAltura}
                     onChange={(e) => setNewAltura(e.target.value)}
-                    className="flex-1 bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] focus:ring-2 focus:ring-[#27AE60]/20 focus:border-[#27AE60] dark:focus:border-emerald-500 rounded-xl px-4 py-3 text-gray-900 dark:text-white text-center font-bold text-lg transition-all outline-none"
+                    className="flex-1 bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-emerald-500 rounded-xl px-4 py-3 text-gray-900 dark:text-white text-center font-bold text-lg transition-all outline-none"
                     placeholder="1.75"
                   />
                   <button
@@ -537,7 +537,7 @@ export function BodyMetrics() {
                     step="0.1"
                     value={newPeso}
                     onChange={(e) => setNewPeso(e.target.value)}
-                    className="flex-1 bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] focus:ring-2 focus:ring-[#27AE60]/20 focus:border-[#27AE60] dark:focus:border-emerald-500 rounded-xl px-4 py-3 text-gray-900 dark:text-white text-center font-bold text-lg transition-all outline-none"
+                    className="flex-1 bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-emerald-500 rounded-xl px-4 py-3 text-gray-900 dark:text-white text-center font-bold text-lg transition-all outline-none"
                     placeholder="75.0"
                   />
                   <button
@@ -555,7 +555,7 @@ export function BodyMetrics() {
                 <textarea
                   value={newNotas}
                   onChange={(e) => setNewNotas(e.target.value)}
-                  className="w-full bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] focus:ring-2 focus:ring-[#27AE60]/20 focus:border-[#27AE60] dark:focus:border-emerald-500 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-medium transition-all outline-none resize-none"
+                  className="w-full bg-gray-50 focus:bg-white dark:bg-[#252525] dark:focus:bg-[#2d2d2d] border border-gray-200 dark:border-[#404040] focus:ring-2 focus:ring-primary/20 focus:border-primary dark:focus:border-emerald-500 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-medium transition-all outline-none resize-none"
                   rows={2}
                   placeholder="Ex: Após treino pesado, balança nova..."
                 />

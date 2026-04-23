@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { ArrowLeft, Moon, Sun, Shield, Lock, Headset, Volume2, VolumeX, Mail, Gem, ChevronRight } from 'lucide-react'
-import { useTheme } from '../contexts/theme-context'
+import { ArrowLeft, Palette, Shield, Lock, Headset, Volume2, VolumeX, Mail, Gem, ChevronRight } from 'lucide-react'
 import { Toast, ToastState } from '../components/toast'
 import { Footer } from '../components/footer'
 import { SettingsCard } from '../components/settings-card'
@@ -12,7 +11,6 @@ import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
 export function Settings() {
   const navigate = useNavigate()
   const usuarioID = localStorage.getItem('usuarioId')
-  const { theme, toggleTheme } = useTheme()
 
   // Audio settings
   const [audioEnabled, setAudioEnabled] = useState(false)
@@ -127,24 +125,6 @@ export function Settings() {
     }
   }
 
-  const ThemeToggle = () => (
-    <button
-      onClick={(e) => {
-        e.stopPropagation()
-        toggleTheme()
-      }}
-      className={`cursor-pointer relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${
-        theme === 'dark' ? 'bg-[#27AE60]' : 'bg-gray-300'
-      }`}
-    >
-      <span
-        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-          theme === 'dark' ? 'translate-x-7' : 'translate-x-1'
-        }`}
-      />
-    </button>
-  )
-
   const EmailToggle = () => (
     <button
       onClick={handleEmailToggle}
@@ -200,11 +180,11 @@ export function Settings() {
         />}
 
         <SettingsCard
-          title="Modo Escuro"
-          description="Reduz o brilho da tela e economiza bateria"
-          icon={theme === 'dark' ? Moon : Sun}
-          action={<ThemeToggle />}
-          onClick={toggleTheme}
+          title="Aparência"
+          description="Altere entre tema claro ou escuro, ou mude a cor principal"
+          icon={Palette}
+          action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
+          onClick={() => navigate('/profile/settings/appearance')}
         />
 
         <SettingsCard

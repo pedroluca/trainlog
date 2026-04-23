@@ -90,13 +90,13 @@ function ExercisePicker({ selectedId, onSelect }: ExercisePickerProps) {
         onClick={() => setOpen(v => !v)}
         className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left
           ${open
-            ? 'border-[#27AE60] bg-[#27AE60]/5 dark:bg-[#27AE60]/10'
+            ? 'border-primary bg-primary/5 dark:bg-primary/10'
             : 'border-gray-200 dark:border-[#404040] bg-white dark:bg-[#1a1a1a] hover:border-gray-300 dark:hover:border-[#555]'
           }`}
       >
         {selected ? (
           <div className="flex items-center gap-3 min-w-0">
-            <CheckCircle2 size={18} className="text-[#27AE60] flex-shrink-0" />
+            <CheckCircle2 size={18} className="text-primary flex-shrink-0" />
             <div className="min-w-0">
               <p className="font-bold text-gray-800 dark:text-gray-100 truncate text-sm">{selected.nome}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{selected.musculos.join(', ')}</p>
@@ -134,7 +134,7 @@ function ExercisePicker({ selectedId, onSelect }: ExercisePickerProps) {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Buscar exercício..."
-                className="w-full pl-9 pr-9 py-2 text-sm rounded-lg bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#404040] text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#27AE60]/40"
+                className="w-full pl-9 pr-9 py-2 text-sm rounded-lg bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#404040] text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
               {search && (
                 <button
@@ -155,8 +155,8 @@ function ExercisePicker({ selectedId, onSelect }: ExercisePickerProps) {
               onClick={() => setMuscle('all')}
               className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-bold border transition-all
                 ${muscle === 'all'
-                  ? 'bg-[#27AE60] text-white border-[#27AE60]'
-                  : 'bg-gray-100 dark:bg-[#2a2a2a] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-[#404040] hover:border-[#27AE60]/50'
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-gray-100 dark:bg-[#2a2a2a] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-[#404040] hover:border-primary/50'
                 }`}
             >
               Todos
@@ -168,7 +168,7 @@ function ExercisePicker({ selectedId, onSelect }: ExercisePickerProps) {
                 onClick={() => setMuscle(m)}
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-bold border transition-all
                   ${muscle === m
-                    ? 'bg-[#27AE60] text-white border-[#27AE60]'
+                    ? 'bg-primary text-white border-primary'
                     : `${getMuscleColor(m)} hover:border-current/70`
                   }`}
               >
@@ -190,14 +190,14 @@ function ExercisePicker({ selectedId, onSelect }: ExercisePickerProps) {
                   key={ex.id}
                   onClick={() => handleSelect(ex.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors border-b border-gray-50 dark:border-[#2a2a2a] last:border-0
-                    ${selectedId === ex.id ? 'bg-[#27AE60]/5 dark:bg-[#27AE60]/10' : ''}
+                    ${selectedId === ex.id ? 'bg-primary/5 dark:bg-primary/10' : ''}
                   `}
                 >
                   {selectedId === ex.id && (
-                    <CheckCircle2 size={16} className="text-[#27AE60] flex-shrink-0" />
+                    <CheckCircle2 size={16} className="text-primary flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold truncate ${selectedId === ex.id ? 'text-[#27AE60]' : 'text-gray-800 dark:text-gray-100'}`}>
+                    <p className={`text-sm font-semibold truncate ${selectedId === ex.id ? 'text-primary' : 'text-gray-800 dark:text-gray-100'}`}>
                       {ex.nome}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
@@ -333,7 +333,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
     }
   }
 
-  const inputClass = 'flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 text-center w-4/6 focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all shadow-sm'
+  const inputClass = 'flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 text-center w-4/6 focus:outline-none focus:ring-2 focus:ring-primary/50 font-medium transition-all shadow-sm'
   const stepBtnClass = 'bg-gray-100 border border-gray-200 dark:border-[#404040] dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#3a3a3a] text-gray-700 dark:text-gray-300 font-bold w-1/6 h-[46px] rounded-lg flex items-center justify-center transition-all shadow-sm'
 
   return (
@@ -368,7 +368,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               type="text"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
-              className="w-full border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all shadow-sm"
+              className="w-full border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2.5 bg-white dark:bg-[#1a1a1a] text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 font-medium transition-all shadow-sm"
               placeholder="Ex: Supino Inclinado"
               required
             />
@@ -401,7 +401,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
                 }
               }}
               className={`cursor-pointer relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
-                usesProgressiveWeight ? 'bg-[#27AE60]' : 'bg-gray-300 dark:bg-gray-600'
+                usesProgressiveWeight ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
               }`}
             >
               <span
@@ -418,9 +418,9 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               {progressiveSets.map((set, index) => (
                 <div key={index} className='flex items-center gap-2 mb-3 last:mb-0'>
                   <span className='text-gray-700 dark:text-gray-300 text-sm font-bold w-16'>Série {index + 1}:</span>
-                  <input type='number' value={set.reps} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].reps = Number(e.target.value); setProgressiveSets(newSets) }} className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 transition-all shadow-sm' placeholder='Reps' />
+                  <input type='number' value={set.reps} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].reps = Number(e.target.value); setProgressiveSets(newSets) }} className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-sm' placeholder='Reps' />
                   <span className='text-gray-600 dark:text-gray-400 text-sm font-medium'>x</span>
-                  <input type='number' value={set.weight} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].weight = Number(e.target.value); setProgressiveSets(newSets) }} className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 transition-all shadow-sm' placeholder='Peso' />
+                  <input type='number' value={set.weight} onChange={(e) => { const newSets = [...progressiveSets]; newSets[index].weight = Number(e.target.value); setProgressiveSets(newSets) }} className='min-w-0 flex-1 border border-gray-300 dark:border-[#404040] rounded-lg px-2 py-2 text-center bg-white dark:bg-[#1a1a1a] dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-sm' placeholder='Peso' />
                   <span className='text-gray-600 dark:text-gray-400 text-sm font-medium'>kg</span>
                 </div>
               ))}

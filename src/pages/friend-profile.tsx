@@ -220,7 +220,7 @@ export function FriendProfile() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212]">
-        <div className="w-10 h-10 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -384,7 +384,7 @@ export function FriendProfile() {
                   <p className="text-lg font-medium text-center">Este usuário prefere manter suas atividades privadas.</p>
                 </div>
               ) : loadingLogs ? (
-                <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div></div>
+                <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>
               ) : logs.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">Nenhuma atividade recente encontrada.</div>
               ) : (
@@ -450,7 +450,7 @@ export function FriendProfile() {
                   <p className="text-lg font-medium text-center">Os treinos deste usuário são privados.</p>
                 </div>
               ) : loadingTreinos ? (
-                <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div></div>
+                <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>
               ) : treinos.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">O usuário não possui treinos cadastrados.</div>
               ) : (
@@ -473,7 +473,7 @@ export function FriendProfile() {
                           <ul className="space-y-1.5">
                             {treino.exercicios.map((ex, i) => (
                               <li key={i} className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#27AE60]/60"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary/60"></div>
                                 {ex.nome}
                               </li>
                             ))}

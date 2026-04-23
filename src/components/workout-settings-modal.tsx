@@ -137,7 +137,7 @@ export function WorkoutSettingsModal({
               type="text"
               value={workoutName}
               onChange={(e) => setWorkoutName(e.target.value)}
-              className="w-full border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium mb-3"
+              className="w-full border border-gray-300 dark:border-[#404040] rounded-lg px-3 py-2 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-primary/50 font-medium mb-3"
               placeholder="Ex: Peito e Tríceps"
             />
             <Button
@@ -269,7 +269,7 @@ export function WorkoutSettingsModal({
           </Button>
           <Button
             type="button"
-            className="flex-1 bg-[#27AE60] hover:bg-[#219150] flex items-center justify-center gap-2 disabled:opacity-75"
+            className="flex-1 bg-primary hover:bg-[#219150] flex items-center justify-center gap-2 disabled:opacity-75"
             onClick={handleSave}
             disabled={isLoading}
           >

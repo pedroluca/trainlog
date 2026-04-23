@@ -116,7 +116,7 @@ export function SettingsPassword() {
                 type={showCurrentPassword ? "text" : "password"}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-[#27AE60]"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Digite sua senha atual"
               />
               <button
@@ -138,7 +138,7 @@ export function SettingsPassword() {
                 type={showNewPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-[#27AE60]"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Digite sua nova senha (mín. 6 caracteres)"
               />
               <button
@@ -160,7 +160,7 @@ export function SettingsPassword() {
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-[#27AE60]"
+                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Digite novamente sua nova senha"
               />
               <button
