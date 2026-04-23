@@ -17,16 +17,25 @@ export type WhatsNewRelease = {
   date: string // YYYY-MM-DD
   title: string
   items: WhatsNewItem[]
-  /** Previous highlights shown below a divider (optional) */
   previousItems?: WhatsNewItem[]
 }
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
-  version: '1.17.9',
-  date: '2026-04-06',
-  title: 'Novidades da Versão 1.17.9',
+  version: '1.18.0',
+  date: '2026-04-24',
+  title: 'Novidades da Versão 1.18.0',
   items: [
+    {
+      id: 'appearance-changes',
+      icon: '🎨',
+      title: 'Aparência',
+      description: 'Além da alteração do tema, usuários Premium agora podem alterar a cor principal do aplicativo.',
+      action: {
+        label: 'Ver meu Perfil',
+        route: '/profile/settings/appearance'
+      }
+    },
     {
       id: 'badge-system',
       icon: '🏅',
