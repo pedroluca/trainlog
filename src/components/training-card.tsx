@@ -212,7 +212,7 @@ export function TrainingCard(props: TrainingCardProps) {
         onResetExercise={setsDone > 0 ? handleResetExercise : undefined}
       />
 
-      <h2 className={`text-3xl md:text-4xl lg:text-2xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h2>
+      <h1 className={`text-2xl md:text-2xl lg:text-xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h1>
       
       {!isBreakTime ? (
         <>
@@ -262,13 +262,13 @@ export function TrainingCard(props: TrainingCardProps) {
             ) : (
               // Normal display
               <>
-                <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-base md:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   <strong>Repetição:</strong> {sets} x {reps}
                 </p>
-                <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-base md:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   <strong>Carga:</strong> {weight} kg
                 </p>
-                <p className={`text-lg md:text-2xl lg:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-base md:text-xl mb-3 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
                   <strong>Descanso:</strong> {formatTime(breakTime)} min
                 </p>
               </>
