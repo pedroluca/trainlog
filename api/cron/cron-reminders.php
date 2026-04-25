@@ -50,14 +50,20 @@ function fetch_users_from_firestore($access_token) {
 
     foreach ($data['documents'] ?? [] as $doc) {
         $id = basename($doc['name']);
+
+        // scheduledDays é um array de inteiros (0=Dom, 1=Seg ... 6=Sáb)
+        $scheduledDaysRaw = $doc['fields']['scheduledDays']['arrayValue']['values'] ?? [];
+        $scheduledDays = array_map(fn($v) => (int)($v['integerValue'] ?? -1), $scheduledDaysRaw);
+
         $users[] = [
-            'id' => $id,
-            'uid' => $id,
-            'nome' => $doc['fields']['nome']['stringValue'] ?? 'Usuário',
-            'lastWorkoutDate' => $doc['fields']['lastWorkoutDate']['stringValue'] ?? null,
-            'player_id' => $doc['fields']['player_id']['stringValue'] ?? null,
-            'oneSignalSubscriptionId' => $doc['fields']['oneSignalSubscriptionId']['stringValue'] ?? null,
-            'pushProvider' => $doc['fields']['pushProvider']['stringValue'] ?? null
+            'id'                     => $id,
+            'uid'                    => $id,
+            'nome'                   => $doc['fields']['nome']['stringValue'] ?? 'Usuário',
+            'lastWorkoutDate'        => $doc['fields']['lastWorkoutDate']['stringValue'] ?? null,
+            'scheduledDays'          => $scheduledDays,
+            'player_id'              => $doc['fields']['player_id']['stringValue'] ?? null,
+            'oneSignalSubscriptionId'=> $doc['fields']['oneSignalSubscriptionId']['stringValue'] ?? null,
+            'pushProvider'           => $doc['fields']['pushProvider']['stringValue'] ?? null
         ];
     }
 
@@ -127,7 +133,14 @@ try {
     $sent_count = 0;
     $error_count = 0;
     $debug_entries = [];
-    $today = date('Y-m-d');
+
+    // Usa fuso horário do Brasil para que a comparação de datas
+    // não quebre quando o servidor de cron está em UTC.
+    $tz_brazil = new DateTimeZone('America/Sao_Paulo');
+    $now_brazil = new DateTime('now', $tz_brazil);
+    $today      = $now_brazil->format('Y-m-d');       // ex: "2026-04-24"
+    $today_dow  = (int) $now_brazil->format('w');     // 0=Dom, 1=Seg ... 6=Sáb
+
     $train_url = rtrim(APP_BASE_URL, '/') . '/train';
 
     foreach ($users as $user) {
@@ -145,31 +158,51 @@ try {
             continue;
         }
 
-        $user_name = $user['nome'] ?? 'Usuário';
+        $user_name         = $user['nome'] ?? 'Usuário';
         $last_workout_date = $user['lastWorkoutDate'] ?? null;
-        $player_id = $override_player_id !== '' ? $override_player_id : ($user['player_id'] ?? null);
-        $provider = $user['pushProvider'] ?? null;
-        $subscription_id = $user['oneSignalSubscriptionId'] ?? null;
+        $scheduled_days    = $user['scheduledDays'] ?? [];
+        $player_id         = $override_player_id !== '' ? $override_player_id : ($user['player_id'] ?? null);
+        $provider          = $user['pushProvider'] ?? null;
+        $subscription_id   = $user['oneSignalSubscriptionId'] ?? null;
 
-        if ($last_workout_date === $today) {
+        // ── 1. Verifica se o usuário tem treino agendado para HOJE ──────────
+        // Se scheduledDays estiver vazio (campo não existe) deixa passar para
+        // não bloquear usuários que ainda não sincronizaram o campo.
+        if (!empty($scheduled_days) && !in_array($today_dow, $scheduled_days, true)) {
             if ($debug_mode) {
                 $debug_entries[] = [
-                    'user_id' => $user_id,
-                    'user_name' => $user_name,
-                    'status' => 'skipped',
-                    'reason' => 'already_trained_today'
+                    'user_id'       => $user_id,
+                    'user_name'     => $user_name,
+                    'status'        => 'skipped',
+                    'reason'        => 'no_workout_scheduled_today',
+                    'today_dow'     => $today_dow,
+                    'scheduled_days'=> $scheduled_days
                 ];
             }
             continue;
         }
 
+        // ── 2. Verifica se o usuário JÁ treinou hoje ────────────────────────
+        if ($last_workout_date === $today) {
+            if ($debug_mode) {
+                $debug_entries[] = [
+                    'user_id'   => $user_id,
+                    'user_name' => $user_name,
+                    'status'    => 'skipped',
+                    'reason'    => 'already_trained_today'
+                ];
+            }
+            continue;
+        }
+
+        // ── 3. Verifica se push está configurado ────────────────────────────
         if ($provider !== 'onesignal' && !$player_id && !$subscription_id) {
             if ($debug_mode) {
                 $debug_entries[] = [
-                    'user_id' => $user_id,
+                    'user_id'   => $user_id,
                     'user_name' => $user_name,
-                    'status' => 'skipped',
-                    'reason' => 'push_not_configured'
+                    'status'    => 'skipped',
+                    'reason'    => 'push_not_configured'
                 ];
             }
             continue;
