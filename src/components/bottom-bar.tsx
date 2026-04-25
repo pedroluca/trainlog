@@ -26,7 +26,7 @@ export function BottomBar() {
         isLogged ? 'fixed' : 'hidden'
       } bottom-6 md:bottom-12 left-0 right-0 flex items-center justify-center px-6 z-10 lg:hidden`}
     >
-      <div className='bg-[#1a4d2e]/80 backdrop-blur-2xl rounded-full p-1 shadow-[0_8px_32px_rgba(26,77,46,0.4)] border border-white/20 flex items-center justify-center gap-12 relative overflow-hidden'>
+      <div className='bg-primary/80 backdrop-blur-2xl rounded-full p-1 shadow-primary-bar border border-white/20 flex items-center justify-center gap-12 relative overflow-hidden'>
         <div className='absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-full' />
 
         <div className='relative flex items-center gap-6'>
@@ -43,9 +43,9 @@ export function BottomBar() {
             }}
           >
             <div className='absolute inset-0 rounded-4xl bg-gradient-to-br from-white/40 to-white/10 blur-[1px] p-[2px]'>
-              <div className='w-full h-full rounded-4xl bg-gradient-to-br from-[#1a4d2e]/90 to-[#1a4d2e]/70' />
+              <div className='w-full h-full rounded-4xl bg-gradient-to-br from-primary-dark to-primary' />
             </div>
-            <div className='absolute inset-[2px] rounded-4xl bg-gradient-to-br from-[#2d7a4f] to-[#1a4d2e] shadow-[0_0_20px_rgba(45,122,79,0.6)]' />
+            <div className='absolute inset-[2px] rounded-4xl bg-gradient-to-br from-primary to-primary-dark shadow-primary-glow' />
           </div>
 
           <BottomBarItem to='/train'>

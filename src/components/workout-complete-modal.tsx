@@ -67,7 +67,7 @@ export function WorkoutCompleteModal({ isOpen, onClose, workoutName }: WorkoutCo
   return (
     <div className="fixed inset-0 z-67 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 animate-fade-in">
       <div 
-        className={`bg-gradient-to-br from-[#27AE60] to-[#219150] dark:from-[#1f8b4a] dark:to-[#186a39] rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all duration-300 ${
+        className={`bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all duration-300 ${
           show ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
         }`}
       >
@@ -107,7 +107,7 @@ export function WorkoutCompleteModal({ isOpen, onClose, workoutName }: WorkoutCo
             <Button
               onClick={onClose}
               className="w-full bg-white dark:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-300 font-bold py-4 text-lg shadow-lg"
-              buttonTextColor="text-[#27AE60] hover:text-[#219150]"
+              buttonTextColor="text-primary hover:text-primary-dark"
             >
               Obrigado! 💪
             </Button>

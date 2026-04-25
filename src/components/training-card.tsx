@@ -235,19 +235,19 @@ export function TrainingCard(props: TrainingCardProps) {
                           isFinished
                             ? 'bg-white/10 border-white/20 text-[#f4f4f4]'
                             : isCurrentSet
-                            ? 'bg-green-50 dark:bg-green-900/20 border-green-500 shadow-sm transform scale-105 my-1'
+                            ? 'bg-primary-light dark:bg-primary-light border-primary shadow-sm transform scale-105 my-1'
                             : isCompleted
                             ? 'bg-gray-100 dark:bg-[#252525] border-gray-200 dark:border-[#404040] opacity-60'
                             : 'bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#404040]'
                         }`}
                       >
                         <h4 className={`text-sm font-bold mb-1 ${
-                          isFinished ? 'text-white/80' : isCurrentSet ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
+                          isFinished ? 'text-white/80' : isCurrentSet ? 'text-primary-dark dark:text-primary' : 'text-gray-500 dark:text-gray-400'
                         }`}>
                           Série {index + 1} {isCompleted && '✓'}
                         </h4>
                         <p className={`text-lg font-black ${
-                          isFinished ? 'text-white' : isCurrentSet ? 'text-green-800 dark:text-green-300' : 'text-gray-800 dark:text-gray-100'
+                          isFinished ? 'text-white' : isCurrentSet ? 'text-primary-dark dark:text-primary' : 'text-gray-800 dark:text-gray-100'
                         }`}>
                           {set.reps}<span className="text-sm font-normal mx-1">×</span>{set.weight}kg
                         </p>

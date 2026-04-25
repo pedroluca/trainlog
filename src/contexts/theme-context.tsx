@@ -6,13 +6,13 @@ type ThemeMode = 'light' | 'dark' | 'system'
 
 // Palette of available primary colors
 export const PRIMARY_COLORS = [
-  { name: 'Verde', hex: '#27AE60', dark: '#219150' },
-  { name: 'Azul', hex: '#2980B9', dark: '#2471A3' },
-  { name: 'Roxo', hex: '#8E44AD', dark: '#7D3C98' },
-  { name: 'Vermelho', hex: '#E74C3C', dark: '#CB4335' },
-  { name: 'Laranja', hex: '#E67E22', dark: '#CA6F1E' },
-  { name: 'Rosa', hex: '#E91E8C', dark: '#C2185B' },
-  { name: 'Ciano', hex: '#00BCD4', dark: '#0097A7' },
+  { name: 'Verde',    hex: '#27AE60', dark: '#219150', light: '#48d17a' },
+  { name: 'Azul',    hex: '#2980B9', dark: '#2471A3', light: '#5dade2' },
+  { name: 'Roxo',    hex: '#8E44AD', dark: '#7D3C98', light: '#a569c7' },
+  { name: 'Vermelho', hex: '#E74C3C', dark: '#CB4335', light: '#f1948a' },
+  { name: 'Laranja', hex: '#E67E22', dark: '#CA6F1E', light: '#f0a045' },
+  { name: 'Rosa',    hex: '#E91E8C', dark: '#C2185B', light: '#f06eb3' },
+  { name: 'Ciano',   hex: '#00BCD4', dark: '#0097A7', light: '#4dd0e1' },
 ] as const
 
 export type PrimaryColorHex = typeof PRIMARY_COLORS[number]['hex']
@@ -46,9 +46,10 @@ function applyThemeToDom(resolved: 'light' | 'dark') {
   }
 }
 
-function applyColorToDom(hex: string, dark: string) {
+function applyColorToDom(hex: string, dark: string, light: string) {
   document.documentElement.style.setProperty('--color-primary', hex)
   document.documentElement.style.setProperty('--color-primary-dark', dark)
+  document.documentElement.style.setProperty('--color-primary-light', light)
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -89,7 +90,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setResolvedTheme(resolved)
         setPrimaryColorState(color)
         applyThemeToDom(resolved)
-        applyColorToDom(colorEntry.hex, colorEntry.dark)
+        applyColorToDom(colorEntry.hex, colorEntry.dark, colorEntry.light)
 
         // Then sync from Firestore
         const usuarioId = localStorage.getItem('usuarioId')
@@ -106,7 +107,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             setResolvedTheme(fsResolved)
             setPrimaryColorState(fsColor)
             applyThemeToDom(fsResolved)
-            applyColorToDom(fsColorEntry.hex, fsColorEntry.dark)
+            applyColorToDom(fsColorEntry.hex, fsColorEntry.dark, fsColorEntry.light)
 
             localStorage.setItem('themeMode', fsMode)
             localStorage.setItem('primaryColor', fsColor)
@@ -149,7 +150,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setPrimaryColor = async (color: PrimaryColorHex) => {
     const entry = PRIMARY_COLORS.find(c => c.hex === color) ?? DEFAULT_COLOR
     setPrimaryColorState(color)
-    applyColorToDom(entry.hex, entry.dark)
+    applyColorToDom(entry.hex, entry.dark, entry.light)
     localStorage.setItem('primaryColor', color)
 
     const usuarioId = localStorage.getItem('usuarioId')

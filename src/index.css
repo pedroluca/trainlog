@@ -6,6 +6,7 @@
 :root {
   --color-primary: #27AE60;
   --color-primary-dark: #219150;
+  --color-primary-light: #48d17a;
 }
 
 /* Utility classes that consume --color-primary */
@@ -17,8 +18,22 @@
   background-color: var(--color-primary-dark) !important;
 }
 
+.bg-primary-light {
+  background-color: var(--color-primary-light) !important;
+}
+
 .from-primary {
   --tw-gradient-from: var(--color-primary) !important;
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position)) !important;
+}
+
+.from-primary-dark {
+  --tw-gradient-from: var(--color-primary-dark) !important;
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position)) !important;
+}
+
+.to-primary {
+  --tw-gradient-to: var(--color-primary) !important;
   --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position)) !important;
 }
 
@@ -35,6 +50,10 @@
   border-color: var(--color-primary) !important;
 }
 
+.bg-primary\/80 {
+  background-color: var(--color-primary) !important;
+}
+
 .hover\:border-primary\/50:hover {
   border-color: color-mix(in srgb, var(--color-primary) 50%, transparent) !important;
 }
@@ -49,6 +68,15 @@
 
 .ring-offset-primary {
   --tw-ring-offset-color: var(--color-primary) !important;
+}
+
+/* Shadow utilities that adapt to the custom primary theme color */
+.shadow-primary-bar {
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--color-primary) 40%, transparent) !important;
+}
+
+.shadow-primary-glow {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 60%, transparent) !important;
 }
 
 .hover\:bg-primary:hover {
