@@ -31,6 +31,7 @@ if (!versionType || !['major', 'minor', 'patch'].includes(versionType)) {
 
 const packageJsonPath = path.join(__dirname, '../package.json');
 const versionFilePath = path.join(__dirname, '../src/version.ts');
+const readmePath = path.join(__dirname, '../README.md');
 
 try {
   // Read package.json
@@ -69,12 +70,21 @@ try {
   versionContent = versionContent.replace(/minor:\s*\d+/, `minor: ${minor}`);
   versionContent = versionContent.replace(/patch:\s*\d+/, `patch: ${patch}`);
   fs.writeFileSync(versionFilePath, versionContent, 'utf8');
+
+  // Update README.md version badge
+  let readmeContent = fs.readFileSync(readmePath, 'utf8');
+  readmeContent = readmeContent.replace(
+    /https:\/\/img\.shields\.io\/badge\/version-[\d.]+-green/,
+    `https://img.shields.io/badge/version-${newVersion}-green`
+  );
+  fs.writeFileSync(readmePath, readmeContent, 'utf8');
   
   console.log('✅ Version bumped successfully!');
   console.log(`   ${oldVersion} -> ${newVersion} (${versionType})`);
   console.log('\n📝 Files updated:');
   console.log('   ✓ package.json');
   console.log('   ✓ src/version.ts');
+  console.log('   ✓ README.md (version badge)');
   console.log('\n📝 Next steps:');
   console.log('   1. Update VERSION_HISTORY in src/version.ts with your changes');
   console.log('   2. Commit your changes: git commit -am "chore: bump version to ' + newVersion + '"');
