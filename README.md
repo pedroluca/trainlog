@@ -2,7 +2,7 @@
 
 A modern workout tracking application built with React, TypeScript, Firebase, and Vite.
 
-![TrainLog Version](https://img.shields.io/badge/version-1.18.1-green)
+![TrainLog Version](https://img.shields.io/badge/version-1.18.2-green)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![Firebase](https://img.shields.io/badge/Firebase-10-orange)
