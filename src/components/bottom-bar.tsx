@@ -1,6 +1,7 @@
 import { Dumbbell, GraduationCap, TrendingUp, UsersRound } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { BottomBarItem } from './bottom-bar-item'
+import { usePendingFriendsCount } from '../hooks/usePendingFriendsCount'
 
 const navItems = [
   { to: '/train', index: 0 },
@@ -13,6 +14,7 @@ export function BottomBar() {
   const usuarioID = localStorage.getItem('usuarioId')
   const isLogged = !!usuarioID
   const location = useLocation()
+  const pendingFriendsCount = usePendingFriendsCount()
 
   const activeIndex = navItems.find(item => location.pathname.startsWith(item.to))?.index ?? -1
 
@@ -52,7 +54,14 @@ export function BottomBar() {
             <Dumbbell size={28} />
           </BottomBarItem>
           <BottomBarItem to='/friends'>
-            <UsersRound size={28} />
+            <div className='relative'>
+              <UsersRound size={28} />
+              {pendingFriendsCount > 0 && (
+                <span className='absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-md animate-pulse'>
+                  {pendingFriendsCount > 9 ? '9+' : pendingFriendsCount}
+                </span>
+              )}
+            </div>
           </BottomBarItem>
           <BottomBarItem to='/profile/connections'>
             <GraduationCap size={28} />
