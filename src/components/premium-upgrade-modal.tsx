@@ -7,6 +7,7 @@ import { trackPremiumUpgradeModalOpened, trackPremiumUpgradeRequested } from '..
 import { notifyAdmins } from '../utils/admin-notifications'
 import QRCode from '../assets/qr-code-upgrade.jpg'
 import { Toast, ToastState } from './toast'
+import { Spinner } from './spinner'
 
 interface PremiumUpgradeModalProps {
   isOpen: boolean
@@ -325,7 +326,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
           >
             {loading ? (
               <div className='flex items-center justify-center gap-2'>
-                <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                <Spinner size={16} thickness={2} color="white" />
                 Enviando...
               </div>
             ) : (

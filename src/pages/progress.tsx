@@ -4,6 +4,7 @@ import { db } from '../firebaseConfig'
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'
 import { TrendingUp, Award, Dumbbell, Calendar } from 'lucide-react'
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
+import { Spinner } from '../components/spinner'
 
 type LogEntry = {
   id: string
@@ -149,7 +150,7 @@ export function Progress() {
     return (
       <main className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <Spinner size={64} color="var(--color-primary)" className="mx-auto mb-4" label="Carregando progresso" />
           <p className="text-gray-600 dark:text-gray-400">Carregando progresso...</p>
         </div>
       </main>

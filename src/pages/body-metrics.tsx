@@ -6,6 +6,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react'
 import { Button } from '../components/button'
 import { Toast, ToastState } from '../components/toast'
+import { Spinner } from '../components/spinner'
 
 type BodyMeasurement = {
   id: string
@@ -229,7 +230,7 @@ export function BodyMetrics() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#121212]">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <Spinner size={48} color="var(--color-primary)" label="Carregando métricas corporais" />
       </div>
     )
   }

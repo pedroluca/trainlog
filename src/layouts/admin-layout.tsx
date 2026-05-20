@@ -4,6 +4,7 @@ import { auth, db } from '../firebaseConfig'
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
 import { LayoutDashboard, Users, Activity, Bug, LogOut, Menu, X, Bell } from 'lucide-react'
 import adminLogo from '../assets/admin-logo.png'
+import { Spinner } from '../components/spinner'
 
 export type UserData = {
   id: string
@@ -199,7 +200,7 @@ export function AdminLayout() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <Spinner size={64} color="#27AE60" className="mx-auto mb-4" label="Carregando painel admin" />
           <p className="text-gray-400">Carregando painel admin...</p>
         </div>
       </div>

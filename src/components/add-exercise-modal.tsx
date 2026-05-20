@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { collection, addDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
+import { Spinner } from './spinner'
 import { exerciseLibrary, getMuscleGroups, type MuscleGroup } from '../data/exercise-library'
 import { Toast, ToastState } from './toast'
 import { Search, ChevronDown, X, Dumbbell, CheckCircle2, Minus, Plus } from 'lucide-react'
@@ -462,7 +463,7 @@ export function AddExerciseModal({ onClose, workoutId }: Props) {
               Cancelar
             </Button>
             <Button type="button" className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg py-3 flex items-center justify-center gap-2 disabled:opacity-50 min-w-[100px] shadow-sm" onClick={handleAddExercise} disabled={isLoading}>
-              {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+              {isLoading && <Spinner size={16} thickness={2} color="rgba(255,255,255,0.8)" />}
               <span>Salvar</span>
             </Button>
           </div>

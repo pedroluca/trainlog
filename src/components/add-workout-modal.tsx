@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { doc, getDoc, collection, addDoc, getDocs, query, where } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
+import { Spinner } from './spinner'
 import { X, BookOpen } from 'lucide-react'
 import { workoutTemplates, templateCategories, type WorkoutTemplate } from '../data/workout-templates'
 
@@ -282,7 +283,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
             onClick={handleAddWorkout}
             disabled={isSubmitting}
             >
-            {isSubmitting && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+            {isSubmitting && <Spinner size={16} thickness={2} color="rgba(255,255,255,0.8)" />}
             <span>{isSubmitting ? 'Criando...' : 'Criar'}</span>
           </Button>
         </div>
@@ -316,7 +317,7 @@ export function AddWorkoutModal({ onClose, currentDay, usuarioID, createdByUserI
             onClick={() => handleAddSharedWorkout()}
             disabled={isSubmitting}
           >
-            {isSubmitting && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+            {isSubmitting && <Spinner size={16} thickness={2} color="rgba(255,255,255,0.8)" />}
             <span>{isSubmitting ? 'Adicionando...' : 'Adicionar'}</span>
           </Button>
         </div>

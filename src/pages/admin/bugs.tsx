@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Bug, AlertTriangle, Lightbulb, MessageSquare, ExternalLink, Image as ImageIcon, CheckCircle, X } from 'lucide-react'
 import { collection, getDocs, query, orderBy, updateDoc, doc } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
+import { Spinner } from '../../components/spinner'
 
 interface BugReport {
   id: string
@@ -123,7 +124,7 @@ export function AdminBugs() {
 
       {loading ? (
         <div className="flex items-center justify-center py-10">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <Spinner size={32} color="#3b82f6" label="Carregando relatos de bug" />
         </div>
       ) : filteredReports.length === 0 ? (
         <div className="text-center py-16 bg-gray-900/30 rounded-xl border border-dashed border-gray-700">

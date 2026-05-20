@@ -7,6 +7,7 @@ import { getVersionWithPrefix } from '../version'
 import { notifyAdmins } from '../utils/admin-notifications'
 import { Eye, EyeOff } from 'lucide-react'
 import { Toast, ToastState } from '../components/toast'
+import { Spinner } from '../components/spinner'
 import logo from '../assets/nova-logo-clear.png'
 
 export function Cadastro() {
@@ -243,7 +244,7 @@ export function Cadastro() {
             />
             {emailChecking && (
               <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                <span className="inline-block w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                <Spinner size={12} thickness={2} color="#9ca3af" />
                 Verificando email...
               </p>
             )}
@@ -394,7 +395,7 @@ export function Cadastro() {
           >
             {loading ? (
               <div className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>
+                <Spinner size={20} thickness={2} color="rgba(255,255,255,0.8)" />
                 <span>Criando conta...</span>
               </div>
             ) : (

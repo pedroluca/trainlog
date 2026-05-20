@@ -4,6 +4,7 @@ import { collection, query, where, getDocs, doc, getDoc, limit } from 'firebase/
 import { db } from '../firebaseConfig'
 import { UserPill } from '../components/user-pill'
 import { Search, Flame, UsersRound, ArrowLeft, Lock } from 'lucide-react'
+import { Spinner } from '../components/spinner'
 
 interface Usuario {
   id: string
@@ -165,7 +166,7 @@ export function FriendFriends() {
             <div className="min-h-[300px]">
               {loading ? (
                 <div className="flex justify-center items-center h-[200px]">
-                  <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <Spinner size={40} color="var(--color-primary)" label="Carregando amigos" />
                 </div>
               ) : amigos.length === 0 ? (
                 <div className="text-center py-16 text-gray-500 dark:text-gray-400 flex flex-col items-center bg-gray-50/50 dark:bg-[#1a1a1a]/50 rounded-xl border border-dashed border-gray-200 dark:border-[#333]">

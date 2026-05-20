@@ -15,6 +15,7 @@ import { WhatsNewModal } from '../components/whats-new-modal'
 import { BadgeList } from '../components/badge-chip'
 import { resolveUserBadges, resolveAvatarRing, type BadgeDefinition } from '../data/badges'
 import { addBadgesToUser, removeBadgesFromUser } from '../utils/badge-utils'
+import { Spinner } from '../components/spinner'
 
 export function Profile() {
   const navigate = useNavigate()
@@ -456,7 +457,7 @@ export function Profile() {
               title="Alterar foto de perfil"
             >
               {uploadingImage ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <Spinner size={16} thickness={2} color="white" />
               ) : (
                 <Camera size={18} />
               )}

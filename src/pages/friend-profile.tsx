@@ -6,6 +6,7 @@ import { ArrowLeft, Lock, UsersRound, Dumbbell, Activity } from 'lucide-react'
 import { BadgeList } from '../components/badge-chip'
 import { resolveUserBadges, resolveAvatarRing } from '../data/badges'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
+import { Spinner } from '../components/spinner'
 
 // Types
 interface Privacidade {
@@ -259,7 +260,7 @@ export function FriendProfile() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212]">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <Spinner size={40} color="var(--color-primary)" label="Carregando perfil do amigo" />
       </div>
     )
   }
@@ -423,7 +424,7 @@ export function FriendProfile() {
                   <p className="text-lg font-medium text-center">Este usuário prefere manter suas atividades privadas.</p>
                 </div>
               ) : loadingLogs ? (
-                <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>
+                <div className="flex justify-center p-8"><Spinner size={32} color="var(--color-primary)" label="Carregando atividades" /></div>
               ) : logs.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">Nenhuma atividade recente encontrada.</div>
               ) : (
@@ -489,7 +490,7 @@ export function FriendProfile() {
                   <p className="text-lg font-medium text-center">Os treinos deste usuário são privados.</p>
                 </div>
               ) : loadingTreinos ? (
-                <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>
+                <div className="flex justify-center p-8"><Spinner size={32} color="var(--color-primary)" label="Carregando treinos" /></div>
               ) : treinos.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">O usuário não possui treinos cadastrados.</div>
               ) : (

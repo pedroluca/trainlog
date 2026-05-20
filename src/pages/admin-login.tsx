@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
 import { Button } from '../components/button'
+import { Spinner } from '../components/spinner'
 import adminLogoClear from '../assets/admin-logo-clear.png'
 import adminLogo from '../assets/admin-logo.png'
 
@@ -135,7 +136,7 @@ export function AdminLogin() {
           >
             {loading ? (
               <div className="flex items-center justify-center">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <Spinner size={20} thickness={2} color="white" className="mr-2" />
                 Verificando...
               </div>
             ) : (

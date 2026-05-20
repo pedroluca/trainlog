@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { getVersionWithPrefix } from '../version'
 import { Eye, EyeOff } from 'lucide-react'
 import { trackLogin, trackPageView } from '../utils/analytics'
+import { Spinner } from '../components/spinner'
 import logo from '../assets/nova-logo-clear.png'
 
 export function Login() {
@@ -173,7 +174,7 @@ export function Login() {
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>
+                  <Spinner size={20} thickness={2} color="rgba(255,255,255,0.8)" />
                   <span>Entrando...</span>
                 </div>
               ) : (
@@ -207,7 +208,7 @@ export function Login() {
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
-                   <div className="w-5 h-5 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>
+                   <Spinner size={20} thickness={2} color="rgba(255,255,255,0.8)" />
                    <span>Enviando...</span>
                 </div>
               ) : (

@@ -33,6 +33,7 @@ const SettingsAppearance = lazy(() => import('./pages/settings-appearance').then
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
 import { WhatsNewModal } from './components/whats-new-modal'
+import { Spinner } from './components/spinner'
 import { ThemeProvider } from './contexts/theme-context'
 import { getVersion } from './version'
 import { currentRelease } from './data/whats-new'
@@ -49,7 +50,7 @@ import { ResetPassword } from './pages/reset-password'
 
 const PageLoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-900">
-    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    <Spinner size={48} color="var(--color-primary)" label="Carregando a aplicação" />
   </div>
 )
 // import { Teste } from './pages/teste'

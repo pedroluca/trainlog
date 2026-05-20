@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
+import { Spinner } from './spinner'
 import { Toast, ToastState } from './toast'
 import { ChevronDown, ChevronUp, IterationCw, Pen, Plus, Trash2, X } from 'lucide-react'
 import { Exercicio } from '../data/get-workout-exercises'
@@ -302,7 +303,7 @@ export function WorkoutSettingsModal({
             onClick={handleSave}
             disabled={isLoading}
           >
-            {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+            {isLoading && <Spinner size={16} thickness={2} color="rgba(255,255,255,0.8)" />}
             <span>Salvar Ajustes</span>
           </Button>
         </div>

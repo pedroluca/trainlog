@@ -4,6 +4,7 @@ import { auth } from '../firebaseConfig'
 import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth'
 import { Button } from '../components/button'
 import { CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { Spinner } from '../components/spinner'
 
 export function ResetPassword() {
   const [searchParams] = useSearchParams()
@@ -90,7 +91,7 @@ export function ResetPassword() {
       <main className="flex flex-col items-center justify-center min-h-[calc(100vh-7rem)] bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="bg-white shadow-lg rounded-2xl p-8 w-[85%] max-w-md">
           <div className="flex flex-col items-center">
-            <div className="w-16 h-16 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <Spinner size={64} color="#27AE60" className="mb-4" />
             <p className="text-gray-600">Verificando link de recuperação...</p>
           </div>
         </div>

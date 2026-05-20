@@ -7,6 +7,7 @@ import { Button } from '../../components/button'
 import { trackPremiumUpgradeApproved, trackPremiumUpgradeRejected } from '../../utils/analytics'
 import { useOutletContext } from 'react-router-dom'
 import { AdminContextData, UpgradeRequest } from '../../layouts/admin-layout'
+import { Spinner } from '../../components/spinner'
 
 function StatCard({ icon, title, value, color }: { icon: React.ReactNode, title: string, value: number, color: string }) {
   return (
@@ -270,7 +271,7 @@ export function AdminOverview() {
               >
                 {processingRequest ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <Spinner size={20} thickness={2} color="white" label="Processando aprovação" />
                     Processando...
                   </>
                 ) : (
@@ -323,7 +324,7 @@ export function AdminOverview() {
               >
                 {processingRequest ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <Spinner size={20} thickness={2} color="white" label="Processando rejeição" />
                     Processando...
                   </>
                 ) : (

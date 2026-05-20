@@ -3,6 +3,7 @@ import { X, Check, X as XIcon, Inbox } from 'lucide-react'
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { UserPill } from './user-pill'
+import { Spinner } from './spinner'
 
 interface Usuario {
   id: string
@@ -116,7 +117,7 @@ export function PendingRequestsModal({ onClose, currentUserId }: PendingRequests
         <div className="p-5 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/50 dark:bg-[#121212]/50">
           {loading ? (
             <div className="flex justify-center py-8">
-              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <Spinner size={32} color="#3b82f6" label="Carregando solicitações" />
             </div>
           ) : solicitacoes.length === 0 ? (
             <div className="text-center py-10 text-gray-500 dark:text-gray-400 flex flex-col items-center">
@@ -137,7 +138,7 @@ export function PendingRequestsModal({ onClose, currentUserId }: PendingRequests
                 >
                   <div className="flex items-center gap-2">
                     {actionLoading === req.id ? (
-                      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-4"></div>
+                      <Spinner size={24} thickness={2} color="#3b82f6" className="mr-4" />
                     ) : (
                       <>
                         <button

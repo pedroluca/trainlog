@@ -57,7 +57,7 @@
 //         disabled:opacity-60 disabled:cursor-not-allowed`}
 //     >
 //       {status === 'loading' ? (
-//         <><span className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" /> Indexando...</>
+//         <><span className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full" /> Indexando...</>
 //       ) : status === 'done' ? '✓ Emails indexados'
 //         : status === 'error' ? '✗ Erro ao indexar'
 //         : <><DatabaseZap size={16} /> Indexar Emails</>}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Flame, Award, Lock, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
+import { Spinner } from '../components/spinner'
 
 type DayStatus = 'completed' | 'missed' | 'scheduled' | 'not-scheduled'
 
@@ -232,7 +233,7 @@ export function StreakCalendar() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#121212]">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <Spinner size={48} color="var(--color-primary)" label="Carregando calendário de streak" />
       </div>
     )
   }

@@ -5,6 +5,7 @@ import { Button } from '../../components/button'
 import { AdminContextData, WorkoutData } from '../../layouts/admin-layout'
 import { db } from '../../firebaseConfig'
 import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore'
+import { Spinner } from '../../components/spinner'
 
 type ExercicioData = {
   id: string
@@ -126,7 +127,7 @@ function UserWorkoutsDetails({ userWorkouts, onWorkoutDeleted }: { userWorkouts:
               <div className="bg-gray-900/80 p-3 border-t border-gray-700">
                 {loading ? (
                   <div className="flex justify-center p-4">
-                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <Spinner size={20} thickness={2} color="#3b82f6" label="Carregando exercícios" />
                   </div>
                 ) : exercises.length === 0 ? (
                   <p className="text-xs text-gray-500 text-center py-2">Nenhum exercício cadastrado.</p>

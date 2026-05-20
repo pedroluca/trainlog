@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
+import { Spinner } from './spinner'
 import { Toast, ToastState } from './toast'
 
 type EditWorkoutModalProps = {
@@ -96,7 +97,7 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
               onClick={handleSave}
               disabled={isLoading}
             >
-              {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+              {isLoading && <Spinner size={16} thickness={2} color="rgba(255,255,255,0.8)" />}
               <span>Salvar</span>
             </Button>
           </div>

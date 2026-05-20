@@ -4,6 +4,7 @@ import { collection, getDocs, addDoc, query, where, doc, getDoc } from 'firebase
 import { db } from '../firebaseConfig'
 import { UserPill } from './user-pill'
 import { Button } from './button'
+import { Spinner } from './spinner'
 
 interface Usuario {
   id: string
@@ -160,7 +161,7 @@ export function AddFriendModal({ onClose, currentUserId }: AddFriendModalProps) 
         <div className="p-5 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/50 dark:bg-[#121212]/50">
           {loading ? (
             <div className="flex justify-center py-8">
-              <div className="w-8 h-8 border-4 border-[#27AE60] border-t-transparent rounded-full animate-spin"></div>
+              <Spinner size={32} color="#27AE60" label="Buscando usuários" />
             </div>
           ) : !searchTerm.trim() ? (
             <div className="text-center py-10 text-gray-500 dark:text-gray-400 flex flex-col items-center">
@@ -193,7 +194,7 @@ export function AddFriendModal({ onClose, currentUserId }: AddFriendModalProps) 
                         className="bg-[#27AE60] hover:bg-[#219150] text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 min-w-[100px] justify-center"
                       >
                         {actionLoading === user.id ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <Spinner size={16} thickness={2} color="white" />
                         ) : (
                           <>
                             <UserPlus size={16} />

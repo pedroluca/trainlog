@@ -4,6 +4,7 @@ import { Bell, Send, Mail, AlertCircle, CheckCircle, Smartphone } from 'lucide-r
 import { AdminContextData } from '../../layouts/admin-layout'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
+import { Spinner } from '../../components/spinner'
 
 export function AdminNotifications() {
   const { adminId, users } = useOutletContext<AdminContextData>()
@@ -204,7 +205,7 @@ export function AdminNotifications() {
                   className="w-full mt-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 px-4 rounded-lg transition-colors"
                 >
                   {loading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <Spinner size={20} thickness={2} color="white" label="Enviando push" />
                   ) : (
                     <>
                       <Send size={18} /> Disparar Push
@@ -240,7 +241,7 @@ export function AdminNotifications() {
                   className="w-full mt-4 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-3 px-4 rounded-lg transition-colors"
                 >
                   {loading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <Spinner size={20} thickness={2} color="white" label="Enviando email" />
                   ) : (
                     <>
                       <Send size={18} /> Disparar Email de Teste

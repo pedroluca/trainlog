@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { doc, updateDoc, deleteDoc, deleteField } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
 import { Button } from './button'
+import { Spinner } from './spinner'
 import { Toast, ToastState } from './toast'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 
@@ -338,7 +339,7 @@ export function EditExerciseModal({
               className='flex-1 py-3 rounded-lg shadow-sm flex items-center justify-center gap-2'
               disabled={isLoading}
             >
-               {isLoading && <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div>}
+               {isLoading && <Spinner size={16} thickness={2} color="rgba(255,255,255,0.8)" />}
               <span>Salvar</span>
             </Button>
           </div>
@@ -366,7 +367,7 @@ export function EditExerciseModal({
                 onClick={handleDeleteExercise}
                 disabled={isLoading}
               >
-                {isLoading ? <div className="w-4 h-4 border-2 border-white/80 border-t-transparent rounded-full animate-spin"></div> : 'Excluir'}
+                {isLoading ? <Spinner size={16} thickness={2} color="rgba(255,255,255,0.8)" /> : 'Excluir'}
               </Button>
             </div>
           </div>
