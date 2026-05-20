@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays, Minus, UsersRound, Crown } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays, Minus, UsersRound, Crown, Snowflake } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
@@ -48,6 +48,7 @@ export function Profile() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
+  const [freezeCount, setFreezeCount] = useState(0)
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
   const [friendsCount, setFriendsCount] = useState(0)
   const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false)
@@ -118,6 +119,7 @@ export function Profile() {
             setAvatarRing(resolveAvatarRing(badges))
             setCurrentStreak(userData.currentStreak || 0)
             setLongestStreak(userData.longestStreak || 0)
+            setFreezeCount(userData.freezeCount || 0)
           } else {
             console.error('Usuário não encontrado no Firestore')
           }
@@ -170,9 +172,11 @@ export function Profile() {
       // Listen for streak updates
       const handleStreakUpdate = (event: CustomEvent) => {
         setCurrentStreak(event.detail.newStreak)
-        // Also update longest streak if needed
-        if (event.detail.newStreak > longestStreak) {
-          setLongestStreak(event.detail.newStreak)
+        if (typeof event.detail.longestStreak === 'number') {
+          setLongestStreak(event.detail.longestStreak)
+        }
+        if (typeof event.detail.freezeCount === 'number') {
+          setFreezeCount(event.detail.freezeCount)
         }
       }
       
@@ -182,7 +186,7 @@ export function Profile() {
         window.removeEventListener('streakUpdated', handleStreakUpdate as EventListener)
       }
     }
-  }, [usuarioID, navigate, daysOrder, longestStreak])
+  }, [usuarioID, navigate, daysOrder])
 
   const handleLogout = () => {
     auth.signOut()
@@ -677,7 +681,7 @@ export function Profile() {
               {!isPremium && <Crown size={12} className="text-amber-500 absolute top-1.5 right-2 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" />}
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">
               <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-orange-800/60 dark:text-orange-200/50 mb-1">Sequência</p>
               <p className="text-xl md:text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400 truncate">{currentStreak}</p>
@@ -686,6 +690,14 @@ export function Profile() {
               <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 mb-1">Recorde</p>
               <p className="text-xl md:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 truncate">{longestStreak}</p>
             </div>
+              <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-cyan-500/10 dark:border-cyan-500/20 backdrop-blur-sm">
+                <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-cyan-700/70 dark:text-cyan-300/70 mb-1 flex items-center gap-1">
+                  <Snowflake size={12} /> Freezes
+                </p>
+                <p className="text-xl md:text-2xl lg:text-3xl font-black text-cyan-700 dark:text-cyan-300 truncate">
+                  {freezeCount}
+                </p>
+              </div>
             <div 
               onClick={() => navigate('/friends')}
               className="cursor-pointer bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm hover:bg-white/80 dark:hover:bg-[#252525] transition-colors"

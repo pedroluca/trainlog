@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
-import { Flame, Award, Lock, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
+import { Flame, Award, Lock, ChevronLeft, ChevronRight, CalendarDays, Snowflake } from 'lucide-react'
 import { Spinner } from '../components/spinner'
 
 type DayStatus = 'completed' | 'missed' | 'scheduled' | 'not-scheduled'
@@ -20,6 +20,7 @@ export function StreakCalendar() {
   const [isPremium, setIsPremium] = useState(false)
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
+  const [freezeCount, setFreezeCount] = useState(0)
   const [scheduledDays, setScheduledDays] = useState<number[]>([])
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [calendarData, setCalendarData] = useState<CalendarDay[]>([])
@@ -150,6 +151,7 @@ export function StreakCalendar() {
       setIsPremium(premium)
       setCurrentStreak(userData.currentStreak || 0)
       setLongestStreak(userData.longestStreak || 0)
+      setFreezeCount(userData.freezeCount || 0)
       setScheduledDays(userData.scheduledDays || [])
 
       await loadCompletedWorkouts()
@@ -169,6 +171,23 @@ export function StreakCalendar() {
 
     loadUserData()
   }, [usuarioID, navigate, loadUserData])
+
+  useEffect(() => {
+    const handleStreakUpdate = (event: CustomEvent) => {
+      if (typeof event.detail.newStreak === 'number') {
+        setCurrentStreak(event.detail.newStreak)
+      }
+      if (typeof event.detail.longestStreak === 'number') {
+        setLongestStreak(event.detail.longestStreak)
+      }
+      if (typeof event.detail.freezeCount === 'number') {
+        setFreezeCount(event.detail.freezeCount)
+      }
+    }
+
+    window.addEventListener('streakUpdated', handleStreakUpdate as EventListener)
+    return () => window.removeEventListener('streakUpdated', handleStreakUpdate as EventListener)
+  }, [])
 
   useEffect(() => {
     if (scheduledDays.length > 0 && completedDates.size >= 0) {
@@ -289,7 +308,7 @@ export function StreakCalendar() {
       </div>
 
       {/* Stats Cards */}
-      <div className="px-4 py-8 max-w-4xl mx-auto grid grid-cols-2 gap-4 lg:gap-6">
+      <div className="px-4 py-8 max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
         <div className="bg-gradient-to-br from-white to-gray-50 dark:from-[#1e1e1e] dark:to-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow rounded-3xl p-5 md:p-6 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-28 h-28 bg-orange-500/10 dark:bg-orange-500/5 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all duration-500"></div>
           <div className="flex flex-col gap-3 relative z-10">
@@ -313,6 +332,19 @@ export function StreakCalendar() {
               <span className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Maior</span>
             </div>
             <p className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">{longestStreak}</p>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-white to-gray-50 dark:from-[#1e1e1e] dark:to-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow rounded-3xl p-5 md:p-6 relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-28 h-28 bg-cyan-500/10 dark:bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all duration-500"></div>
+          <div className="flex flex-col gap-3 relative z-10">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-cyan-100 dark:bg-cyan-900/40 rounded-xl">
+                <Snowflake size={20} className="text-cyan-500 dark:text-cyan-400" />
+              </div>
+              <span className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Freezes</span>
+            </div>
+            <p className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">{freezeCount}</p>
           </div>
         </div>
       </div>

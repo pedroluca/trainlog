@@ -32,12 +32,13 @@ const SettingsAppearance = lazy(() => import('./pages/settings-appearance').then
 
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
+import { FreezeWarningModal } from './components/freeze-warning-modal'
 import { WhatsNewModal } from './components/whats-new-modal'
 import { Spinner } from './components/spinner'
 import { ThemeProvider } from './contexts/theme-context'
 import { getVersion } from './version'
 import { currentRelease } from './data/whats-new'
-import { checkAndResetStreakIfMissed, resetPreviousDaysExercises } from './data/streak-utils'
+import { checkAndResetStreakIfMissed, resetPreviousDaysExercises, type FreezeWarning } from './data/streak-utils'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db, auth } from './firebaseConfig'
 import { onAuthStateChanged } from 'firebase/auth'
@@ -127,6 +128,7 @@ async function salvarPlayerIdSeLogado() {
 export function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false)
   const [forceUpdateVersion, setForceUpdateVersion] = useState<string | null>(null)
+  const [freezeWarning, setFreezeWarning] = useState<FreezeWarning | null>(null)
 
   useEffect(() => {
     const isLocalEnv =
@@ -189,6 +191,21 @@ export function App() {
 
     const timer = setTimeout(initializeStreakChecks, 1500)
     return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleFreezeWarning = (event: Event) => {
+      const customEvent = event as CustomEvent<FreezeWarning>
+      setFreezeWarning(customEvent.detail)
+    }
+
+    window.addEventListener('freezeWarning', handleFreezeWarning as EventListener)
+
+    return () => {
+      window.removeEventListener('freezeWarning', handleFreezeWarning as EventListener)
+    }
   }, [])
 
   useEffect(() => {
@@ -260,6 +277,11 @@ export function App() {
         <ScrollToTopOnRouteChange />
         <PWAUpdateNotification />
         <PWAInstallPrompt />
+        <FreezeWarningModal
+          isOpen={!!freezeWarning}
+          warning={freezeWarning}
+          onClose={() => setFreezeWarning(null)}
+        />
         <WhatsNewModal 
           isOpen={showWhatsNew || !!forceUpdateVersion} 
           onClose={() => setShowWhatsNew(false)} 

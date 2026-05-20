@@ -23,6 +23,23 @@ export interface BadgeDefinition {
   upgradeLink?: boolean
 }
 
+export function getStreakMilestoneValue(streak: number): number {
+  if (streak < 30) return 0
+  return Math.floor(streak / 30) * 30
+}
+
+function createStreakMilestoneBadge(milestoneValue: number): BadgeDefinition {
+  return {
+    id: 'streak-milestone',
+    title: `${milestoneValue} Dias de Streak`,
+    description: `Completou ${milestoneValue} dias de streak. Cada bloco de 30 dias fortalece sua consistência.`,
+    Icon: Flame,
+    order: 4.5,
+    hasImageBorder: false,
+    chipClass: 'bg-red-500/15 border-2 border-red-500 text-red-400 dark:text-red-300'
+  }
+}
+
 export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     id: 'founder',
@@ -66,6 +83,15 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     chipClass: 'bg-emerald-400/15 border-2 border-emerald-500 text-emerald-400 dark:text-emerald-300',
   },
   {
+    id: 'streak-milestone',
+    title: 'Streak Milestone',
+    description: 'Conquista dinâmica de marcos de consistência em blocos de 30 dias.',
+    Icon: Flame,
+    order: 4.5,
+    hasImageBorder: false,
+    chipClass: 'bg-red-500/15 border-2 border-red-500 text-red-400 dark:text-red-300',
+  },
+  {
     id: 'streak-100',
     title: '100 Dias de Treino',
     description: 'Este usuário completou 100 dias de treino. Uau!',
@@ -103,6 +129,7 @@ export function resolveUserBadges(userData: {
   isFounder?: boolean
   isPremium?: boolean
   isTrainer?: boolean
+  longestStreak?: number
 }): BadgeDefinition[] {
   let ids: string[]
 
@@ -119,6 +146,11 @@ export function resolveUserBadges(userData: {
   const resolved = ids
     .map(id => getBadgeById(id))
     .filter(Boolean) as BadgeDefinition[]
+
+  const milestoneValue = getStreakMilestoneValue(userData.longestStreak || 0)
+  if (milestoneValue > 0) {
+    resolved.push(createStreakMilestoneBadge(milestoneValue))
+  }
 
   // Sort: ordered badges first (by order), then unordered badges
   resolved.sort((a, b) => {
