@@ -118,11 +118,19 @@ export function Header() {
         {usuarioID && (
           <Link
             to={`${isPremium ? '/profile/streak-calendar' : '/profile'}`}
-            className={`flex items-center gap-2 ${treinouHoje ? 'bg-orange-400/50 hover:bg-orange-500/50' : 'bg-white/10 hover:bg-white/20'} pr-4 pl-3 py-2 rounded-full transition-colors z-10`}
+            className={`flex items-center gap-1.5 ${treinouHoje ? 'bg-amber-400 hover:bg-amber-500' : 'bg-white/20 hover:bg-white/30'} pr-4 pl-3 py-2 rounded-full transition-colors z-10`}
             title='Seu streak de treinos'
           >
-            <span className='text-xl md:text-2xl' style={{ filter: treinouHoje ? 'none' : 'grayscale(1)' }}>🔥</span>
-            <span className='text-xl md:text-2xl font-bold'>{streak}</span>
+            <img
+              src='https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@latest/assets/Fire/3D/fire_3d.png'
+              alt='🔥'
+              className='w-6 h-6 md:w-7 md:h-7'
+              style={{ filter: treinouHoje ? 'none' : 'grayscale(1)' }}
+              draggable={false}
+            />
+            <span className='text-xl md:text-2xl font-bold text-white'>
+              {streak}
+            </span>
           </Link>
         )}
       </main>
