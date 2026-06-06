@@ -82,7 +82,7 @@ export function AdminLogin() {
         {/* Header */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-24 h-24 mb-4">
-            <img src={adminLogoClear} alt="Admin Logo" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(39,174,96,0.5)]" />
+            <img src={adminLogoClear} alt="Admin Logo" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,190,0,0.5)]" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Portal Administrador</h1>
           <p className="text-gray-400 text-sm">Acesso restrito a administradores</p>
@@ -107,7 +107,7 @@ export function AdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#27AE60] focus:border-transparent transition-all"
+              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FFBE00] focus:border-transparent transition-all"
               placeholder="admin@trainlog.com"
               disabled={loading}
             />
@@ -123,7 +123,7 @@ export function AdminLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#27AE60] focus:border-transparent transition-all"
+              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FFBE00] focus:border-transparent transition-all"
               placeholder="••••••••"
               disabled={loading}
             />
@@ -131,7 +131,8 @@ export function AdminLogin() {
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#27AE60] to-[#219150] hover:from-[#219150] hover:to-[#1e8449] text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg mt-6"
+            className="w-full text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg mt-6"
+            bgColor='bg-[#FFBE00] hover:bg-[#BF8E39]'
             disabled={loading}
           >
             {loading ? (

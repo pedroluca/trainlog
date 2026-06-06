@@ -4,6 +4,7 @@ import { auth, db } from '../firebaseConfig'
 import { collection, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore'
 import { LayoutDashboard, Users, Activity, Bug, LogOut, Menu, X, Bell, Store } from 'lucide-react'
 import adminLogo from '../assets/admin-logo.png'
+import adminLogoClear from '../assets/admin-logo-clear.png'
 import { Spinner } from '../components/spinner'
 
 export type UserData = {
@@ -99,7 +100,7 @@ export function AdminLayout() {
     const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     const originalHref = link?.href;
     if (link) {
-      link.href = adminLogo;
+      link.href = adminLogoClear;
     }
 
     // Check admin authentication
@@ -264,7 +265,7 @@ export function AdminLayout() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="text-center">
-          <Spinner size={64} color="#27AE60" className="mx-auto mb-4" label="Carregando painel admin" />
+          <Spinner size={64} color="#FFBE00" className="mx-auto mb-4" label="Carregando painel admin" />
           <p className="text-gray-400">Carregando painel admin...</p>
         </div>
       </div>
@@ -305,9 +306,9 @@ export function AdminLayout() {
       `}>
         <div className="p-6 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={adminLogo} alt="Admin Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(39,174,96,0.3)]" />
+            <img src={adminLogo} alt="Admin Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(255,190,0,0.3)]" />
             <div>
-              <h2 className="text-2xl font-black text-white tracking-tight">Train<span className="text-[#27AE60]">Log</span></h2>
+              <h2 className="text-2xl font-extrabold text-white">Tractus</h2>
               <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Admin Panel</p>
             </div>
           </div>
