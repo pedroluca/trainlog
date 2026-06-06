@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { TrendingUp, Clock, CheckCircle, Zap, Users, Shield } from "lucide-react"
+import { CheckCircle, Zap, Users, Shield } from "lucide-react"
 import { getVersionWithPrefix } from "../version"
 import logo from '../assets/LOGO COM FUNDO - VERDE.png'
 
