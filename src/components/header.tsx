@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
 import { BookUser, Dumbbell, TrendingUp, UsersRound, UserRound } from 'lucide-react'
+import logo from '../assets/nova-logo-white.svg'
 
 export function Header() {
   const [streak, setStreak] = useState(0)
@@ -90,9 +91,9 @@ export function Header() {
         ) : (
           <Link
             to='/'
-            className='text-3xl md:text-4xl font-bold tracking-tight hover:scale-105 transition-transform duration-200 z-10'
+            className='z-10'
           >
-            Tractus
+            <img src={logo} alt="Logo do Tractus" className="w-11 h-11 inline-block" />
           </Link>
         )}
 
