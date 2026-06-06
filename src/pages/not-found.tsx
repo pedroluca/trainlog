@@ -47,7 +47,7 @@ export function NotFound() {
 
       <img 
         src={logo} 
-        alt="TrainLog" 
+        alt="Tractus" 
         className="h-6 absolute bottom-8 opacity-30 hover:opacity-100 dark:brightness-200 dark:contrast-125 transition-all duration-300 cursor-pointer" 
         onClick={() => navigate('/')}
       />

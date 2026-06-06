@@ -30,7 +30,7 @@ export function Home() {
             </div>
             <div className="text-center lg:text-left">
               <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-[#27AE60] to-[#1ecc6a] bg-clip-text text-transparent leading-tight">
-                TrainLog
+                Tractus
               </h1>
               <p className="text-gray-500 dark:text-gray-400 text-lg mt-3 max-w-md">
                 Seu companheiro inteligente para acompanhar treinos e alcançar seus objetivos fitness
@@ -89,7 +89,7 @@ export function Home() {
           {/* Divider */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-gray-200 dark:bg-[#333]" />
-            <span className="text-xs text-gray-400 uppercase tracking-wider">Por que TrainLog?</span>
+            <span className="text-xs text-gray-400 uppercase tracking-wider">Por que Tractus?</span>
             <div className="flex-1 h-px bg-gray-200 dark:bg-[#333]" />
           </div>
 

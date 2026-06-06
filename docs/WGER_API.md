@@ -1,7 +1,7 @@
 # 🏋️ Wger Exercise API Integration
 
 ## Overview
-TrainLog uses the **Wger Exercise API** - a completely **FREE, open-source** API that provides exercise data with real images and videos!
+Tractus uses the **Wger Exercise API** - a completely **FREE, open-source** API that provides exercise data with real images and videos!
 
 ## ✅ Features
 
@@ -20,7 +20,7 @@ TrainLog uses the **Wger Exercise API** - a completely **FREE, open-source** API
 - **Official Website**: https://wger.de
 - **API Base URL**: `https://wger.de/api/v2`
 
-## 🎯 How It Works in TrainLog
+## 🎯 How It Works in Tractus
 
 ### 1. **Exercise Library Modal**
 When you open the exercise library:
@@ -195,7 +195,7 @@ Visit: https://github.com/wger-project/wger
 
 Wger API is free to use under their open-source license. The exercise data and images are community-contributed and licensed accordingly.
 
-TrainLog respects Wger's terms of service:
+Tractus respects Wger's terms of service:
 - ✅ Attribution provided in documentation
 - ✅ Non-commercial use
 - ✅ No redistribution of data

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The TrainLog Premium Upgrade System allows free users to request Premium status through an admin-approval workflow. This system is designed for small-scale operations where manual approval and payment coordination is feasible.
+The Tractus Premium Upgrade System allows free users to request Premium status through an admin-approval workflow. This system is designed for small-scale operations where manual approval and payment coordination is feasible.
 
 ## 🎯 Why This Approach?
 
@@ -246,12 +246,12 @@ The TrainLog Premium Upgrade System allows free users to request Premium status 
 
 ### Approval Email Template
 
-**Subject**: ✅ TrainLog Premium Aprovado - Próximos Passos
+**Subject**: ✅ Tractus Premium Aprovado - Próximos Passos
 
 ```
 Olá [NOME],
 
-Ótimas notícias! Seu upgrade para TrainLog Premium foi aprovado! 🎉
+Ótimas notícias! Seu upgrade para Tractus Premium foi aprovado! 🎉
 
 Seu acesso Premium já está ativo e você pode começar a usar:
 ✨ Calendário de Streaks (visualize todo seu histórico)
@@ -275,22 +275,22 @@ CPF: [CPF]
 Dúvidas? Responda este email!
 
 Bons treinos! 💪
-Equipe TrainLog
+Equipe Tractus
 ```
 
 ### Rejection Email Template (Optional)
 
-**Subject**: TrainLog Premium - Solicitação Revisada
+**Subject**: Tractus Premium - Solicitação Revisada
 
 ```
 Olá [NOME],
 
-Agradecemos seu interesse no TrainLog Premium!
+Agradecemos seu interesse no Tractus Premium!
 
 Infelizmente, não pudemos aprovar sua solicitação neste momento.
 [MOTIVO, se fornecido]
 
-Você ainda pode aproveitar todos os recursos gratuitos do TrainLog:
+Você ainda pode aproveitar todos os recursos gratuitos do Tractus:
 ✅ Cadastro ilimitado de treinos
 ✅ Acompanhamento de exercícios
 ✅ Sistema de streaks
@@ -299,7 +299,7 @@ Você ainda pode aproveitar todos os recursos gratuitos do TrainLog:
 Caso queira reavaliar sua solicitação no futuro, fique à vontade para nos contatar!
 
 Atenciosamente,
-Equipe TrainLog
+Equipe Tractus
 ```
 
 ---
@@ -405,4 +405,4 @@ interface PromoCode {
 
 Need help implementing payment integration? Email: your-support-email@domain.com
 
-Built with ❤️ for TrainLog users
+Built with ❤️ for Tractus users

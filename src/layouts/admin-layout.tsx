@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
 import { auth, db } from '../firebaseConfig'
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
-import { LayoutDashboard, Users, Activity, Bug, LogOut, Menu, X, Bell } from 'lucide-react'
+import { collection, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore'
+import { LayoutDashboard, Users, Activity, Bug, LogOut, Menu, X, Bell, Store } from 'lucide-react'
 import adminLogo from '../assets/admin-logo.png'
+import adminLogoClear from '../assets/admin-logo-clear.png'
 import { Spinner } from '../components/spinner'
 
 export type UserData = {
@@ -47,6 +48,24 @@ export type UpgradeRequest = {
   processedAt?: string
 }
 
+export type PlayTesterLead = {
+  id: string
+  email: string
+  status: 'pending' | 'invited_on_google_play' | 'access_email_sent'
+  source: string
+  followUpStatus?: string
+  locale?: string
+  userAgent?: string
+  requestCount?: number
+  createdAt?: unknown
+  updatedAt?: unknown
+  invitedAt?: unknown
+  emailedAt?: unknown
+  accessLink?: string
+  processedBy?: string
+  rawData?: Record<string, unknown>
+}
+
 export type AdminContextData = {
   adminId: string
   adminName: string
@@ -57,6 +76,8 @@ export type AdminContextData = {
   logs: LogData[]
   upgradeRequests: UpgradeRequest[]
   setUpgradeRequests: React.Dispatch<React.SetStateAction<UpgradeRequest[]>>
+  playTesterLeads: PlayTesterLead[]
+  setPlayTesterLeads: React.Dispatch<React.SetStateAction<PlayTesterLead[]>>
 }
 
 export function AdminLayout() {
@@ -70,15 +91,16 @@ export function AdminLayout() {
   const [workouts, setWorkouts] = useState<WorkoutData[]>([])
   const [logs, setLogs] = useState<LogData[]>([])
   const [upgradeRequests, setUpgradeRequests] = useState<UpgradeRequest[]>([])
+  const [playTesterLeads, setPlayTesterLeads] = useState<PlayTesterLead[]>([])
   const [adminName, setAdminName] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
-    document.title = 'Painel Admin - TrainLog'
+    document.title = 'Painel Admin - Tractus'
     const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     const originalHref = link?.href;
     if (link) {
-      link.href = adminLogo;
+      link.href = adminLogoClear;
     }
 
     // Check admin authentication
@@ -182,6 +204,48 @@ export function AdminLayout() {
     }
   }, [adminId, isAdmin, navigate])
 
+  useEffect(() => {
+    if (!adminId || isAdmin !== 'true') {
+      return
+    }
+
+    const playTesterLeadsRef = collection(db, 'google_play_waitlist')
+
+    const unsubscribePlayTesterLeads = onSnapshot(playTesterLeadsRef, (playTesterLeadsSnapshot) => {
+      const playTesterLeadsData: PlayTesterLead[] = playTesterLeadsSnapshot.docs.map((d) => ({
+        id: d.id,
+        email: d.data().email,
+        status: d.data().status || 'pending',
+        source: d.data().source || 'unknown',
+        followUpStatus: d.data().followUpStatus,
+        locale: d.data().locale,
+        userAgent: d.data().userAgent,
+        requestCount: d.data().requestCount,
+        createdAt: d.data().createdAt,
+        updatedAt: d.data().updatedAt,
+        invitedAt: d.data().invitedAt,
+        emailedAt: d.data().emailedAt,
+        accessLink: d.data().accessLink,
+        processedBy: d.data().processedBy,
+        rawData: d.data(),
+      }))
+
+      playTesterLeadsData.sort((a, b) => {
+        const createdA = a.createdAt && typeof a.createdAt === 'object' && 'toDate' in a.createdAt
+          ? (a.createdAt as { toDate: () => Date }).toDate().getTime()
+          : 0
+        const createdB = b.createdAt && typeof b.createdAt === 'object' && 'toDate' in b.createdAt
+          ? (b.createdAt as { toDate: () => Date }).toDate().getTime()
+          : 0
+        return createdB - createdA
+      })
+
+      setPlayTesterLeads(playTesterLeadsData)
+    })
+
+    return () => unsubscribePlayTesterLeads()
+  }, [adminId, isAdmin])
+
   const handleLogout = () => {
     auth.signOut()
     localStorage.clear()
@@ -193,6 +257,7 @@ export function AdminLayout() {
     { name: 'Usuários', path: '/admin/dashboard/users', icon: <Users size={20} /> },
     { name: 'Atividades', path: '/admin/dashboard/activities', icon: <Activity size={20} /> },
     { name: 'Reporte de Bugs', path: '/admin/dashboard/bugs', icon: <Bug size={20} /> },
+    { name: 'Google Play Testers', path: '/admin/dashboard/play-testers', icon: <Store size={20} /> },
     { name: 'Notificações', path: '/admin/dashboard/notifications', icon: <Bell size={20} /> },
   ]
 
@@ -200,7 +265,7 @@ export function AdminLayout() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="text-center">
-          <Spinner size={64} color="#27AE60" className="mx-auto mb-4" label="Carregando painel admin" />
+          <Spinner size={64} color="#FFBE00" className="mx-auto mb-4" label="Carregando painel admin" />
           <p className="text-gray-400">Carregando painel admin...</p>
         </div>
       </div>
@@ -216,7 +281,9 @@ export function AdminLayout() {
     setWorkouts,
     logs,
     upgradeRequests,
-    setUpgradeRequests
+    setUpgradeRequests,
+    playTesterLeads,
+    setPlayTesterLeads
   }
 
   return (
@@ -239,9 +306,9 @@ export function AdminLayout() {
       `}>
         <div className="p-6 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={adminLogo} alt="Admin Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(39,174,96,0.3)]" />
+            <img src={adminLogo} alt="Admin Logo" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(255,190,0,0.3)]" />
             <div>
-              <h2 className="text-2xl font-black text-white tracking-tight">Train<span className="text-[#27AE60]">Log</span></h2>
+              <h2 className="text-2xl font-extrabold text-white">Tractus</h2>
               <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Admin Panel</p>
             </div>
           </div>

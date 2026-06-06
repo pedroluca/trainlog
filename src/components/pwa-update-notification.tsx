@@ -105,7 +105,7 @@ export function PWAUpdateNotification() {
     if (updateType === 'major') {
       return {
         title: 'Grande Atualização Disponível! 🚀',
-        description: 'Uma versão principal do TrainLog está pronta com mudanças importantes. Clique em "Atualizar" para obter as novas funcionalidades.',
+        description: 'Uma versão principal do Tractus está pronta com mudanças importantes. Clique em "Atualizar" para obter as novas funcionalidades.',
         badge: 'MAJOR',
         badgeColor: 'bg-red-500'
       }
@@ -114,7 +114,7 @@ export function PWAUpdateNotification() {
     if (updateType === 'minor') {
       return {
         title: 'Nova Versão Disponível! 🎉',
-        description: 'Novas funcionalidades foram adicionadas ao TrainLog. Clique em "Atualizar" para acessá-las.',
+        description: 'Novas funcionalidades foram adicionadas ao Tractus. Clique em "Atualizar" para acessá-las.',
         badge: 'MINOR',
         badgeColor: 'bg-blue-500'
       }
@@ -123,7 +123,7 @@ export function PWAUpdateNotification() {
     // Default message
     return {
       title: 'Atualização Disponível! ✨',
-      description: 'Uma atualização do TrainLog está pronta. Clique em "Atualizar" para obter as últimas melhorias.',
+      description: 'Uma atualização do Tractus está pronta. Clique em "Atualizar" para obter as últimas melhorias.',
       badge: null,
       badgeColor: ''
     }

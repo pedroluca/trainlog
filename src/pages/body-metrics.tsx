@@ -57,7 +57,7 @@ export function BodyMetrics() {
   }
 
   useEffect(() => {
-    document.title = 'Métricas Corporais - TrainLog'
+    document.title = 'Métricas Corporais - Tractus'
 
     if (!usuarioID) {
       navigate('/login')

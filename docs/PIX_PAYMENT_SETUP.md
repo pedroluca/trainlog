@@ -54,7 +54,7 @@ Se abrir o WhatsApp, está correto! ✅
 1. Acesse uma das ferramentas
 2. Insira sua chave PIX (email, telefone, CPF ou CNPJ)
 3. Insira o valor: **R$ 14,90**
-4. Adicione descrição: "TrainLog Premium"
+4. Adicione descrição: "Tractus Premium"
 5. Gere o QR Code
 6. Baixe a imagem (PNG ou SVG)
 
@@ -370,4 +370,4 @@ const copyPixKey = async () => {
 
 Dúvidas sobre esta implementação? Entre em contato!
 
-Feito com 💚 para TrainLog
+Feito com 💚 para Tractus

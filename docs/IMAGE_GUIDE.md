@@ -1,7 +1,7 @@
 # 🖼️ Exercise Images - Complete Guide
 
 ## Overview
-TrainLog displays exercise images throughout the app to enhance the visual experience and help users perform exercises correctly.
+Tractus displays exercise images throughout the app to enhance the visual experience and help users perform exercises correctly.
 
 ## 🎨 Where Images Appear
 

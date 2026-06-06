@@ -1,9 +1,9 @@
-# PWA Features - TrainLog
+# PWA Features - Tractus
 
 ## ✅ What's Included
 
 ### 1. **Installable App**
-- Users can install TrainLog on their home screen
+- Users can install Tractus on their home screen
 - Works on mobile (Android/iOS) and desktop (Chrome, Edge, Safari)
 - Appears like a native app with no browser UI
 
@@ -62,12 +62,12 @@ pnpm preview
 ## 📱 Install Instructions for Users
 
 ### Android (Chrome/Edge)
-1. Open TrainLog in browser
+1. Open Tractus in browser
 2. Tap menu (⋮) → "Install app" or "Add to Home Screen"
 3. App appears on home screen like native app
 
 ### iOS (Safari)
-1. Open TrainLog in Safari
+1. Open Tractus in Safari
 2. Tap Share button (□↑)
 3. Scroll and tap "Add to Home Screen"
 4. Tap "Add"

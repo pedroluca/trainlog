@@ -70,7 +70,7 @@ When a new version is detected:
     └─────────────────┘ │• Dismiss     │ │• Dismiss     │
                         └──────────────┘ └──────────────┘
 ```# Overview
-TrainLog uses a **prompt-based PWA update system** that actively checks for updates and notifies users when a new version is available.
+Tractus uses a **prompt-based PWA update system** that actively checks for updates and notifies users when a new version is available.
 
 ## How It Works
 
@@ -237,14 +237,14 @@ useRegisterSW({
 - **Badge**: Blue "MINOR" label
 - **Title**: "Nova Versão Disponível! 🎉"
 - **Button**: Blue (bg-blue-500)
-- **Message**: "Novas funcionalidades foram adicionadas ao TrainLog..."
+- **Message**: "Novas funcionalidades foram adicionadas ao Tractus..."
 - **Tone**: Positive, inviting
 
 #### Major Update Notification
 - **Badge**: Red "MAJOR" label
 - **Title**: "Grande Atualização Disponível! 🚀"
 - **Button**: Red (bg-red-500)
-- **Message**: "Uma versão principal do TrainLog está pronta com mudanças importantes..."
+- **Message**: "Uma versão principal do Tractus está pronta com mudanças importantes..."
 - **Tone**: Urgent, important
 
 #### Patch Update (Silent)

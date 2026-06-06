@@ -92,7 +92,7 @@ export function Header() {
             to='/'
             className='text-3xl md:text-4xl font-bold tracking-tight hover:scale-105 transition-transform duration-200 z-10'
           >
-            TrainLog
+            Tractus
           </Link>
         )}
 
