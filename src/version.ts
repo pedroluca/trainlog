@@ -4,8 +4,8 @@
 // PATCH: Bug fixes, backwards compatible
 
 export const APP_VERSION = {
-  major: 1,
-  minor: 19,
+  major: 2,
+  minor: 0,
   patch: 0,
 }
 
