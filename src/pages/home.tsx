@@ -97,21 +97,6 @@ export function Home() {
   )
 }
 
-// Feature Card Component — horizontal layout no desktop
-function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode, title: string, description: string, color: string }) {
-  return (
-    <div className="flex items-start gap-4 bg-white dark:bg-[#121212] rounded-2xl p-5 border border-gray-200 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className={`w-11 h-11 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-lg`}>
-        {icon}
-      </div>
-      <div>
-        <h3 className="font-bold text-gray-800 dark:text-white text-sm">{title}</h3>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 leading-snug">{description}</p>
-      </div>
-    </div>
-  )
-}
-
 // Benefit Item — compact grid cell
 function BenefitItem({ icon, text }: { icon: React.ReactNode, text: string }) {
   return (
