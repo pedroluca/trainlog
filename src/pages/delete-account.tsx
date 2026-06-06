@@ -4,7 +4,7 @@ const SUPPORT_EMAIL = 'suporte@trainlog.site'
 
 export function DeleteAccount() {
   useEffect(() => {
-    document.title = 'Excluir Conta – TrainLog'
+    document.title = 'Excluir Conta – Tractus'
   }, [])
 
   const [copied, setCopied] = useState(false)
@@ -29,7 +29,7 @@ export function DeleteAccount() {
               <rect width="36" height="36" rx="10" fill="#27AE60" />
               <path d="M10 18h4l3-7 4 14 3-10 2 3h4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="privacy-logo-text">TrainLog</span>
+            <span className="privacy-logo-text">Tractus</span>
           </div>
 
           <div className="delete-icon-wrapper">
@@ -134,7 +134,7 @@ export function DeleteAccount() {
         </div>
 
         <footer className="privacy-footer">
-          <p>© {new Date().getFullYear()} TrainLog. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} Tractus. Todos os direitos reservados.</p>
           <p style={{ marginTop: '0.4rem' }}>
             <a href="/privacy" style={{ color: '#27AE60', textDecoration: 'none' }}>Política de Privacidade</a>
           </p>

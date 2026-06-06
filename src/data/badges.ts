@@ -44,7 +44,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     id: 'founder',
     title: 'Fundador',
-    description: 'Desenvolvedor que fundou o TrainLog. Obrigado por acreditar desde o início!',
+    description: 'Desenvolvedor que fundou o Tractus. Obrigado por acreditar desde o início!',
     Icon: Laptop,
     order: 0,
     hasImageBorder: true,
@@ -55,7 +55,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     id: 'premium',
     title: 'Premium',
-    description: 'Usuário com acesso premium ao TrainLog. Desfruta de todos os recursos exclusivos da plataforma.',
+    description: 'Usuário com acesso premium ao Tractus. Desfruta de todos os recursos exclusivos da plataforma.',
     Icon: Crown,
     order: 1,
     hasImageBorder: true,
@@ -67,7 +67,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     id: 'trainer',
     title: 'Treinador',
-    description: 'Personal trainer verificado no TrainLog. Profissional qualificado para orientar treinos.',
+    description: 'Personal trainer verificado no Tractus. Profissional qualificado para orientar treinos.',
     Icon: GraduationCap,
     order: 2,
     hasImageBorder: false,
@@ -76,7 +76,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     id: 'alpha',
     title: 'Alpha User',
-    description: 'Fez parte da fase Alpha do TrainLog, testando o app antes de ser lançado ao público.',
+    description: 'Fez parte da fase Alpha do Tractus, testando o app antes de ser lançado ao público.',
     Icon: Rocket,
     order: 3,
     hasImageBorder: false,

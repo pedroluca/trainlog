@@ -1,8 +1,8 @@
-# 🏋️ TrainLog
+# 🏋️ Tractus
 
 A modern workout tracking application built with React, TypeScript, Firebase, and Vite.
 
-![TrainLog Version](https://img.shields.io/badge/version-1.19.0-green)
+![Tractus Version](https://img.shields.io/badge/version-1.19.0-green)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![Firebase](https://img.shields.io/badge/Firebase-10-orange)
@@ -144,7 +144,7 @@ See `firestore.rules` for details.
 
 ## 🌟 Wger API Integration
 
-TrainLog uses the free **Wger Exercise API** to provide:
+Tractus uses the free **Wger Exercise API** to provide:
 - Real exercise images (no API key needed!)
 - 1000+ exercises with photos
 - Exercise videos

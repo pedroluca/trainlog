@@ -1,4 +1,4 @@
-# TrainLog - Hostinger Deployment Guide
+# Tractus - Hostinger Deployment Guide
 
 ## 🌐 Estrutura de Domínios
 

@@ -126,7 +126,7 @@ export function ReportBugModal({ onClose, usuarioID, nome, email, username }: Re
         <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center border border-gray-100 dark:border-[#333]">
           <CheckCircle2 size={64} className="text-[#27AE60] mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Relato Enviado!</h2>
-          <p className="text-gray-600 dark:text-gray-400">Obrigado por nos ajudar a melhorar o TrainLog. Analisaremos em breve.</p>
+          <p className="text-gray-600 dark:text-gray-400">Obrigado por nos ajudar a melhorar o Tractus. Analisaremos em breve.</p>
         </div>
       </div>
     )

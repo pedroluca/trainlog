@@ -1,7 +1,7 @@
 import { logEvent } from '../firebaseConfig'
 
 /**
- * Analytics Events for TrainLog
+ * Analytics Events for Tractus
  * Track user behavior and feature usage
  */
 

@@ -20,6 +20,7 @@ const AdminOverview = lazy(() => import('./pages/admin/overview').then(m => ({ d
 const AdminUsers = lazy(() => import('./pages/admin/users').then(m => ({ default: m.AdminUsers })))
 const AdminActivities = lazy(() => import('./pages/admin/activities').then(m => ({ default: m.AdminActivities })))
 const AdminBugs = lazy(() => import('./pages/admin/bugs').then(m => ({ default: m.AdminBugs })))
+const AdminPlayTesters = lazy(() => import('./pages/admin/play-testers').then(m => ({ default: m.AdminPlayTesters })))
 const AdminNotifications = lazy(() => import('./pages/admin/notifications').then(m => ({ default: m.AdminNotifications })))
 const TrainerConnections = lazy(() => import('./pages/trainer-connections').then(m => ({ default: m.TrainerConnections })))
 const PrivacyPolicy = lazy(() => import('./pages/privacy-policy').then(m => ({ default: m.PrivacyPolicy })))
@@ -328,6 +329,7 @@ export function App() {
               <Route path='users' element={<AdminUsers />} />
               <Route path='activities' element={<AdminActivities />} />
               <Route path='bugs' element={<AdminBugs />} />
+              <Route path='play-testers' element={<AdminPlayTesters />} />
               <Route path='notifications' element={<AdminNotifications />} />
             </Route>
 

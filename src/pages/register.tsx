@@ -205,7 +205,7 @@ export function Cadastro() {
     <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a] py-8 pt-20 px-4">
       <div className="bg-white dark:bg-[#2d2d2d] shadow-xl rounded-2xl p-6 sm:p-8 w-full max-w-md sm:max-w-2xl border border-gray-100 dark:border-[#404040]">
         <div className="flex justify-center mb-6">
-          <img src={logo} alt="TrainLog Logo" className="h-16 w-auto drop-shadow-sm" />
+          <img src={logo} alt="Tractus Logo" className="h-16 w-auto drop-shadow-sm" />
         </div>
         <h1 className="text-3xl font-black text-center mb-2 text-gray-800 dark:text-gray-100">Junte-se a nós</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-8">
@@ -379,7 +379,7 @@ export function Cadastro() {
                 >
                   Política de Privacidade
                 </a>{' '}
-                e os Termos de Uso do TrainLog.
+                e os Termos de Uso do Tractus.
               </p>
             </label>
           </div>

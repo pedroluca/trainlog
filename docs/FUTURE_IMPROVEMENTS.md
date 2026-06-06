@@ -1,4 +1,4 @@
-# TrainLog - Future Improvements & Recommendations
+# Tractus - Future Improvements & Recommendations
 
 ## ✅ Just Implemented
 - **Password Reset** - FREE with Firebase! Users can now reset their password via email
@@ -196,7 +196,7 @@ Remove register page, add form:
 <form onSubmit={handleAccessRequest}>
   <input type="email" placeholder="Seu email" />
   <input type="text" placeholder="Seu nome" />
-  <textarea placeholder="Por que você quer usar o TrainLog?" />
+  <textarea placeholder="Por que você quer usar o Tractus?" />
   <button>Solicitar Acesso</button>
 </form>
 ```
@@ -431,7 +431,7 @@ If you need help implementing any of these:
 - Progress charts
 - Any feature
 
-Just ask! I'm here to help you make TrainLog successful 💪
+Just ask! I'm here to help you make Tractus successful 💪
 
 ---
 

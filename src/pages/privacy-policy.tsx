@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 export function PrivacyPolicy() {
   useEffect(() => {
-    document.title = 'Política de Privacidade – TrainLog'
+    document.title = 'Política de Privacidade – Tractus'
   }, [])
 
   return (
@@ -15,7 +15,7 @@ export function PrivacyPolicy() {
               <rect width="36" height="36" rx="10" fill="#27AE60" />
               <path d="M10 18h4l3-7 4 14 3-10 2 3h4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="privacy-logo-text">TrainLog</span>
+            <span className="privacy-logo-text">Tractus</span>
           </div>
           <h1 className="privacy-title">Política de Privacidade</h1>
           <p className="privacy-subtitle">
@@ -29,11 +29,11 @@ export function PrivacyPolicy() {
           <section className="privacy-section">
             <h2>1. Introdução</h2>
             <p>
-              Bem-vindo ao <strong>TrainLog</strong>. Esta Política de Privacidade descreve como coletamos, usamos,
+              Bem-vindo ao <strong>Tractus</strong>. Esta Política de Privacidade descreve como coletamos, usamos,
               armazenamos e protegemos suas informações pessoais ao utilizar nosso aplicativo de acompanhamento de treinos.
             </p>
             <p>
-              Ao criar uma conta e utilizar o TrainLog, você concorda com as práticas descritas nesta política.
+              Ao criar uma conta e utilizar o Tractus, você concorda com as práticas descritas nesta política.
               Caso não concorde com algum ponto, recomendamos que não utilize o aplicativo.
             </p>
           </section>
@@ -85,14 +85,14 @@ export function PrivacyPolicy() {
                 <strong>Obrigações legais:</strong> quando exigido por lei, ordem judicial ou autoridade competente.
               </li>
               <li>
-                <strong>Proteção de direitos:</strong> para proteger os direitos, propriedade ou segurança do TrainLog e de seus usuários.
+                <strong>Proteção de direitos:</strong> para proteger os direitos, propriedade ou segurança do Tractus e de seus usuários.
               </li>
             </ul>
           </section>
 
           <section className="privacy-section">
             <h2>5. Serviços de Terceiros</h2>
-            <p>O TrainLog utiliza os seguintes serviços de terceiros, cada um com sua própria política de privacidade:</p>
+            <p>O Tractus utiliza os seguintes serviços de terceiros, cada um com sua própria política de privacidade:</p>
             <ul>
               <li>
                 <strong>Firebase (Google LLC)</strong> – Autenticação, banco de dados em nuvem e armazenamento.
@@ -142,7 +142,7 @@ export function PrivacyPolicy() {
           <section className="privacy-section">
             <h2>9. Privacidade de Menores</h2>
             <p>
-              O TrainLog não é destinado a menores de <strong>13 anos</strong>. Não coletamos intencionalmente informações pessoais de crianças.
+              O Tractus não é destinado a menores de <strong>13 anos</strong>. Não coletamos intencionalmente informações pessoais de crianças.
               Se você acredita que uma criança nos forneceu dados, entre em contato para que possamos removê-los.
             </p>
           </section>
@@ -159,7 +159,7 @@ export function PrivacyPolicy() {
             <h2>11. Alterações nesta Política</h2>
             <p>
               Podemos atualizar esta Política de Privacidade periodicamente. Quando houver alterações relevantes, notificaremos você
-              por meio do aplicativo ou por e-mail. O uso continuado do TrainLog após as alterações implica aceitação da nova política.
+              por meio do aplicativo ou por e-mail. O uso continuado do Tractus após as alterações implica aceitação da nova política.
             </p>
           </section>
 
@@ -169,7 +169,7 @@ export function PrivacyPolicy() {
               Se tiver dúvidas, solicitações ou preocupações sobre esta Política de Privacidade, entre em contato conosco:
             </p>
             <div className="privacy-contact">
-              <p><strong>TrainLog</strong></p>
+              <p><strong>Tractus</strong></p>
               <p>📧 <a href="mailto:suporte@trainlog.site">suporte@trainlog.site</a></p>
             </div>
           </section>
@@ -177,7 +177,7 @@ export function PrivacyPolicy() {
         </main>
 
         <footer className="privacy-footer">
-          <p>© {new Date().getFullYear()} TrainLog. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} Tractus. Todos os direitos reservados.</p>
         </footer>
       </div>
     </div>

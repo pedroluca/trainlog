@@ -166,7 +166,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
             {/* Action Buttons */}
             <div className='space-y-2'>
               <a
-                href={`https://wa.me/${ADMIN_WHATSAPP}?text=Olá! Acabei de fazer o pagamento do TrainLog Premium (R$ ${PIX_VALUE}). Segue o comprovante:`}
+                href={`https://wa.me/${ADMIN_WHATSAPP}?text=Olá! Acabei de fazer o pagamento do Tractus Premium (R$ ${PIX_VALUE}). Segue o comprovante:`}
                 target='_blank'
                 rel='noopener noreferrer'
                 className='w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2'
@@ -176,7 +176,7 @@ export function PremiumUpgradeModal({ isOpen, onClose, userEmail, userName, user
               </a>
 
               <a
-                href={`mailto:suporte@trainlog.site?subject=Comprovante TrainLog Premium - ${userName}&body=Olá!%0A%0AAcabei de fazer o pagamento do TrainLog Premium (R$ ${PIX_VALUE}).%0A%0AMeus dados:%0ANome: ${userName}%0AEmail: ${userEmail}%0A%0AComprovante em anexo.`}
+                href={`mailto:suporte@trainlog.site?subject=Comprovante Tractus Premium - ${userName}&body=Olá!%0A%0AAcabei de fazer o pagamento do Tractus Premium (R$ ${PIX_VALUE}).%0A%0AMeus dados:%0ANome: ${userName}%0AEmail: ${userEmail}%0A%0AComprovante em anexo.`}
                 className='w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2'
               >
                 <span className='text-xl'>📧</span>

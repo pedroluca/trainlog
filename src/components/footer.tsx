@@ -8,7 +8,7 @@ export function Footer({ showInformation = true }: FooterProps) {
   return (
     <footer className="mt-6 text-center space-y-2 pb-8 md:pb-30 lg:pb-0">
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        © {new Date().getFullYear()} TrainLog. Todos os direitos reservados.
+        © {new Date().getFullYear()} Tractus. Todos os direitos reservados.
       </p>
       {
         showInformation && (

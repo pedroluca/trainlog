@@ -70,7 +70,7 @@ export function PWAInstallPrompt() {
           
           <div className="flex-1 min-w-0">
             <h3 className="text-white font-semibold text-sm mb-1">
-              Instalar TrainLog
+              Instalar Tractus
             </h3>
             <p className="text-gray-400 text-xs mb-3">
               Adicione o app à sua tela inicial para acesso rápido e experiência offline

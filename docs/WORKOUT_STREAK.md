@@ -65,7 +65,7 @@ Tracks user's workout completion streaks based on their scheduled training days.
 ### 4. UI/UX
 
 #### Header:
-- **Left**: TrainLog title (clickable logo)
+- **Left**: Tractus title (clickable logo)
 - **Right**: 🔥 Streak counter (links to profile)
 - Visible on all main pages
 

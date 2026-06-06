@@ -1,4 +1,4 @@
-# Google Analytics 4 Integration - TrainLog
+# Google Analytics 4 Integration - Tractus
 
 ## ✅ What's Included
 
@@ -45,7 +45,7 @@ Firebase Console → Select Project → Analytics (Left Sidebar)
 **Step-by-Step:**
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your **TrainLog** project
+2. Select your **Tractus** project
 3. Click **Analytics** in the left sidebar
 4. If you see "Get Started", click it
 5. Click **Enable Google Analytics**
@@ -120,7 +120,7 @@ After enabling, Firebase automatically adds:
 ### Google Analytics 4 Property
 
 1. Go to [analytics.google.com](https://analytics.google.com/)
-2. Select your TrainLog property
+2. Select your Tractus property
 3. Advanced reports:
    - User demographics
    - Device breakdown

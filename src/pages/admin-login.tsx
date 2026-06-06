@@ -16,7 +16,7 @@ export function AdminLogin() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    document.title = 'Admin - TrainLog'
+    document.title = 'Admin - Tractus'
     const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     const originalHref = link?.href;
     if (link) {

@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg'],
       manifest: {
-        name: 'TrainLog - Seu Diário de Treinos',
-        short_name: 'TrainLog',
+        name: 'Tractus - Seu Diário de Treinos',
+        short_name: 'Tractus',
         description: 'Registre e acompanhe seus treinos de musculação',
         theme_color: '#27AE60',
         background_color: '#1a1a1a',

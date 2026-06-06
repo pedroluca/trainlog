@@ -1,7 +1,7 @@
 # Dark Mode Implementation
 
 ## Overview
-Full dark mode support has been implemented across the TrainLog app with automatic persistence to Firestore and localStorage.
+Full dark mode support has been implemented across the Tractus app with automatic persistence to Firestore and localStorage.
 
 ## Features
 
