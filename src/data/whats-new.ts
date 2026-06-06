@@ -22,58 +22,62 @@ export type WhatsNewRelease = {
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
-  version: '1.18.0',
-  date: '2026-04-24',
-  title: 'Novidades da Versão 1.18.0',
+  version: '2.0.0',
+  date: '2026-06-06',
+  title: 'Novidades da Versão 2.0.0',
   items: [
     {
-      id: 'appearance-changes',
-      icon: '🎨',
-      title: 'Aparência',
-      description: 'Além da alteração do tema, usuários Premium agora podem alterar a cor principal do aplicativo.',
+      id: 'rebrand-tractus',
+      icon: '✨',
+      title: 'Novo nome: Tractus',
+      description: 'O app agora se chama Tractus. Atualizamos a identidade para refletir essa nova fase do projeto.',
       action: {
-        label: 'Ver meu Perfil',
-        route: '/profile/settings/appearance'
-      }
-    },
-    {
-      id: 'badge-system',
-      icon: '🏅',
-      title: 'Sistema de Badges',
-      description: 'Seu perfil agora exibe conquistas como Fundador, Premium, Treinador e Alpha User. Toque em qualquer badge para ver o que ela significa!',
-      action: {
-        label: 'Ver meu Perfil',
+        label: 'Ver novidades',
         route: '/profile'
       }
-    }
+    },
+    // {
+    //   id: 'appearance-changes',
+    //   icon: '🎨',
+    //   title: 'Aparência',
+    //   description: 'Além da alteração do tema, usuários Premium agora podem alterar a cor principal do aplicativo.',
+    //   action: {
+    //     label: 'Ver meu Perfil',
+    //     route: '/profile/settings/appearance'
+    //   }
+    // },
+    // {
+    //   id: 'badge-system',
+    //   icon: '🏅',
+    //   title: 'Sistema de Badges',
+    //   description: 'Seu perfil agora exibe conquistas como Fundador, Premium, Treinador e Alpha User. Toque em qualquer badge para ver o que ela significa!',
+    //   action: {
+    //     label: 'Ver meu Perfil',
+    //     route: '/profile'
+    //   }
+    // }
   ],
   previousItems: [
-    {
-      id: 'trainer-student-flow',
-      icon: '🧑‍🏫',
-      title: 'Novo Fluxo Treinador/Aluno',
-      description: 'Conecte-se como treinador ou aluno, envie solicitações com consentimento e gerencie treinos por vínculo.',
-      action: {
-        label: 'Abrir Treinador/Aluno',
-        route: '/profile/connections'
-      }
-    },
-    {
-      id: 'friendships-kept',
-      icon: '🤝',
-      title: 'Amizades Mantidas',
-      description: 'O sistema de amizade continua ativo com solicitações, perfil de amigos e privacidade.',
-      action: {
-        label: 'Ver Amigos',
-        route: '/friends'
-      }
-    },
-    {
-      id: 'android-push-kept',
-      icon: '📲',
-      title: 'Push no Android Continua',
-      description: 'As notificações push para Android permanecem ativas no app.'
-    }
+    // {
+    //   id: 'trainer-student-flow',
+    //   icon: '🧑‍🏫',
+    //   title: 'Novo Fluxo Treinador/Aluno',
+    //   description: 'Conecte-se como treinador ou aluno, envie solicitações com consentimento e gerencie treinos por vínculo.',
+    //   action: {
+    //     label: 'Abrir Treinador/Aluno',
+    //     route: '/profile/connections'
+    //   }
+    // },
+    // {
+    //   id: 'friendships-kept',
+    //   icon: '🤝',
+    //   title: 'Amizades Mantidas',
+    //   description: 'O sistema de amizade continua ativo com solicitações, perfil de amigos e privacidade.',
+    //   action: {
+    //     label: 'Ver Amigos',
+    //     route: '/friends'
+    //   }
+    // }
   ]
 }
 
