@@ -18,9 +18,10 @@ type TrainingCardProps = {
   weight: number
   breakTime: number
   isFeito: boolean
+  isSkipped?: boolean
   reset?: boolean
   onEdit: () => void
-  onComplete?: () => void // Callback when exercise is completed
+  onComplete?: (options?: { skipped?: boolean }) => void // Callback when exercise is completed
   nota?: string
   usesProgressiveWeight?: boolean
   progressiveSets?: Array<{ reps: number; weight: number }>
@@ -28,7 +29,7 @@ type TrainingCardProps = {
 }
 
 export function TrainingCard(props: TrainingCardProps) {
-  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, reset, onEdit, onComplete, nota, usesProgressiveWeight, progressiveSets, disableExecution } = props
+  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, isSkipped, reset, onEdit, onComplete, nota, usesProgressiveWeight, progressiveSets, disableExecution } = props
   const [isBreakTime, setIsBreakTime] = useState(false)
   const [timeLeft, setTimeLeft] = useState(0)
   const [setsDone, setSetsDone] = useState(0)
@@ -81,7 +82,7 @@ export function TrainingCard(props: TrainingCardProps) {
     }
   }, [audioEnabled])
 
-  const isFinished = isFeito
+  const isFinished = isFeito || isSkipped
   const isExecutionLocked = !!disableExecution
 
   useEffect(() => {
@@ -95,9 +96,18 @@ export function TrainingCard(props: TrainingCardProps) {
     setTimeLeft(breakTime)
   }
 
-  const handleFinishSet = useCallback(() => {
+  const updateExerciseStatus = useCallback(async (skipped = false) => {
     const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-    updateDoc(exerciseRef, { isFeito: true, lastDoneDate: new Date().toISOString() })
+
+    await updateDoc(exerciseRef, {
+      isFeito: true,
+      isSkipped: skipped,
+      lastDoneDate: new Date().toISOString()
+    })
+  }, [workoutId, id])
+
+  const handleFinishSet = useCallback(() => {
+    updateExerciseStatus(false)
       .catch(err => console.error('Erro ao marcar exercício como concluído:', err))
     
     // Add exercise to log when completed
@@ -121,11 +131,23 @@ export function TrainingCard(props: TrainingCardProps) {
     
     // Call onComplete callback to move to next exercise
     if (onComplete) {
-      onComplete()
+      onComplete({ skipped: false })
     } else {
       onEdit()
     }
-  }, [workoutId, id, onEdit, onComplete, title, sets, reps, weight])
+  }, [updateExerciseStatus, onEdit, onComplete, title, sets, reps, weight, usesProgressiveWeight, progressiveSets])
+
+  const handleSkipExercise = useCallback(() => {
+    updateExerciseStatus(true)
+      .then(() => {
+        if (onComplete) {
+          onComplete({ skipped: true })
+        } else {
+          onEdit()
+        }
+      })
+      .catch(err => console.error('Erro ao marcar exercício como pulado:', err))
+  }, [updateExerciseStatus, onComplete, onEdit])
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -151,24 +173,24 @@ export function TrainingCard(props: TrainingCardProps) {
       setSetsDone(prev => prev - 1)
       setIsBreakTime(false)
       setTimeLeft(0)
-      if (isFeito) {
+      if (isFeito || isSkipped) {
         const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-        updateDoc(exerciseRef, { isFeito: false }).catch(err => console.error('Erro ao desmarcar conclusão:', err))
+        updateDoc(exerciseRef, { isFeito: false, isSkipped: false }).catch(err => console.error('Erro ao desmarcar conclusão:', err))
         onEdit() // Trigger parent rebuild to drop finished status visually
       }
     }
-  }, [setsDone, isFeito, workoutId, id, onEdit])
+  }, [setsDone, isFeito, isSkipped, workoutId, id, onEdit])
 
   const handleResetExercise = useCallback(() => {
     setSetsDone(0)
     setIsBreakTime(false)
     setTimeLeft(0)
-    if (isFeito) {
+    if (isFeito || isSkipped) {
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
-      updateDoc(exerciseRef, { isFeito: false }).catch(err => console.error('Erro ao resetar conclusão:', err))
+      updateDoc(exerciseRef, { isFeito: false, isSkipped: false }).catch(err => console.error('Erro ao resetar conclusão:', err))
       onEdit() // Trigger parent rebuild
     }
-  }, [isFeito, workoutId, id, onEdit])
+  }, [isFeito, isSkipped, workoutId, id, onEdit])
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -209,7 +231,7 @@ export function TrainingCard(props: TrainingCardProps) {
         onEdit={() => setIsModalOpen(true)}
         onAddNote={() => setIsNoteModalOpen(true)}
         onUndoSet={setsDone > 0 ? handleUndoSet : undefined}
-        onResetExercise={setsDone > 0 ? handleResetExercise : undefined}
+        onResetExercise={setsDone > 0 || isFinished ? handleResetExercise : undefined}
       />
 
       <h1 className={`text-2xl md:text-2xl lg:text-xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h1>
@@ -296,8 +318,17 @@ export function TrainingCard(props: TrainingCardProps) {
             bgColor={'bg-primary hover:bg-primary-dark disabled:bg-primary-dark'}
             className='w-full py-4 text-lg md:text-2xl lg:text-xl font-bold mt-4'
           >
-            {isExecutionLocked ? 'Execução desativada' : isFinished ? 'Concluído' : ('Finalizar ' + (setsDone + 1) + 'ª série')}
+            {isExecutionLocked ? 'Execução desativada' : isFinished ? (isSkipped ? 'Pulado' : 'Concluído') : ('Finalizar ' + (setsDone + 1) + 'ª série')}
           </Button>
+          {!isFinished && !isExecutionLocked && (
+            <button
+              type='button'
+              onClick={handleSkipExercise}
+              className='mt-3 text-sm font-medium text-gray-500/90 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors self-center'
+            >
+              Não fiz esse hoje
+            </button>
+          )}
         </>
       ) : (
         <>

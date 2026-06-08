@@ -201,7 +201,7 @@ export function Training() {
         const exercisesRef = collection(db, 'treinos', selectedWorkout.id, 'exercicios')
         const querySnapshot = await getDocs(exercisesRef)
         const resetPromises = querySnapshot.docs.map((doc) =>
-          updateDoc(doc.ref, { isFeito: false })
+          updateDoc(doc.ref, { isFeito: false, isSkipped: false })
         )
         await Promise.all(resetPromises)
         setReset(true)
@@ -255,7 +255,7 @@ export function Training() {
   const checkAllExercisesComplete = useCallback(() => {
     if (exercises.length > 0 && selectedWorkout) {
       const allComplete = exercises.every((ex) => {
-        if (!ex.isFeito || !ex.lastDoneDate) return false
+        if ((!ex.isFeito && !ex.isSkipped) || !ex.lastDoneDate) return false
 
         const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD local
         const done = new Date(ex.lastDoneDate).toLocaleDateString('en-CA')
@@ -295,7 +295,7 @@ export function Training() {
     }
   }, [exercises, isCompleteModalOpen, selectedWorkout, usuarioID, canExecuteWorkout])
 
-  const handleExerciseComplete = useCallback(() => {
+  const handleExerciseComplete = useCallback((options?: { skipped?: boolean }) => {
     // Optimistic update to immediately show completion state
     setExercises(prev => {
       const newExercises = [...prev]
@@ -303,6 +303,7 @@ export function Training() {
         newExercises[currentExerciseIndex] = {
           ...newExercises[currentExerciseIndex],
           isFeito: true,
+          isSkipped: options?.skipped ?? false,
           lastDoneDate: new Date().toISOString()
         }
       }
@@ -512,6 +513,7 @@ export function Training() {
                           weight={exercise.peso}
                           breakTime={exercise.tempoIntervalo}
                           isFeito={exercise.isFeito}
+                          isSkipped={exercise.isSkipped}
                           reset={reset}
                           onEdit={() => fetchExercisesForDay(true)}
                           onComplete={handleExerciseComplete}

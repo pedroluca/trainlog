@@ -9,6 +9,7 @@ export interface Exercicio {
   peso: number
   tempoIntervalo: number
   isFeito: boolean
+  isSkipped?: boolean
   lastDoneDate?: string
   nota?: string
   usesProgressiveWeight?: boolean
@@ -29,6 +30,7 @@ export async function getWorkoutExercises(workoutId: string, exerciseOrder?: str
       peso: data.peso,
       tempoIntervalo: data.tempoIntervalo,
       isFeito: data.isFeito,
+      isSkipped: data.isSkipped === true,
       lastDoneDate: data.lastDoneDate,
       nota: data.nota,
       usesProgressiveWeight: data.usesProgressiveWeight,
