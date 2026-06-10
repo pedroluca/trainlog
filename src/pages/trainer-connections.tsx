@@ -289,7 +289,7 @@ export function TrainerConnections() {
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Treinadores e Alunos</h1>
           <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 px-3 py-1 rounded-full">
-            {isTrainer ? 'Perfil Treinador' : 'Perfil Aluno'}
+            {isTrainer ? 'Treinador' : 'Aluno'}
           </span>
         </div>
 
