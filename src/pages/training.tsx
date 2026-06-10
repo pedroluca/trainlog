@@ -362,7 +362,7 @@ export function Training() {
   }, [creatorNames, managedUserId])
 
   return (
-    <main className="flex flex-col items-center h-[calc(100vh-4rem)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 lg:p-8">
+    <main className="flex flex-col items-center h-[calc(100vh-4rem)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 pt-2.5 lg:p-8 lg:pt-4">
       {isManagingStudent && (
         <div className="w-full max-w-3xl mb-3 bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-900/30 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
@@ -377,7 +377,7 @@ export function Training() {
         </div>
       )}
 
-      <div className="flex items-center justify-center w-full max-w-4xl mb-2 flex-shrink-0">
+      <div className="flex items-center justify-center w-full max-w-4xl mb-1.5 flex-shrink-0">
         <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handlePreviousDay}>
           <ChevronLeft />
         </button>
@@ -423,10 +423,11 @@ export function Training() {
                 </div>
               )}
 
-              <div className="flex justify-between items-center w-full border-b border-gray-300 dark:border-gray-700 pb-3 mb-4 flex-shrink-0">
+              <div className="flex justify-between items-center w-full border-b border-gray-300 dark:border-gray-700 pb-3 mb-1 flex-shrink-0">
                 <div>
-                  <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100">
-                    Dia de: <span className="text-primary">{selectedWorkout.musculo}</span>
+                  <h3 className="flex flex-col text-2xl font-black text-primary">
+                    <span className="text-sm text-gray-900 dark:text-gray-100">Dia de:</span> 
+                    {selectedWorkout.musculo}
                   </h3>
                   {!isManagingStudent && getWorkoutCreatorLabel(selectedWorkout) && (
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">
@@ -445,7 +446,7 @@ export function Training() {
               {exercises.length > 0 ? (
                 <div className='w-full pb-24 lg:pb-0 flex flex-col items-center flex-1 overflow-hidden'>
                   {/* Navigation arrows & Progress */}
-                  <div className="flex items-center justify-between w-full mb-3 flex-shrink-0">
+                  <div className="flex items-center justify-between w-full mb-2 flex-shrink-0">
                     <button
                       className={`cursor-pointer p-2 rounded-full transition-colors ${
                         currentExerciseIndex === 0
@@ -496,7 +497,7 @@ export function Training() {
                   <div 
                     ref={sliderRef}
                     onScroll={handleScroll}
-                    className="flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar pb-3 pt-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    className="flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar pb-3 pt-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                   >
                     {exercises.map((exercise, index) => (
                       <div 
