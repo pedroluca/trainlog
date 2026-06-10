@@ -36,16 +36,16 @@ export const currentRelease: WhatsNewRelease = {
         route: '/profile'
       }
     },
-    // {
-    //   id: 'appearance-changes',
-    //   icon: '🎨',
-    //   title: 'Aparência',
-    //   description: 'Além da alteração do tema, usuários Premium agora podem alterar a cor principal do aplicativo.',
-    //   action: {
-    //     label: 'Ver meu Perfil',
-    //     route: '/profile/settings/appearance'
-    //   }
-    // },
+    {
+      id: 'didnt-do-exercise',
+      icon: '❌',
+      title: 'Não fez um exercício?',
+      description: 'Quando não fizer um exercício do seu treino não precisa editar ou marcar algo que não fez, adicionamos a opção de não fazer um exercício.',
+      action: {
+        label: 'Ver meus exercícios',
+        route: '/training'
+      }
+    },
     // {
     //   id: 'badge-system',
     //   icon: '🏅',
