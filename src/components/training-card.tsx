@@ -212,7 +212,7 @@ export function TrainingCard(props: TrainingCardProps) {
 
   return (
     <div
-      className={`shadow-lg lg:shadow-xl w-full max-w-sm md:max-w-xl lg:max-w-2xl relative rounded-2xl overflow-hidden p-6 md:p-8 mx-auto transition-all duration-300 min-h-[375px] max-h-[500px] md:max-h-[600px] lg:max-h-[450px] flex flex-col ${
+      className={`shadow-lg lg:shadow-xl w-full max-w-sm md:max-w-xl lg:max-w-2xl relative rounded-2xl overflow-hidden p-4 md:p-8 mx-auto transition-all duration-300 min-h-[375px] max-h-[500px] md:max-h-[600px] lg:max-h-[450px] flex flex-col ${
         isFinished 
           ? 'bg-gradient-to-br from-primary to-primary-dark border-primary shadow-primary/20' 
           : 'bg-white dark:bg-[#1e1e1e] border border-gray-100 dark:border-[#2a2a2a] shadow-black/5 dark:shadow-black/20'
@@ -234,18 +234,14 @@ export function TrainingCard(props: TrainingCardProps) {
         onResetExercise={setsDone > 0 || isFinished ? handleResetExercise : undefined}
       />
 
-      <h1 className={`text-2xl md:text-2xl lg:text-xl font-bold mb-6 mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h1>
+      <h1 className={`text-2xl md:text-2xl lg:text-xl font-bold ${usesProgressiveWeight ? 'mb-2' : 'mb-4'} mr-7 ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-800 dark:text-gray-100'}`}>{title}</h1>
       
       {!isBreakTime ? (
         <>
           <div className='mb-auto'>
             {usesProgressiveWeight && progressiveSets ? (
-              // Progressive weight display
               <>
-                <p className={`text-lg md:text-2xl lg:text-xl mb-3 font-bold ${isFinished ? 'text-[#f4f4f4]' : 'text-gray-700 dark:text-gray-300'}`}>
-                  Peso Progressivo:
-                </p>
-                <div className="flex gap-3 overflow-x-auto pb-4 pt-2 px-2 -mx-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="flex gap-3 overflow-x-auto pb-4 px-2 -mx-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   {progressiveSets.map((set, index) => {
                     const isCurrentSet = index === setsDone
                     const isCompleted = index < setsDone
