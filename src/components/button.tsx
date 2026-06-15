@@ -16,7 +16,9 @@ export function Button({ children, className, buttonTextColor, bgColor, ...rest 
         font-bold 
         py-2 
         px-4 
-        rounded 
+        rounded-lg 
+        flex items-center justify-center gap-2
+        transition-all
         ${className}
       `} 
       {...rest}

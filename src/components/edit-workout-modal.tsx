@@ -79,7 +79,7 @@ export function EditWorkoutModal({ workout, onClose, onSave, disabledDays }: Edi
               type="text"
               value={muscleGroup}
               onChange={(e) => setMuscleGroup(e.target.value)}
-              className="w-full border dark:border-[#404040] rounded px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
+              className="w-full border dark:border-[#404040] rounded-lg px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
             />
           </div>
           <div className="flex w-full">

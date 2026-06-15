@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, Flame, CalendarDays, Minus, UsersRound, Crown, Snowflake } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, CalendarDays, Minus, UsersRound, Crown, Instagram, ChartPie, LogIn, LogOut } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
@@ -430,14 +430,21 @@ export function Profile() {
   return (
     <main className="flex flex-col items-center justify-start min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-24 md:py-8">
       {/* Profile Card */}
-      <div className="relative grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-4 bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 pt-10 md:pt-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a] transition-all">
+      <div className="relative grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-4 bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-4 pt-10 md:pt-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a] transition-all">
         {/* Edit Profile Button */}
         <button
           onClick={handleOpenEditProfile}
-          className="cursor-pointer absolute top-4 right-4 p-2 rounded-full bg-gray-50 dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-300 transition-colors shadow-sm"
+          className="cursor-pointer absolute top-2 right-11.5 p-2 rounded-full bg-gray-50 dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-300 transition-colors shadow-sm"
           title="Editar perfil"
         >
           <Pencil size={16} />
+        </button>
+        <button
+          onClick={() => navigate('/profile/settings')}
+          className="cursor-pointer absolute top-2 right-2 p-2 rounded-full bg-gray-50 dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-300 transition-colors shadow-sm"
+          title="Configurações"
+        >
+          <Settings size={16} />
         </button>
         <div className="md:col-span-1 lg:col-span-4 flex flex-col items-center relative">
           {/* Avatar Circle with Image Upload */}
@@ -484,65 +491,50 @@ export function Profile() {
         </div>
         
         {/* Personal Info Fields */}
-        <div className="md:col-span-3 lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-3">
-          <div className="col-span-2 md:col-span-full bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Email</p>
-            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
+        <div className="md:col-span-3 lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-2">
+          <div className="col-span-2 md:col-span-full bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333] transition-colors">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">Email</p>
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
               {email ? email : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>}
             </p>
           </div>
-          <div className="col-span-2 md:col-span-1 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Nascimento</p>
-            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
-              {dataNascimento ? new Date(dataNascimento + 'T00:00:00').toLocaleDateString('pt-BR') : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>}
-            </p>
-          </div>
-          <div className="col-span-2 md:col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Instagram</p>
-            <p className="text-base font-semibold text-gray-800 dark:text-gray-100">
+          <div className="col-span-2 md:col-span-full flex items-center gap-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333] transition-colors">
+            <Instagram size={16} className="text-pink-500" />
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
               {instagram ? (
-                <span className="text-blue-500 dark:text-blue-400 hover:underline cursor-pointer">@{instagram.replace(/^@/, '')}</span>
+                <span className="text-gray-800 dark:text-gray-100 hover:underline cursor-pointer">{instagram.replace(/^@/, '')}</span>
               ) : (
                 <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>
               )}
             </p>
           </div>
           {isTrainer && (
-            <div className="col-span-2 md:col-span-full bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-900/30 transition-colors">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">Perfil</p>
-                  <p className="text-base font-semibold text-blue-900 dark:text-blue-200">Treinador</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">CREF</p>
-                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">
-                    {cref ? cref : <span className="text-blue-400/70 font-normal">Nao informado</span>}
-                  </p>
-                </div>
-              </div>
+            <div className="col-span-2 md:col-span-full bg-blue-50 dark:bg-blue-900/10 rounded-xl p-2 md:px-2.5 border border-blue-100 dark:border-blue-900/30 transition-colors">
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-300 truncate">
+                {cref ? cref : <span className="text-blue-400/70 font-normal">Nao informado</span>}
+              </p>
             </div>
           )}
 
           {/* Body Metrics as info fields */}
-          <div className="col-span-full grid grid-cols-3 gap-3 mt-1">
-            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wide font-bold">Altura</p>
-              <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300">
+          <div className="col-span-full grid grid-cols-4 gap-2">
+            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2 md:px-2.5 border border-emerald-100 dark:border-emerald-800/30">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 uppercase tracking-wide font-bold">Altura</p>
+              <p className="text-base font-medium text-emerald-900 dark:text-emerald-300">
                 {altura > 0 ? `${(altura / 100).toFixed(2)}m` : <span className="text-emerald-400/50 font-normal text-sm">—</span>}
               </p>
             </div>
-            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wide font-bold">Peso</p>
-              <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300">
+            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2 md:px-2.5 border border-emerald-100 dark:border-emerald-800/30">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 uppercase tracking-wide font-bold">Peso</p>
+              <p className="text-base font-medium text-emerald-900 dark:text-emerald-300">
                 {peso > 0 ? `${peso.toFixed(1)}kg` : <span className="text-emerald-400/50 font-normal text-sm">—</span>}
               </p>
             </div>
-            <div className="flex flex-col justify-between bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
+            <div className="col-span-2 flex flex-col justify-between bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2 md:px-2.5 border border-emerald-100 dark:border-emerald-800/30">
               <p className="text-xs text-emerald-600 dark:text-emerald-400 uppercase tracking-wide font-bold">IMC</p>
               {altura > 0 && peso > 0 ? (
-                <div className='flex flex-col items-start'>
-                  <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300 leading-tight">{calculateIMC(peso, altura).toFixed(1)}</p>
+                <div className='flex gap-2 items-end'>
+                  <p className="text-base font-medium text-emerald-900 dark:text-emerald-300 leading-tight">{calculateIMC(peso, altura).toFixed(1)}</p>
                   <p className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${getIMCStatus(calculateIMC(peso, altura)).color}`}>
                     {getIMCStatus(calculateIMC(peso, altura)).label}
                   </p>
@@ -660,11 +652,9 @@ export function Profile() {
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="md:col-span-4 lg:col-span-8 md:order-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 dark:from-orange-500/15 dark:to-red-500/15 rounded-xl p-4 border border-orange-500/20 dark:border-orange-500/30 shadow-inner flex flex-col justify-center">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <h3 className="text-sm md:text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 uppercase tracking-wide">
-              <Flame className="text-orange-500" size={20} />
+              <ChartPie className="text-orange-500" size={20} />
               Estatísticas
             </h3>
             <button
@@ -681,34 +671,39 @@ export function Profile() {
               {!isPremium && <Crown size={12} className="text-amber-500 absolute top-1.5 right-2 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" />}
             </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">
-              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-orange-800/60 dark:text-orange-200/50 mb-1">Sequência</p>
+          <div className="grid grid-cols-4 gap-2 md:gap-3">
+            <div className="bg-orange-60 dark:bg-orange-500/10 rounded-xl p-2 md:px-2.5 border border-orange-500/20 dark:border-orange-500/30 backdrop-blur-sm">
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-orange-600 dark:text-orange-400 mb-1">
+                <span className="hidden md:inline">Sequência</span>
+                <span className="md:hidden">Seq.</span>
+              </p>
               <p className="text-xl md:text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400 truncate">{currentStreak}</p>
             </div>
-            <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm">
-              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400 mb-1">Recorde</p>
-              <p className="text-xl md:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 truncate">{longestStreak}</p>
+            <div className="bg-yellow-50 dark:bg-yellow-500/10 rounded-xl p-2 md:px-2.5 border border-yellow-500/20 dark:border-yellow-500/30 backdrop-blur-sm">
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-yellow-600 dark:text-yellow-400 mb-1">
+                <span className="hidden md:inline">Recorde Seq.</span>
+                <span className="md:hidden">RP Seq.</span>
+              </p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-yellow-600 dark:text-yellow-400 truncate">{longestStreak}</p>
             </div>
-              <div className="bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-cyan-500/10 dark:border-cyan-500/20 backdrop-blur-sm">
-                <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-cyan-700/70 dark:text-cyan-300/70 mb-1 flex items-center gap-1">
-                  <Snowflake size={12} /> Freezes
-                </p>
-                <p className="text-xl md:text-2xl lg:text-3xl font-black text-cyan-700 dark:text-cyan-300 truncate">
-                  {freezeCount}
-                </p>
-              </div>
+            <div className="bg-cyan-50 dark:bg-cyan-500/10 rounded-xl p-2 md:px-2.5 border border-cyan-500/20 dark:border-cyan-500/30 backdrop-blur-sm">
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-cyan-600 dark:text-cyan-400 mb-1 flex items-center gap-1">
+                <span className="">Freezes</span>
+              </p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-cyan-600 dark:text-cyan-400 truncate">
+                {freezeCount}
+              </p>
+            </div>
             <div 
               onClick={() => navigate('/friends')}
-              className="cursor-pointer bg-white/60 dark:bg-[#1e1e1e]/60 rounded-xl px-4 py-3 border border-orange-500/10 dark:border-orange-500/20 backdrop-blur-sm hover:bg-white/80 dark:hover:bg-[#252525] transition-colors"
+              className="cursor-pointer bg-blue-50 dark:bg-blue-500/10 rounded-xl p-2 md:px-2.5 border border-blue-500/20 dark:border-blue-500/30 backdrop-blur-sm hover:bg-blue-500/30 dark:hover:bg-blue-500/30 transition-colors"
             >
-              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-[#2980B9] dark:text-[#3498DB] mb-1 flex items-center gap-1">
-                <UsersRound size={12} className="hidden sm:inline" /> Amigos
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400 mb-1 flex items-center gap-1">
+                <span className="">Amigos</span>
               </p>
-              <p className="text-xl md:text-2xl lg:text-3xl font-black text-gray-800 dark:text-gray-100 truncate">{friendsCount}</p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-blue-600 dark:text-blue-400 truncate">{friendsCount}</p>
             </div>
           </div>
-        </div>
         
         <div className="md:col-span-4 md:order-2 flex flex-col md:flex-row lg:flex-col gap-3">
           <button
@@ -738,8 +733,8 @@ export function Profile() {
       </div>
 
       {/* Workouts Section */}
-      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl mt-6 border border-gray-100 dark:border-[#2a2a2a]">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-4 md:p-5 w-full max-w-lg md:max-w-3xl lg:max-w-4xl mt-6 border border-gray-100 dark:border-[#2a2a2a]">
+        <div className="flex items-center justify-between mb-3 md:mb-6">
           <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Meus Treinos</h2>
           <span className="text-sm font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#2a2a2a] px-4 py-1.5 rounded-full border border-gray-200 dark:border-[#333]">
             {workouts.length} {workouts.length === 1 ? 'treino' : 'treinos'}
@@ -747,7 +742,7 @@ export function Profile() {
         </div>
         
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
             <WorkoutCardSkeleton />
             <WorkoutCardSkeleton />
             <WorkoutCardSkeleton />
@@ -763,45 +758,45 @@ export function Profile() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
             {workouts.map((workout) => (
               <div
                 key={workout.id}
-                className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] hover:border-blue-500 dark:hover:border-blue-500 rounded-xl p-5 transition-all shadow-sm hover:shadow-md flex flex-col justify-between"
+                className="bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] hover:border-blue-500 dark:hover:border-blue-500 rounded-xl p-2.5 md:px-3 transition-all shadow-sm hover:shadow-md flex flex-col justify-between"
               >
                 {/* Info Section */}
-                <div className="mb-4">
-                  <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">
+                <div className="mb-1.5">
+                  <p className="text-xs tracking-wide text-gray-600 dark:text-gray-400">
                     {workout.dia}
-                  </h3>
-                  <p className="text-base text-gray-600 dark:text-gray-400">
-                    {workout.musculo}
                   </p>
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                    {workout.musculo}
+                  </h3>
                 </div>
                 
                 {/* Actions Section */}
-                <div className="flex gap-2 flex-wrap">
+                <div className="grid grid-cols-3 md:grid-cols-3 gap-2">
                   <Button
-                    className="text-white px-4 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all"
+                    className=" text-white px-4 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all"
                     bgColor='bg-[#F1C40F] hover:bg-[#D4AC0D]'
                     onClick={() => handleShareWorkout(workout)}
                     title="Compartilhar treino"
                   >
-                    <Share2 size={20} />
+                    <Share2 size={20} className="shrink-0" />
                   </Button>
                   <Button
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all"
                     onClick={() => handleEditWorkout(workout)}
                     title="Editar treino"
                   >
-                    <Pencil size={20} />
+                    <Pencil size={20} className="shrink-0" />
                   </Button>
                   <Button
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all"
                     onClick={() => handleDeleteWorkout(workout)}
                     title="Excluir treino"
                   >
-                    <Trash2 size={20} />
+                    <Trash2 size={20} className="shrink-0" />
                   </Button>
                 </div>
               </div>
@@ -816,6 +811,7 @@ export function Profile() {
           onClick={handleLogout}
           className="cursor-pointer w-full md:w-auto md:min-w-[250px] bg-white dark:bg-[#1e1e1e] hover:bg-red-50 dark:hover:bg-red-900/10 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-900/30 font-bold py-3.5 px-6 rounded-xl transition-all shadow-sm hover:shadow text-lg tracking-wide flex justify-center items-center gap-2"
         >
+          <LogOut size={20} />
           Sair da Conta
         </button>
       </div>
