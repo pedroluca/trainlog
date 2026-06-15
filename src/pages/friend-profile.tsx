@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc, collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore'
-import { ArrowLeft, Lock, UsersRound, Dumbbell, Activity } from 'lucide-react'
+import { ArrowLeft, Lock, UsersRound, Dumbbell, Activity, Instagram } from 'lucide-react'
 import { BadgeList } from '../components/badge-chip'
 import { resolveUserBadges, resolveAvatarRing } from '../data/badges'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
@@ -165,16 +165,7 @@ export function FriendProfile() {
     fetchUserAndCount()
   }, [id])
 
-  useEffect(() => {
-    if (!profile) return
-    if (activeTab === 'atividades' && !profile.privacidade?.ocultarAtividades) {
-      fetchLogsData()
-    } else if (activeTab === 'treinos' && !profile.privacidade?.ocultarTreinos) {
-      if (treinos.length === 0) fetchTreinosData()
-    }
-  }, [profile, activeTab, logsLimit])
-
-  const fetchLogsData = async () => {
+  const fetchLogsData = useCallback(async () => {
     if (!profile?.id) return
     setLoadingLogs(true)
     try {
@@ -193,9 +184,9 @@ export function FriendProfile() {
     } finally {
       setLoadingLogs(false)
     }
-  }
+  }, [profile?.id, logsLimit])
 
-  const fetchTreinosData = async () => {
+  const fetchTreinosData = useCallback(async () => {
     if (!profile?.id) return
     setLoadingTreinos(true)
     try {
@@ -243,7 +234,16 @@ export function FriendProfile() {
     } finally {
       setLoadingTreinos(false)
     }
-  }
+  }, [profile?.id])
+
+  useEffect(() => {
+    if (!profile) return
+    if (activeTab === 'atividades' && !profile.privacidade?.ocultarAtividades) {
+      fetchLogsData()
+    } else if (activeTab === 'treinos' && !profile.privacidade?.ocultarTreinos) {
+      if (treinos.length === 0) fetchTreinosData()
+    }
+  }, [profile, activeTab, logsLimit, treinos.length, fetchLogsData, fetchTreinosData])
 
   const handleLoadMoreLogs = () => {
     setLogsLimit(prev => prev + 10)
@@ -284,12 +284,34 @@ export function FriendProfile() {
     return diff <= 7 * 24 * 60 * 60 * 1000
   }
 
+  // const calculateIMC = (peso: number, altura: number) => {
+  //   if (!peso || !altura) return 0
+  //   const alturaMetros = altura / 100
+  //   return peso / (alturaMetros * alturaMetros)
+  // }
+
+  // const getIMCStatus = (imc: number) => {
+  //   if (imc === 0) return { label: 'N/A', color: 'text-gray-500' }
+  //   if (imc < 18.5) return { label: 'Abaixo do peso', color: 'text-blue-600' }
+  //   if (imc < 25) return { label: 'Normal', color: 'text-green-600' }
+  //   if (imc < 30) return { label: 'Sobrepeso', color: 'text-yellow-600' }
+  //   return { label: 'Obesidade', color: 'text-red-600' }
+  // }
+
   const priv = profile.privacidade || {}
+  const visibleMetricCount = [
+    !priv.ocultarAltura && profile.altura && profile.altura > 0,
+    !priv.ocultarPeso && profile.peso && profile.peso > 0,
+    !priv.ocultarAmigos,
+    !priv.ocultarStreak,
+  ].filter(Boolean).length
+  // const imc = profile.altura && profile.peso ? calculateIMC(profile.peso, profile.altura) : 0
+  const birthDate = profile.dataNascimento ? new Date(profile.dataNascimento + 'T00:00:00').toLocaleDateString('pt-BR') : null
 
   return (
     <main className="flex flex-col items-center justify-start min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-24 md:py-8">
       {/* Container header and info */}
-      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-5xl border border-gray-100 dark:border-[#2a2a2a] mb-6 relative">
+      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a] mb-6 relative">
         <button
           onClick={() => navigate('/friends')}
           className="cursor-pointer absolute top-4 left-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-400 transition-colors"
@@ -297,99 +319,190 @@ export function FriendProfile() {
           <ArrowLeft size={20} />
         </button>
         
-        {/* Profile Head */}
-        <div className="flex flex-col items-center pt-8 md:pt-4 mb-8">
-          {/* Avatar */}
-          <div className="relative mb-3 w-max mx-auto">
-            <div className={`w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl font-bold overflow-hidden shadow-inner relative z-0 ${
-              resolveAvatarRing(resolveUserBadges(profile))
-            }`}>
-              {profile.photoURL ? (
-                <img src={profile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                profile.nome.charAt(0).toUpperCase()
+        <div className="md:hidden pt-8">
+          {/* Profile Head */}
+          <div className="flex flex-col items-center mb-4">
+            {/* Avatar */}
+            <div className="relative mb-3 w-max mx-auto">
+              <div className={`w-24 h-24 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl font-bold overflow-hidden shadow-inner relative z-0 ${
+                resolveAvatarRing(resolveUserBadges(profile))
+              }`}>
+                {profile.photoURL ? (
+                  <img src={profile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  profile.nome.charAt(0).toUpperCase()
+                )}
+              </div>
+            </div>
+
+            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">{profile.nome}</h1>
+            {profile.username && (
+              <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">@{profile.username}</p>
+            )}
+
+            {/* Badges */}
+            <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} />
+          </div>
+
+          {/* Info Grid */}
+          <div className="grid grid-cols-2 gap-2">
+            {!(priv.ocultarEmail ?? true) && profile.email && (
+              <div className={`col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333]`}>
+                <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Email</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{profile.email}</p>
+              </div>
+            )}
+
+            {!priv.ocultarInstagram && profile.instagram && (
+              <div className={`${!profile.isTrainer ? 'col-span-2' : ''} flex items-center gap-2 border border-gray-100 dark:border-[#333] bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5`}>
+                {/* <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Instagram</p> */}
+                <Instagram size={16} className="text-pink-500" />
+                <Link to={`https://instagram.com/${profile.instagram}`} target="_blank" className="block text-sm font-semibold text-gray-800 dark:text-gray-100 hover:underline max-w-full truncate">{profile.instagram}</Link>
+              </div>
+            )}
+
+            {profile.isTrainer && (
+              <div className={`${!priv.ocultarInstagram ? '' : 'col-span-2'} border border-blue-100 dark:border-blue-900/30 bg-blue-50 dark:bg-blue-900/10 rounded-xl p-2 md:px-2.5`}>
+                <p className="text-sm font-bold text-blue-900 dark:text-blue-300 truncate">
+                  {profile.cref ? profile.cref : 'Nao informado'}
+                </p>
+              </div>
+            )}
+            <div
+              className="col-span-2 md:col-span-4 grid gap-2"
+              style={{ gridTemplateColumns: `repeat(${Math.max(visibleMetricCount, 1)}, minmax(0, 1fr))` }}
+            >
+              {!priv.ocultarAltura && profile.altura && profile.altura > 0 && (
+                <div className={`col-span-1 border border-gray-100 dark:border-[#333] bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2 md:px-2.5`}>
+                  <p className="text-xs uppercase font-medium text-emerald-600 dark:text-emerald-400">Altura</p>
+                  <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300">{(profile.altura / 100).toFixed(2)}m</p>
+                </div>
+              )}
+
+              {!priv.ocultarPeso && profile.peso && profile.peso > 0 && (
+                <div className={`col-span-1 border border-gray-100 dark:border-[#333] bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2 md:px-2.5`}>
+                  <p className="text-xs uppercase font-medium text-emerald-600 dark:text-emerald-400">Peso</p>
+                  <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300">{profile.peso.toFixed(1)}kg</p>
+                </div>
+              )}
+
+              {!priv.ocultarAmigos && (
+                <div
+                  onClick={() => navigate(`/friend/${profile.username || profile.id}/friends`)}
+                  className={`col-span-1 border border-gray-100 dark:border-[#333] bg-blue-50 dark:bg-blue-900/10 rounded-xl p-2 md:px-2.5 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors`}
+                >
+                  <p className="text-xs uppercase font-medium text-blue-600 dark:text-blue-400">Amigos</p>
+                  <p className="text-sm font-bold text-blue-900 dark:text-blue-300">{friendsCount}</p>
+                </div>
+              )}
+
+              {!priv.ocultarStreak && (
+                <div className={`col-span-1 border border-orange-500/20 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 rounded-xl p-2 md:px-2.5`}>
+                  <p className="text-xs uppercase font-medium text-orange-600 dark:text-orange-400">
+                    <span className="hidden md:inline">Sequência</span>
+                    <span className="md:hidden">Seq.</span>
+                  </p>
+                  <p className="text-sm font-bold text-orange-600 dark:text-orange-400">{profile.currentStreak || 0}</p>
+                </div>
               )}
             </div>
           </div>
-
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">{profile.nome}</h1>
-          {profile.username && (
-            <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">@{profile.username}</p>
-          )}
-
-          {/* Badges */}
-          <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} />
         </div>
 
-        {/* Info Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {!(priv.ocultarEmail ?? true) && profile.email && (
-            <div className="col-span-2 md:col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333]">
-              <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Email</p>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{profile.email}</p>
+        <div className="hidden md:grid grid-cols-12 gap-4">
+          <div className="col-span-4 flex flex-col items-center justify-start pt-2">
+            <div className="relative mb-3 w-max mx-auto">
+              <div className={`w-28 h-28 lg:w-36 lg:h-36 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl lg:text-5xl font-bold overflow-hidden shadow-inner relative z-0 ${
+                resolveAvatarRing(resolveUserBadges(profile))
+              }`}>
+                {profile.photoURL ? (
+                  <img src={profile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  profile.nome.charAt(0).toUpperCase()
+                )}
+              </div>
             </div>
-          )}
-          
-          {!priv.ocultarNascimento && profile.dataNascimento && (
-            <div className="col-span-1 border border-gray-100 dark:border-[#333] bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3">
-              <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Nascimento</p>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                {new Date(profile.dataNascimento + 'T00:00:00').toLocaleDateString('pt-BR')}
-              </p>
-            </div>
-          )}
-          
-          {!priv.ocultarInstagram && profile.instagram && (
-            <div className="col-span-1 border border-gray-100 dark:border-[#333] bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3">
-              <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Instagram</p>
-              <Link to={`https://instagram.com/${profile.instagram}`} target='_blank' className="block text-sm font-semibold text-blue-500 hover:underline max-w-full truncate">@{profile.instagram}</Link>
-            </div>
-          )}
 
-          {profile.isTrainer && (
-            <div className="col-span-2 md:col-span-2 border border-blue-100 dark:border-blue-900/30 bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3">
-              <p className="text-xs uppercase font-medium text-blue-600 dark:text-blue-400">CREF</p>
-              <p className="text-sm font-bold text-blue-900 dark:text-blue-300 truncate">
-                {profile.cref ? profile.cref : 'Nao informado'}
-              </p>
+            <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-900 dark:text-white text-center tracking-tight">{profile.nome}</h1>
+            {profile.username && (
+              <p className="text-gray-500 dark:text-gray-400 text-sm lg:text-base font-medium text-center">@{profile.username}</p>
+            )}
+
+            <div className="mt-2">
+              <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} />
             </div>
-          )}
-          
-          {!priv.ocultarAltura && profile.altura && profile.altura > 0 && (
-             <div className="col-span-1 border border-gray-100 dark:border-[#333] bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-4 py-3">
-               <p className="text-xs uppercase font-medium text-emerald-600 dark:text-emerald-400">Altura</p>
-               <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300">{(profile.altura / 100).toFixed(2)}m</p>
-             </div>
-          )}
-          
-          {!priv.ocultarPeso && profile.peso && profile.peso > 0 && (
-             <div className="col-span-1 border border-gray-100 dark:border-[#333] bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-4 py-3">
-               <p className="text-xs uppercase font-medium text-emerald-600 dark:text-emerald-400">Peso</p>
-               <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300">{profile.peso.toFixed(1)}kg</p>
-             </div>
-          )}
-          
-          {!priv.ocultarAmigos && (
-             <div 
-               onClick={() => navigate(`/friend/${profile.username || profile.id}/friends`)}
-               className="col-span-1 border border-gray-100 dark:border-[#333] bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors"
-             >
-               <p className="text-xs uppercase font-medium text-blue-600 dark:text-blue-400">Amigos</p>
-               <p className="text-sm font-bold text-blue-900 dark:text-blue-300">{friendsCount}</p>
-             </div>
-          )}
-          
-          {!priv.ocultarStreak && (
-             <div className="col-span-1 border border-orange-500/20 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 rounded-xl px-4 py-3">
-               <p className="text-xs uppercase font-medium text-orange-600 dark:text-orange-400">Sequência</p>
-               <p className="text-sm font-bold text-orange-600 dark:text-orange-400">{profile.currentStreak || 0}</p>
-             </div>
-          )}
+          </div>
+
+          <div className="col-span-8 grid grid-cols-2 gap-3">
+            {!(priv.ocultarEmail ?? true) && profile.email && (
+              <div className="col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Email</p>
+                <p className="text-base font-semibold text-gray-800 dark:text-gray-100 truncate">{profile.email}</p>
+              </div>
+            )}
+
+            {!priv.ocultarInstagram && profile.instagram && (
+              <div className={`${!(priv.ocultarNascimento ?? true) && birthDate ? 'col-span-1' : 'col-span-2'} bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors`}>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Instagram</p>
+                <Link to={`https://instagram.com/${profile.instagram}`} target="_blank" className="block text-base font-semibold text-blue-500 hover:underline max-w-full truncate">@{profile.instagram}</Link>
+              </div>
+            )}
+
+            {profile.isTrainer && (
+              <div className="col-span-2 bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-900/30 transition-colors">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">Perfil</p>
+                    <p className="text-base font-semibold text-blue-900 dark:text-blue-200">Treinador</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">CREF</p>
+                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">
+                      {profile.cref ? profile.cref : <span className="text-blue-400/70 font-normal">Nao informado</span>}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="col-span-2 grid grid-cols-4 gap-3 mt-1">
+              {!priv.ocultarAltura && profile.altura && profile.altura > 0 && (
+                <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wide font-bold">Altura</p>
+                  <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300">{(profile.altura / 100).toFixed(2)}m</p>
+                </div>
+              )}
+
+              {!priv.ocultarPeso && profile.peso && profile.peso > 0 && (
+                <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wide font-bold">Peso</p>
+                  <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300">{profile.peso.toFixed(1)}kg</p>
+                </div>
+              )}
+
+              {!priv.ocultarAmigos && (
+                <div
+                  onClick={() => navigate(`/friend/${profile.username || profile.id}/friends`)}
+                  className="cursor-pointer bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors"
+                >
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">Amigos</p>
+                  <p className="text-base font-semibold text-blue-900 dark:text-blue-200">{friendsCount}</p>
+                </div>
+              )}
+
+              {!priv.ocultarStreak && (
+                <div className="w-full rounded-xl border border-orange-500/20 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 px-4 py-3">
+                  <p className="text-xs uppercase font-medium text-orange-600 dark:text-orange-400 mb-1">Sequência</p>
+                  <p className="text-2xl font-black text-orange-600 dark:text-orange-400">{profile.currentStreak || 0}</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Tabs Section */}
-      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-5xl">
+      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl">
         <div className="flex bg-gray-200 dark:bg-[#1e1e1e] p-1 rounded-xl mb-4 border border-gray-100 dark:border-[#2a2a2a]">
           <button
             onClick={() => setActiveTab('atividades')}
