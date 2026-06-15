@@ -652,6 +652,7 @@ export function Profile() {
           </div>
         </div>
 
+        <div className="md:col-span-4 lg:col-span-8 md:order-3 flex flex-col justify-center md:justify-start gap-3 md:gap-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm md:text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 uppercase tracking-wide">
               <ChartPie className="text-orange-500" size={20} />
@@ -704,6 +705,7 @@ export function Profile() {
               <p className="text-xl md:text-2xl lg:text-3xl font-black text-blue-600 dark:text-blue-400 truncate">{friendsCount}</p>
             </div>
           </div>
+        </div>
         
         <div className="md:col-span-4 md:order-2 flex flex-col md:flex-row lg:flex-col gap-3">
           <button
@@ -769,7 +771,7 @@ export function Profile() {
                   <p className="text-xs tracking-wide text-gray-600 dark:text-gray-400">
                     {workout.dia}
                   </p>
-                  <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                     {workout.musculo}
                   </h3>
                 </div>
