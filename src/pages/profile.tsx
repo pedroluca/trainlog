@@ -5,7 +5,7 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, CalendarDays, Minus, UsersRound, Crown, Instagram, ChartPie, LogOut, Mail, BookUser } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, CalendarDays, Minus, UsersRound, Crown, Instagram, ChartPie, LogOut, Mail } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
