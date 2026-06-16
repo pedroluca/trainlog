@@ -24,6 +24,7 @@ interface Privacidade {
 interface UsuarioProfile {
   id: string
   nome: string
+  bio?: string
   username?: string
   isTrainer?: boolean
   cref?: string
@@ -311,20 +312,20 @@ export function FriendProfile() {
   return (
     <main className="flex flex-col items-center justify-start min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-24 md:py-8">
       {/* Container header and info */}
-      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a] mb-6 relative">
+      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-4 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a] mb-6 relative">
         <button
           onClick={() => navigate('/friends')}
-          className="cursor-pointer absolute top-4 left-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-400 transition-colors"
+          className="cursor-pointer absolute top-1 left-1 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-400 transition-colors"
         >
           <ArrowLeft size={20} />
         </button>
         
         <div className="md:hidden pt-8">
           {/* Profile Head */}
-          <div className="flex flex-col items-center mb-4">
+          <div className="flex md:flex-col md:items-center justify-start gap-4 mb-4">
             {/* Avatar */}
-            <div className="relative mb-3 w-max mx-auto">
-              <div className={`w-24 h-24 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl font-bold overflow-hidden shadow-inner relative z-0 ${
+            <div className="relative mb-3 pl-1 pt-1">
+              <div className={`w-20 h-20 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl font-bold overflow-hidden shadow-inner relative z-0 ${
                 resolveAvatarRing(resolveUserBadges(profile))
               }`}>
                 {profile.photoURL ? (
@@ -335,17 +336,25 @@ export function FriendProfile() {
               </div>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">{profile.nome}</h1>
-            {profile.username && (
-              <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">@{profile.username}</p>
-            )}
+            <div className="flex flex-col gap-0">
+              <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white">{profile.nome}</h1>
+              {profile.username && (
+                <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">@{profile.username}</p>
+              )}
 
-            {/* Badges */}
-            <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} />
+              {/* Badges */}
+              <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} />
+            </div>
           </div>
 
           {/* Info Grid */}
           <div className="grid grid-cols-2 gap-2">
+            {profile.bio && (
+              <div className={`col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333]`}>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{profile.bio}</p>
+              </div>
+            )}
+
             {!(priv.ocultarEmail ?? true) && profile.email && (
               <div className={`col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333]`}>
                 <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Email</p>
