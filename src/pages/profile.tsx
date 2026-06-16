@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { auth, db } from '../firebaseConfig'
-import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, addDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, addDoc, deleteField } from 'firebase/firestore'
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, CalendarDays, Minus, UsersRound, Crown, Instagram, ChartPie, LogOut } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, CalendarDays, Minus, UsersRound, Crown, Instagram, ChartPie, LogOut, Mail, BookUser } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
@@ -48,6 +48,7 @@ export function Profile() {
   const [email, setEmail] = useState<string | null>(null)
   const [telefone, setTelefone] = useState<string | null>(null)
   const [photoURL, setPhotoURL] = useState<string | null>(null)
+  const [bio, setBio] = useState('')
   const [dataNascimento, setDataNascimento] = useState<string | null>(null)
   const [instagram, setInstagram] = useState<string | null>(null)
   const [altura, setAltura] = useState<number>(0) // cm
@@ -80,6 +81,7 @@ export function Profile() {
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [editedNome, setEditedNome] = useState('')
   const [editedUsername, setEditedUsername] = useState('')
+  const [editedBio, setEditedBio] = useState('')
   const [editedDataNascimento, setEditedDataNascimento] = useState('')
   const [editedInstagram, setEditedInstagram] = useState('')
   const [editedIsTrainer, setEditedIsTrainer] = useState(false)
@@ -89,6 +91,7 @@ export function Profile() {
     message: '',
     type: 'success'
   })
+  const profileImageInputRef = useRef<HTMLInputElement>(null)
 
   const daysOrder = useMemo(() => ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'], [])
 
@@ -126,6 +129,7 @@ export function Profile() {
             setEmail(userData.email || 'Não disponível')
             setTelefone(userData.telefone || null)
             setPhotoURL(userData.photoURL || null)
+            setBio(userData.bio || '')
             setDataNascimento(userData.dataNascimento || null)
             setInstagram(userData.instagram || null)
             setAltura(userData.altura || 0)
@@ -348,6 +352,20 @@ export function Profile() {
     }
   }
 
+  const handleRemovePhoto = async () => {
+    if (!usuarioID) return
+    try {
+      await updateDoc(doc(db, 'usuarios', usuarioID), {
+        photoURL: deleteField()
+      })
+      setPhotoURL(null)
+      setToast({ show: true, message: 'Foto de perfil removida.', type: 'success' })
+    } catch (err) {
+      console.error('Erro ao remover foto:', err)
+      setToast({ show: true, message: 'Erro ao remover foto. Tente novamente.', type: 'error' })
+    }
+  }
+
   const handleShareWorkout = (workout: Treino) => {
     setSelectedWorkout(workout)
     setIsShareModalOpen(true)
@@ -403,6 +421,7 @@ export function Profile() {
   const handleOpenEditProfile = () => {
     setEditedNome(nome || '')
     setEditedUsername(username || '')
+    setEditedBio(bio || '')
     setEditedDataNascimento(dataNascimento || '')
     setEditedInstagram(instagram?.replace(/^@/, '') || '')
     setEditedIsTrainer(isTrainer)
@@ -430,6 +449,7 @@ export function Profile() {
       await updateDoc(doc(db, 'usuarios', usuarioID), {
         nome: editedNome.trim(),
         username: trimmedUsername,
+        bio: editedBio.trim(),
         dataNascimento: editedDataNascimento,
         instagram: editedInstagram.replace(/^@/, '').trim(),
         isTrainer: editedIsTrainer,
@@ -453,6 +473,7 @@ export function Profile() {
       }
       setNome(editedNome.trim())
       setUsername(trimmedUsername)
+      setBio(editedBio.trim())
       setDataNascimento(editedDataNascimento)
       setInstagram(editedInstagram.replace(/^@/, '').trim())
       setIsTrainer(editedIsTrainer)
@@ -528,6 +549,7 @@ export function Profile() {
               )}
             </label>
             <input
+              ref={profileImageInputRef}
               id="profile-image-upload"
               type="file"
               accept="image/*"
@@ -546,14 +568,19 @@ export function Profile() {
         
         {/* Personal Info Fields */}
         <div className="md:col-span-3 lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-2">
-          <div className="col-span-2 md:col-span-full bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333] transition-colors">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">Email</p>
+          <div className="col-span-2 md:col-span-full flex items-center gap-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333] transition-colors">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {bio ? bio : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>}
+            </p>
+          </div>
+          <div className="col-span-2 md:col-span-full flex items-center gap-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333] transition-colors">
+            <Mail size={16} className="shrink-0 text-blue-500" />
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
               {email ? email : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>}
             </p>
           </div>
           <div className="col-span-2 md:col-span-full flex items-center gap-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333] transition-colors">
-            <Instagram size={16} className="text-pink-500" />
+            <Instagram size={16} className="shrink-0 text-pink-500" />
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
               {instagram ? (
                 <span className="text-gray-800 dark:text-gray-100 hover:underline cursor-pointer">{instagram.replace(/^@/, '')}</span>
@@ -964,6 +991,35 @@ export function Profile() {
 
             {/* Fields */}
             <div className="px-5 py-4 space-y-4">
+              {/* Photo */}
+              <div className="flex items-center gap-4">
+                <div className={`w-16 h-16 shrink-0 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-2xl font-bold overflow-hidden ${avatarRing}`}>
+                  {photoURL ? (
+                    <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    nome ? nome.charAt(0).toUpperCase() : '?'
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => profileImageInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="cursor-pointer text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50 text-left"
+                  >
+                    {uploadingImage ? 'Enviando...' : photoURL ? 'Alterar foto' : 'Adicionar foto'}
+                  </button>
+                  {photoURL && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="cursor-pointer text-xs font-semibold text-red-500 dark:text-red-400 hover:underline text-left"
+                    >
+                      Remover foto
+                    </button>
+                  )}
+                </div>
+              </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nome</label>
                 <input
@@ -1005,6 +1061,18 @@ export function Profile() {
                     className="flex-1 py-2 pr-3 text-sm text-gray-800 dark:text-gray-100 bg-transparent focus:outline-none"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Bio</label>
+                <textarea
+                  value={editedBio}
+                  onChange={(e) => setEditedBio(e.target.value)}
+                  placeholder="Conte um pouco sobre você..."
+                  maxLength={160}
+                  rows={3}
+                  className="w-full border border-gray-200 dark:border-[#404040] rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                />
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 text-right mt-0.5">{editedBio.length}/160</p>
               </div>
               <div>
                 <label className="flex items-center justify-between text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
