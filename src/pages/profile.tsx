@@ -507,9 +507,9 @@ export function Profile() {
         >
           <Settings size={16} />
         </button>
-        <div className="md:col-span-1 lg:col-span-4 flex flex-col items-center relative">
+        <div className="md:col-span-1 lg:col-span-4 flex md:flex-col justify-start md:items-center relative gap-4">
           {/* Avatar Circle with Image Upload */}
-          <div className="relative mb-3 md:mt-6 w-max mx-auto">
+          <div className="relative mb-3 md:mt-6 pl-1 pt-1">
             {birthdayBalloonMode === 'compact' && (
               <>
                 <div className="absolute -left-8 top-8 flex flex-col items-center gap-1 animate-bounce" style={{ animationDuration: '2.4s' }}>
@@ -524,7 +524,7 @@ export function Profile() {
                 </div>
               </>
             )}
-            <div className={`w-24 md:w-32 lg:w-40 h-24 md:h-32 lg:h-40 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl lg:text-5xl font-bold overflow-hidden shadow-inner relative z-0 ${avatarRing}`}>
+            <div className={`w-20 md:w-32 lg:w-40 h-20 md:h-32 lg:h-40 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white overflow-hidden shadow-inner relative z-0 ${avatarRing}`}>
               {photoURL ? (
                 <img 
                   src={photoURL} 
@@ -559,17 +559,19 @@ export function Profile() {
             />
           </div>
 
-          <h1 className="text-2xl lg:text-3xl text-center font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
-          <p className="text-sm md:text-base font-bold text-gray-500 dark:text-gray-400">{username ? '@' + username : ''}</p>
+          <div className="flex flex-col gap-0">
+            <h1 className="text-xl lg:text-3xl md:text-center font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
+            <p className="text-sm md:text-base font-bold text-gray-500 dark:text-gray-400 mb-1">{username ? '@' + username : ''}</p>
 
-          {/* Badges */}
-          <BadgeList onUpgrade={handleOpenUpgradeModal} badges={userBadges} userIsPremium={isPremium} />
+            {/* Badges */}
+            <BadgeList onUpgrade={handleOpenUpgradeModal} badges={userBadges} userIsPremium={isPremium} />
+          </div>
         </div>
         
         {/* Personal Info Fields */}
         <div className="md:col-span-3 lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-2">
           <div className="col-span-2 md:col-span-full flex items-center gap-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333] transition-colors">
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
               {bio ? bio : <span className="text-gray-400 dark:text-gray-500 font-normal text-sm">Não informado</span>}
             </p>
           </div>

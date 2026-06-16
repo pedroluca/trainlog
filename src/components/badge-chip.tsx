@@ -73,7 +73,7 @@ export function BadgeChip({ badge, onClick }: BadgeChipProps) {
       title={title}
       onClick={() => onClick(badge)}
       className={`
-        w-11 h-11 rounded-full flex items-center justify-center
+        w-10 h-10 rounded-full flex items-center justify-center
         hover:scale-110 active:scale-95 transition-transform cursor-pointer
         ${chipClass}
       `}
@@ -98,7 +98,7 @@ export function BadgeList({ badges, userIsPremium = false, onUpgrade }: BadgeLis
 
   return (
     <>
-      <div className="flex items-center justify-center gap-2 mt-2">
+      <div className="flex items-center gap-2 mt-2">
         {badges.map(badge => (
           <BadgeChip
             key={badge.id}
