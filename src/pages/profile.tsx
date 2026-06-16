@@ -17,6 +17,30 @@ import { resolveUserBadges, resolveAvatarRing, type BadgeDefinition } from '../d
 import { addBadgesToUser, removeBadgesFromUser } from '../utils/badge-utils'
 import { Spinner } from '../components/spinner'
 
+type BirthdayBalloonMode = 'none' | 'compact' | 'burst'
+
+const getLocalDateKey = (date = new Date()) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+const isBirthdayToday = (birthDate: string, referenceDate = new Date()) => {
+  const [year, month, day] = birthDate.split('-')
+
+  if (!year || !month || !day) return false
+
+  return (
+    Number(month) === referenceDate.getMonth() + 1 &&
+    Number(day) === referenceDate.getDate()
+  )
+}
+
+const getBirthdayCelebrationStorageKey = (userId: string, dateKey: string) =>
+  `birthdayCelebration:${userId}:${dateKey}`
+
 export function Profile() {
   const navigate = useNavigate()
   const usuarioID = localStorage.getItem('usuarioId')
@@ -52,6 +76,7 @@ export function Profile() {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
   const [friendsCount, setFriendsCount] = useState(0)
   const [isWhatsNewModalOpen, setIsWhatsNewModalOpen] = useState(false)
+  const [birthdayBalloonMode, setBirthdayBalloonMode] = useState<BirthdayBalloonMode>('none')
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [editedNome, setEditedNome] = useState('')
   const [editedUsername, setEditedUsername] = useState('')
@@ -120,6 +145,19 @@ export function Profile() {
             setCurrentStreak(userData.currentStreak || 0)
             setLongestStreak(userData.longestStreak || 0)
             setFreezeCount(userData.freezeCount || 0)
+
+            const birthDate = typeof userData.dataNascimento === 'string' ? userData.dataNascimento : ''
+            if (birthDate && isBirthdayToday(birthDate)) {
+              const todayKey = getLocalDateKey()
+              const birthdayStorageKey = getBirthdayCelebrationStorageKey(usuarioID, todayKey)
+              const alreadyCelebrated =
+                localStorage.getItem(birthdayStorageKey) === 'seen' ||
+                userData.lastBirthdayCelebrationDate === todayKey
+
+              setBirthdayBalloonMode(alreadyCelebrated ? 'compact' : 'burst')
+            } else {
+              setBirthdayBalloonMode('none')
+            }
           } else {
             console.error('Usuário não encontrado no Firestore')
           }
@@ -429,6 +467,8 @@ export function Profile() {
 
   return (
     <main className="flex flex-col items-center justify-start min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-24 md:py-8">
+      <BirthdayCelebrationBalloons mode={birthdayBalloonMode} />
+
       {/* Profile Card */}
       <div className="relative grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-4 bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-4 pt-10 md:pt-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a] transition-all">
         {/* Edit Profile Button */}
@@ -449,6 +489,20 @@ export function Profile() {
         <div className="md:col-span-1 lg:col-span-4 flex flex-col items-center relative">
           {/* Avatar Circle with Image Upload */}
           <div className="relative mb-3 md:mt-6 w-max mx-auto">
+            {birthdayBalloonMode === 'compact' && (
+              <>
+                <div className="absolute -left-8 top-8 flex flex-col items-center gap-1 animate-bounce" style={{ animationDuration: '2.4s' }}>
+                  <div className="h-10 w-8 rounded-full bg-rose-400 shadow-lg shadow-rose-500/30 relative">
+                    <div className="absolute left-1/2 top-full h-8 w-px -translate-x-1/2 bg-rose-300" />
+                  </div>
+                </div>
+                <div className="absolute -right-8 top-6 flex flex-col items-center gap-1 animate-bounce" style={{ animationDuration: '2.8s', animationDelay: '0.2s' }}>
+                  <div className="h-10 w-8 rounded-full bg-sky-400 shadow-lg shadow-sky-500/30 relative">
+                    <div className="absolute left-1/2 top-full h-8 w-px -translate-x-1/2 bg-sky-300" />
+                  </div>
+                </div>
+              </>
+            )}
             <div className={`w-24 md:w-32 lg:w-40 h-24 md:h-32 lg:h-40 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl lg:text-5xl font-bold overflow-hidden shadow-inner relative z-0 ${avatarRing}`}>
               {photoURL ? (
                 <img 
@@ -1036,6 +1090,49 @@ export function Profile() {
       />
     </main>
   )
+}
+
+function BirthdayCelebrationBalloons({ mode }: { mode: BirthdayBalloonMode }) {
+  if (mode === 'none') return null
+
+  if (mode === 'burst') {
+    return (
+      <div className="fixed inset-0 pointer-events-none z-[65] overflow-hidden">
+        <div className="absolute left-[6%] top-[14%] animate-bounce" style={{ animationDuration: '3s' }}>
+          <div className="h-14 w-11 rounded-full bg-rose-400 shadow-xl shadow-rose-500/30 relative">
+            <div className="absolute left-1/2 top-full h-10 w-px -translate-x-1/2 bg-rose-300" />
+          </div>
+        </div>
+        <div className="absolute left-[16%] top-[28%] animate-bounce" style={{ animationDuration: '2.6s', animationDelay: '0.2s' }}>
+          <div className="h-12 w-9 rounded-full bg-amber-400 shadow-xl shadow-amber-500/30 relative">
+            <div className="absolute left-1/2 top-full h-9 w-px -translate-x-1/2 bg-amber-300" />
+          </div>
+        </div>
+        <div className="absolute right-[12%] top-[18%] animate-bounce" style={{ animationDuration: '2.9s', animationDelay: '0.35s' }}>
+          <div className="h-14 w-11 rounded-full bg-sky-400 shadow-xl shadow-sky-500/30 relative">
+            <div className="absolute left-1/2 top-full h-10 w-px -translate-x-1/2 bg-sky-300" />
+          </div>
+        </div>
+        <div className="absolute right-[8%] top-[38%] animate-bounce" style={{ animationDuration: '3.1s', animationDelay: '0.15s' }}>
+          <div className="h-12 w-9 rounded-full bg-emerald-400 shadow-xl shadow-emerald-500/30 relative">
+            <div className="absolute left-1/2 top-full h-9 w-px -translate-x-1/2 bg-emerald-300" />
+          </div>
+        </div>
+        <div className="absolute left-[26%] bottom-[18%] animate-bounce" style={{ animationDuration: '2.7s', animationDelay: '0.4s' }}>
+          <div className="h-12 w-10 rounded-full bg-fuchsia-400 shadow-xl shadow-fuchsia-500/30 relative">
+            <div className="absolute left-1/2 top-full h-10 w-px -translate-x-1/2 bg-fuchsia-300" />
+          </div>
+        </div>
+        <div className="absolute right-[24%] bottom-[16%] animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.05s' }}>
+          <div className="h-12 w-10 rounded-full bg-yellow-400 shadow-xl shadow-yellow-500/30 relative">
+            <div className="absolute left-1/2 top-full h-10 w-px -translate-x-1/2 bg-yellow-300" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return null
 }
 
 export const WorkoutCardSkeleton = () => {

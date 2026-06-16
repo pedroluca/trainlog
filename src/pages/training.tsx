@@ -13,6 +13,12 @@ import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'fireb
 import { db } from '../firebaseConfig'
 import { updateStreak, updateScheduledDays } from '../data/streak-utils'
 import { trackPageView, trackWorkoutCompleted } from '../utils/analytics'
+import {
+  BirthdayCelebrationModal,
+  getBirthdayCelebrationStorageKey,
+  getLocalDateKey,
+  isBirthdayToday,
+} from '../components/birthday-celebration'
 
 const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
@@ -29,6 +35,8 @@ export function Training() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
+  const [isBirthdayModalOpen, setIsBirthdayModalOpen] = useState(false)
+  const [birthdayName, setBirthdayName] = useState('você')
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null)
   const [creatorNames, setCreatorNames] = useState<Record<string, string>>({})
@@ -178,6 +186,42 @@ export function Training() {
     fetchWorkouts()
     setReset(false)
   }, [fetchWorkouts])
+
+  useEffect(() => {
+    if (!usuarioID) return
+
+    const checkBirthdayCelebration = async () => {
+      try {
+        const userDocRef = doc(db, 'usuarios', usuarioID)
+        const userDoc = await getDoc(userDocRef)
+
+        if (!userDoc.exists()) return
+
+        const userData = userDoc.data()
+        const birthDate = typeof userData.dataNascimento === 'string' ? userData.dataNascimento : ''
+
+        if (!birthDate || !isBirthdayToday(birthDate)) return
+
+        const todayKey = getLocalDateKey()
+        const birthdayStorageKey = getBirthdayCelebrationStorageKey(usuarioID, todayKey)
+        const alreadyCelebrated =
+          localStorage.getItem(birthdayStorageKey) === 'seen' ||
+          userData.lastBirthdayCelebrationDate === todayKey
+
+        setBirthdayName(userData.nome || 'você')
+
+        if (!alreadyCelebrated) {
+          setIsBirthdayModalOpen(true)
+          localStorage.setItem(birthdayStorageKey, 'seen')
+          await updateDoc(userDocRef, { lastBirthdayCelebrationDate: todayKey })
+        }
+      } catch (err) {
+        console.error('Erro ao verificar aniversário:', err)
+      }
+    }
+
+    checkBirthdayCelebration()
+  }, [usuarioID])
 
   useEffect(() => {
     if (workouts.length > 0) {
@@ -363,6 +407,12 @@ export function Training() {
 
   return (
     <main className="flex flex-col items-center h-[calc(100vh-4rem)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 pt-2.5 lg:p-8 lg:pt-4">
+      <BirthdayCelebrationModal
+        isOpen={isBirthdayModalOpen}
+        onClose={() => setIsBirthdayModalOpen(false)}
+        name={birthdayName}
+      />
+
       {isManagingStudent && (
         <div className="w-full max-w-3xl mb-3 bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-900/30 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
