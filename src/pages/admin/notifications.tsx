@@ -5,6 +5,7 @@ import { AdminContextData } from '../../layouts/admin-layout'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../../firebaseConfig'
 import { Spinner } from '../../components/spinner'
+import adminLogo from '../../assets/admin-logo.png'
 
 export function AdminNotifications() {
   const { adminId, users } = useOutletContext<AdminContextData>()
@@ -66,6 +67,7 @@ export function AdminNotifications() {
       
       url.searchParams.append('title', pushTitle.trim())
       url.searchParams.append('body', pushBody.trim())
+      url.searchParams.append('icon', `${window.location.origin}${adminLogo}`)
       
       const res = await fetch(url.toString())
       const data = await res.json()
