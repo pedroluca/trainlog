@@ -30,6 +30,7 @@ $subscription_id = trim((string) ($_GET['subscription_id'] ?? ''));
 $title = trim((string) ($_GET['title'] ?? 'Novo treino 💪'));
 $body = trim((string) ($_GET['body'] ?? 'Seu treino de hoje ja esta disponivel'));
 $url = trim((string) ($_GET['url'] ?? rtrim(APP_BASE_URL, '/') . '/train'));
+$icon = trim((string) ($_GET['icon'] ?? ''));
 
 if ($external_id === '' && $subscription_id === '') {
     json_response(400, [
@@ -49,6 +50,10 @@ $onesignal_payload = [
         'sentAt' => date('c')
     ]
 ];
+
+if ($icon !== '') {
+    $onesignal_payload['large_icon'] = $icon;
+}
 
 if ($external_id !== '') {
     $onesignal_payload['include_aliases'] = [
