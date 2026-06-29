@@ -1,6 +1,6 @@
 <?php
 /**
- * TrainLog - Cron Job para Relatório Semanal
+ * Tractus - Cron Job para Relatório Semanal
  * 
  * Função: Enviar relatório por e-mail com resumo da semana de treinos
  * Frequência: 1x por semana (domingo às 20:00)
@@ -122,7 +122,7 @@ function generate_html_report($user_name, $weekly_data) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrainLog - Seu Resumo da Semana</title>
+    <title>Tractus - Seu Resumo da Semana</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; color: #1f2937;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6; padding: 40px 20px;">
@@ -132,8 +132,8 @@ function generate_html_report($user_name, $weekly_data) {
                     <!-- Header -->
                     <tr>
                         <td align="center" style="padding: 30px 20px 20px; border-bottom: 1px solid #f3f4f6;">
-                            <img src="https://app.trainlog.site/icon-192.png" alt="TrainLog Logo" width="60" height="60" style="display: block; margin: 0 auto 15px; border-radius: 14px;">
-                            <h1 style="margin: 0 0 5px; font-size: 24px; font-weight: 800; color: #111827;">TrainLog</h1>
+                            <img src="https://app.trainlog.site/icon-192.png" alt="Tractus Logo" width="60" height="60" style="display: block; margin: 0 auto 15px; border-radius: 14px;">
+                            <h1 style="margin: 0 0 5px; font-size: 24px; font-weight: 800; color: #111827;">Tractus</h1>
                             <p style="margin: 0; font-size: 14px; color: #6b7280; font-weight: 500;">Relatório Semanal</p>
                         </td>
                     </tr>
@@ -180,7 +180,7 @@ function generate_html_report($user_name, $weekly_data) {
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
                                     <td align="center" style="padding: 0 0 30px;">
-                                        <p style="margin: 0 0 15px; color: #6b7280; font-size: 14px;">Confira todos os detalhes e gráficos no TrainLog:</p>
+                                        <p style="margin: 0 0 15px; color: #6b7280; font-size: 14px;">Confira todos os detalhes e gráficos no Tractus:</p>
                                         <a href="https://app.trainlog.site/progress" style="background-color: #27AE60; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 15px;">Ver Meus Progressos</a>
                                     </td>
                                 </tr>
@@ -201,7 +201,7 @@ function generate_html_report($user_name, $weekly_data) {
                     <!-- Footer -->
                     <tr>
                         <td align="center" style="background-color: #f9fafb; padding: 25px; border-top: 1px solid #e5e7eb;">
-                            <p style="margin: 0 0 8px; font-size: 13px; color: #6b7280;"><strong>TrainLog</strong> - Seu Diário de Treinos 💪</p>
+                            <p style="margin: 0 0 8px; font-size: 13px; color: #6b7280;"><strong>Tractus</strong> - Seu Diário de Treinos 💪</p>
                             <p style="margin: 0 0 8px; font-size: 12px; color: #9ca3af;">Você recebeu este e-mail porque ativou o relatório semanal.</p>
                             <p style="margin: 0;"><a href="https://app.trainlog.site/profile/settings" style="color: #27AE60; text-decoration: none; font-size: 12px; font-weight: 600;">Gerenciar Preferências</a></p>
                         </td>
@@ -218,13 +218,13 @@ HTML;
 }
 
 function send_email($to_email, $user_name, $html_content) {
-    $subject = "TrainLog - Seu Resumo da Semana 📊";
+    $subject = "Tractus - Seu Resumo da Semana 📊";
     
     $headers = [
         "MIME-Version: 1.0",
         "Content-type: text/html; charset=UTF-8",
-        "From: TrainLog <suporte@trainlog.site>",
-        "X-Mailer: TrainLog Cron Service"
+        "From: Tractus <suporte@trainlog.site>",
+        "X-Mailer: Tractus Cron Service"
     ];
     
     return mail($to_email, $subject, $html_content, implode("\r\n", $headers));
