@@ -66,10 +66,12 @@ try {
     file_put_contents(__DIR__ . '/users-cache.json', json_encode($users, JSON_PRETTY_PRINT));
     
     write_log('Sincronizacao concluida: ' . count($users) . ' usuarios');
+    ping_healthcheck('sync-users');
     echo json_encode(['success' => true, 'count' => count($users)]);
-    
+
 } catch (Exception $e) {
     write_log('Erro na sincronizacao: ' . $e->getMessage());
+    ping_healthcheck('sync-users', 'fail');
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
 }

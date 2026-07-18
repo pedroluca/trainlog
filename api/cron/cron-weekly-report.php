@@ -256,6 +256,7 @@ try {
     
     if (empty($users)) {
         write_log("⚠️ Nenhum usuário encontrado");
+        ping_healthcheck('cron-weekly-report');
         http_response_code(200);
         echo json_encode([
             'status' => 'success',
@@ -349,7 +350,9 @@ try {
     write_log("✅ E-mails enviados: $sent_count");
     write_log("❌ Erros: $error_count");
     write_log("=========== FIM ===========\n");
-    
+
+    ping_healthcheck('cron-weekly-report');
+
     http_response_code(200);
     echo json_encode([
         'status' => 'success',
@@ -357,10 +360,12 @@ try {
         'errors' => $error_count,
         'timestamp' => date('Y-m-d H:i:s')
     ]);
-    
+
 } catch (Exception $e) {
     write_log("💥 ERRO CRÍTICO: " . $e->getMessage());
-    
+
+    ping_healthcheck('cron-weekly-report', 'fail');
+
     http_response_code(500);
     echo json_encode([
         'status' => 'error',

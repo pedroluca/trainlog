@@ -1,0 +1,48 @@
+name: Trainlog Cron Jobs
+
+# Dispara os crons de api/cron/ via HTTP em vez de depender do agendador do
+# Hostinger, que falhou silenciosamente (nenhuma execucao por dias, sem
+# nenhum erro/alerta) mesmo apos recriar os jobs em hPanel.
+#
+# Cada schedule dispara todos os jobs do workflow; o "if" de cada job filtra
+# pelo cron que casou, entao só aquele roda. workflow_dispatch permite rodar
+# tudo manualmente para teste.
+#
+# Horarios em UTC (America/Sao_Paulo = UTC-3, sem horario de verao).
+
+on:
+  schedule:
+    - cron: "*/30 * * * *" # sync-users - a cada 30 min
+    - cron: "0 */4 * * *" # cron-reminders - a cada 4h
+    - cron: "0 3 * * *" # cron-streak-leader - ~00:00 BRT
+    - cron: "0 23 * * 0" # cron-weekly-report - domingo ~20:00 BRT
+  workflow_dispatch:
+
+jobs:
+  sync-users:
+    if: github.event.schedule == '*/30 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger sync-users
+        run: curl -fsS --retry 2 --max-time 30 "https://trainlog.site/api/cron/sync-users.php?secret=${{ secrets.CRON_SECRET }}"
+
+  cron-reminders:
+    if: github.event.schedule == '0 */4 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger cron-reminders
+        run: curl -fsS --retry 2 --max-time 30 "https://trainlog.site/api/cron/cron-reminders.php?secret=${{ secrets.CRON_SECRET }}"
+
+  cron-streak-leader:
+    if: github.event.schedule == '0 3 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger cron-streak-leader
+        run: curl -fsS --retry 2 --max-time 30 "https://trainlog.site/api/cron/cron-streak-leader.php?secret=${{ secrets.CRON_SECRET }}"
+
+  cron-weekly-report:
+    if: github.event.schedule == '0 23 * * 0' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger cron-weekly-report
+        run: curl -fsS --retry 2 --max-time 30 "https://trainlog.site/api/cron/cron-weekly-report.php?secret=${{ secrets.CRON_SECRET }}"

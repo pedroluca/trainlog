@@ -250,6 +250,8 @@ try {
     write_log('Erros: ' . $error_count);
     write_log('=========== FIM ===========\n');
 
+    ping_healthcheck('cron-reminders');
+
     $response = [
         'status' => 'success',
         'provider' => 'onesignal',
@@ -268,6 +270,7 @@ try {
     echo json_encode($response);
 } catch (Exception $e) {
     write_log('ERRO CRÍTICO: ' . $e->getMessage());
+    ping_healthcheck('cron-reminders', 'fail');
     http_response_code(500);
     echo json_encode([
         'status' => 'error',
