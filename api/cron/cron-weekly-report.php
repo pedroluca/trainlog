@@ -132,7 +132,7 @@ function generate_html_report($user_name, $weekly_data) {
                     <!-- Header -->
                     <tr>
                         <td align="center" style="padding: 30px 20px 20px; border-bottom: 1px solid #f3f4f6;">
-                            <img src="https://app.trainlog.site/icon-192.png" alt="Tractus Logo" width="60" height="60" style="display: block; margin: 0 auto 15px; border-radius: 14px;">
+                            <img src="https://apptractus.com.br/icon-192.png" alt="Tractus Logo" width="60" height="60" style="display: block; margin: 0 auto 15px; border-radius: 14px;">
                             <h1 style="margin: 0 0 5px; font-size: 24px; font-weight: 800; color: #111827;">Tractus</h1>
                             <p style="margin: 0; font-size: 14px; color: #6b7280; font-weight: 500;">Relatório Semanal</p>
                         </td>
@@ -181,7 +181,7 @@ function generate_html_report($user_name, $weekly_data) {
                                 <tr>
                                     <td align="center" style="padding: 0 0 30px;">
                                         <p style="margin: 0 0 15px; color: #6b7280; font-size: 14px;">Confira todos os detalhes e gráficos no Tractus:</p>
-                                        <a href="https://app.trainlog.site/progress" style="background-color: #27AE60; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 15px;">Ver Meus Progressos</a>
+                                        <a href="https://apptractus.com.br/progress" style="background-color: #27AE60; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 15px;">Ver Meus Progressos</a>
                                     </td>
                                 </tr>
                                 <tr>
@@ -203,7 +203,7 @@ function generate_html_report($user_name, $weekly_data) {
                         <td align="center" style="background-color: #f9fafb; padding: 25px; border-top: 1px solid #e5e7eb;">
                             <p style="margin: 0 0 8px; font-size: 13px; color: #6b7280;"><strong>Tractus</strong> - Seu Diário de Treinos 💪</p>
                             <p style="margin: 0 0 8px; font-size: 12px; color: #9ca3af;">Você recebeu este e-mail porque ativou o relatório semanal.</p>
-                            <p style="margin: 0;"><a href="https://app.trainlog.site/profile/settings" style="color: #27AE60; text-decoration: none; font-size: 12px; font-weight: 600;">Gerenciar Preferências</a></p>
+                            <p style="margin: 0;"><a href="https://apptractus.com.br/profile/settings" style="color: #27AE60; text-decoration: none; font-size: 12px; font-weight: 600;">Gerenciar Preferências</a></p>
                         </td>
                     </tr>
                 </table>

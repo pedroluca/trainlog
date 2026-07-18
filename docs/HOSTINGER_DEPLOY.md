@@ -4,7 +4,7 @@
 
 Este projeto usa **subdomínio**:
 - **trainlog.site** → Landing page (pasta `public_html/`)
-- **app.trainlog.site** → React App (pasta `public_html/app/`)
+- **apptractus.com.br** → React App (pasta `public_html/app/`)
 
 ## 📦 Passo a Passo para Deploy na Hostinger
 

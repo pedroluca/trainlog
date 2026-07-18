@@ -54,7 +54,7 @@ Para push funcionar no iPhone/iPad com webapp:
 
 1. iOS/iPadOS 16.4+
 2. App aberto pelo icone na Tela de Inicio (PWA instalado)
-3. HTTPS no dominio final (`https://app.trainlog.site`)
+3. HTTPS no dominio final (`https://apptractus.com.br`)
 4. Permissao de notificacao concedida pelo usuario apos instalar o PWA
 5. Configuracao completa de Web Push no OneSignal (incluindo etapa Apple/Safari quando o painel solicitar)
 
@@ -71,6 +71,6 @@ curl -X POST https://api.onesignal.com/notifications \
     "include_subscription_ids": ["SUBSCRIPTION_ID"],
     "headings": {"en": "Hora do Treino!"},
     "contents": {"en": "Voce ainda nao treinou hoje."},
-    "url": "https://app.trainlog.site/train"
+    "url": "https://apptractus.com.br/train"
   }'
 ```
