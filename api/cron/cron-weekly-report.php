@@ -132,7 +132,7 @@ function generate_html_report($user_name, $weekly_data) {
                     <!-- Header -->
                     <tr>
                         <td align="center" style="padding: 30px 20px 20px; border-bottom: 1px solid #f3f4f6;">
-                            <img src="https://apptractus.com.br/icon-192.png" alt="Tractus Logo" width="60" height="60" style="display: block; margin: 0 auto 15px; border-radius: 14px;">
+                            <img src="https://apptractus.com.br/LOGO%20SEM%20FUNDO%20-%20BRANCO.svg" alt="Tractus Logo" width="60" height="60" style="display: block; margin: 0 auto 15px; border-radius: 14px;">
                             <h1 style="margin: 0 0 5px; font-size: 24px; font-weight: 800; color: #111827;">Tractus</h1>
                             <p style="margin: 0; font-size: 14px; color: #6b7280; font-weight: 500;">Relatório Semanal</p>
                         </td>
