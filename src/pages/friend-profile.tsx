@@ -336,14 +336,14 @@ export function FriendProfile() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-0">
+            <div className="flex flex-col gap-0 min-w-0 flex-1">
               <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white">{profile.nome}</h1>
               {profile.username && (
                 <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">@{profile.username}</p>
               )}
 
               {/* Badges */}
-              <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} />
+              <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} viewAllHref={`/friend/${id}/badges`} />
             </div>
           </div>
 
@@ -438,7 +438,7 @@ export function FriendProfile() {
             )}
 
             <div className="mt-2">
-              <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} />
+              <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} viewAllHref={`/friend/${id}/badges`} />
             </div>
           </div>
 

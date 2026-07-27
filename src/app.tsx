@@ -13,6 +13,8 @@ const LogPage = lazy(() => import('./pages/log').then(m => ({ default: m.LogPage
 const Progress = lazy(() => import('./pages/progress').then(m => ({ default: m.Progress })))
 const BodyMetrics = lazy(() => import('./pages/body-metrics').then(m => ({ default: m.BodyMetrics })))
 const StreakCalendar = lazy(() => import('./pages/streak-calendar').then(m => ({ default: m.StreakCalendar })))
+const ProfileBadges = lazy(() => import('./pages/profile-badges').then(m => ({ default: m.ProfileBadges })))
+const FriendBadges = lazy(() => import('./pages/friend-badges').then(m => ({ default: m.FriendBadges })))
 
 const AdminLogin = lazy(() => import('./pages/admin-login').then(m => ({ default: m.AdminLogin })))
 const AdminLayout = lazy(() => import('./layouts/admin-layout').then(m => ({ default: m.AdminLayout })))
@@ -308,6 +310,7 @@ export function App() {
               <Route path="/friends" element={<Friends />} />
               <Route path="/friend/:id" element={<FriendProfile />} />
               <Route path="/friend/:id/friends" element={<FriendFriends />} />
+              <Route path="/friend/:id/badges" element={<FriendBadges />} />
               <Route path='/progress' element={<Progress />} />
               <Route path='/profile'>
                 <Route index element={<Profile />} />
@@ -318,6 +321,7 @@ export function App() {
                 <Route path='settings/appearance' element={<SettingsAppearance />} />
                 <Route path='body-metrics' element={<BodyMetrics />} />
                 <Route path='streak-calendar' element={<StreakCalendar />} />
+                <Route path='badges' element={<ProfileBadges />} />
                 <Route path='log' element={<LogPage />} />
                 <Route path='connections' element={<TrainerConnections />} />
               </Route>

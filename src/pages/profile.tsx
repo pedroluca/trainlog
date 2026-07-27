@@ -559,12 +559,12 @@ export function Profile() {
             />
           </div>
 
-          <div className="flex flex-col gap-0">
+          <div className="flex flex-col gap-0 min-w-0 flex-1 md:flex-none">
             <h1 className="text-xl lg:text-3xl md:text-center font-extrabold text-gray-900 dark:text-white tracking-tight">{nome || 'Carregando...'}</h1>
             <p className="text-sm md:text-base font-bold text-gray-500 dark:text-gray-400 mb-1">{username ? '@' + username : ''}</p>
 
             {/* Badges */}
-            <BadgeList onUpgrade={handleOpenUpgradeModal} badges={userBadges} userIsPremium={isPremium} />
+            <BadgeList onUpgrade={handleOpenUpgradeModal} badges={userBadges} userIsPremium={isPremium} viewAllHref="/profile/badges" />
           </div>
         </div>
         
