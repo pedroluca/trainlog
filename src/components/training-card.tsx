@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from './button'
 import { EllipsisVertical } from 'lucide-react'
 import { addDoc, collection, doc, updateDoc, getDoc } from 'firebase/firestore'
@@ -37,6 +37,7 @@ export function TrainingCard(props: TrainingCardProps) {
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false)
   const [audioEnabled, setAudioEnabled] = useState(false)
+  const setCardRefs = useRef<Array<HTMLDivElement | null>>([])
   const [toast, setToast] = useState<ToastState>({
     show: false,
     message: '',
@@ -90,6 +91,16 @@ export function TrainingCard(props: TrainingCardProps) {
       setSetsDone(0)
     }
   }, [reset])
+
+  useEffect(() => {
+    if (!usesProgressiveWeight || !progressiveSets) return
+    const activeIndex = Math.min(setsDone, progressiveSets.length - 1)
+    setCardRefs.current[activeIndex]?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest'
+    })
+  }, [setsDone, usesProgressiveWeight, progressiveSets])
 
   const handleStartSet = () => {
     setIsBreakTime(true)
@@ -247,9 +258,10 @@ export function TrainingCard(props: TrainingCardProps) {
                     const isCompleted = index < setsDone
                     
                     return (
-                      <div 
-                        key={index} 
-                        className={`min-w-[140px] p-3 rounded-xl snap-center flex-shrink-0 transition-all border ${
+                      <div
+                        key={index}
+                        ref={(el) => { setCardRefs.current[index] = el }}
+                        className={`min-w-40 p-3 rounded-xl snap-center flex-shrink-0 transition-all border ${
                           isFinished
                             ? 'bg-white/10 border-white/20 text-[#f4f4f4]'
                             : isCurrentSet
