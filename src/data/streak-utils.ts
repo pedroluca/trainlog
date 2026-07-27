@@ -374,9 +374,9 @@ export async function resetPreviousDaysExercises(usuarioID: string): Promise<voi
 
       for (const exDoc of exercisesSnap.docs) {
         const exData = exDoc.data()
-        if (exData.isFeito === true) {
+        if (exData.isFeito === true || exData.isSkipped === true) {
           hasUpdates = true
-          updatePromises.push(updateDoc(exDoc.ref, { isFeito: false }))
+          updatePromises.push(updateDoc(exDoc.ref, { isFeito: false, isSkipped: false }))
         }
       }
 
