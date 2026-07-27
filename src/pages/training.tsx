@@ -245,7 +245,7 @@ export function Training() {
         const exercisesRef = collection(db, 'treinos', selectedWorkout.id, 'exercicios')
         const querySnapshot = await getDocs(exercisesRef)
         const resetPromises = querySnapshot.docs.map((doc) =>
-          updateDoc(doc.ref, { isFeito: false, isSkipped: false })
+          updateDoc(doc.ref, { isFeito: false, isSkipped: false, setsDone: 0, restEndsAt: null })
         )
         await Promise.all(resetPromises)
         setReset(true)
@@ -565,6 +565,8 @@ export function Training() {
                           breakTime={exercise.tempoIntervalo}
                           isFeito={exercise.isFeito}
                           isSkipped={exercise.isSkipped}
+                          persistedSetsDone={exercise.setsDone}
+                          persistedRestEndsAt={exercise.restEndsAt}
                           reset={reset}
                           onEdit={() => fetchExercisesForDay(true)}
                           onComplete={handleExerciseComplete}

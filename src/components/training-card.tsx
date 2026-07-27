@@ -19,6 +19,8 @@ type TrainingCardProps = {
   breakTime: number
   isFeito: boolean
   isSkipped?: boolean
+  persistedSetsDone?: number
+  persistedRestEndsAt?: number | null
   reset?: boolean
   onEdit: () => void
   onComplete?: (options?: { skipped?: boolean }) => void // Callback when exercise is completed
@@ -29,10 +31,11 @@ type TrainingCardProps = {
 }
 
 export function TrainingCard(props: TrainingCardProps) {
-  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, isSkipped, reset, onEdit, onComplete, nota, usesProgressiveWeight, progressiveSets, disableExecution } = props
+  const { id, workoutId, title, sets, reps, weight, breakTime, isFeito, isSkipped, persistedSetsDone, persistedRestEndsAt, reset, onEdit, onComplete, nota, usesProgressiveWeight, progressiveSets, disableExecution } = props
   const [isBreakTime, setIsBreakTime] = useState(false)
   const [timeLeft, setTimeLeft] = useState(0)
-  const [setsDone, setSetsDone] = useState(0)
+  const [restEndsAt, setRestEndsAt] = useState<number | null>(null)
+  const [setsDone, setSetsDone] = useState(persistedSetsDone ?? 0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false)
@@ -89,6 +92,9 @@ export function TrainingCard(props: TrainingCardProps) {
   useEffect(() => {
     if (reset) {
       setSetsDone(0)
+      setIsBreakTime(false)
+      setTimeLeft(0)
+      setRestEndsAt(null)
     }
   }, [reset])
 
@@ -102,9 +108,19 @@ export function TrainingCard(props: TrainingCardProps) {
     })
   }, [setsDone, usesProgressiveWeight, progressiveSets])
 
+  const persistProgress = useCallback((newSetsDone: number, newRestEndsAt: number | null) => {
+    const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
+    updateDoc(exerciseRef, { setsDone: newSetsDone, restEndsAt: newRestEndsAt }).catch(
+      err => console.error('Erro ao salvar progresso da série:', err)
+    )
+  }, [workoutId, id])
+
   const handleStartSet = () => {
+    const endsAt = Date.now() + breakTime * 1000
     setIsBreakTime(true)
+    setRestEndsAt(endsAt)
     setTimeLeft(breakTime)
+    persistProgress(setsDone, endsAt)
   }
 
   const updateExerciseStatus = useCallback(async (skipped = false) => {
@@ -160,48 +176,95 @@ export function TrainingCard(props: TrainingCardProps) {
       .catch(err => console.error('Erro ao marcar exercício como pulado:', err))
   }, [updateExerciseStatus, onComplete, onEdit])
 
-  useEffect(() => {
-    if (timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1)
-      }, 1000)
-
-      return () => clearInterval(timer)
-    } else if (timeLeft === 0 && isBreakTime) {
-      // Play beep sound when timer ends
-      playBeepSound()
-      
-      setIsBreakTime(false)
-      setSetsDone((prev) => prev + 1)
-      if (setsDone + 1 === sets) {
+  const finishCurrentSet = useCallback(() => {
+    playBeepSound()
+    setIsBreakTime(false)
+    setTimeLeft(0)
+    setRestEndsAt(null)
+    setSetsDone((prev) => {
+      const next = prev + 1
+      persistProgress(next, null)
+      if (next === sets) {
         handleFinishSet()
       }
+      return next
+    })
+  }, [playBeepSound, persistProgress, sets, handleFinishSet])
+
+  // Recompute time left from the persisted end timestamp every tick, so the
+  // countdown stays accurate even if the tab was backgrounded/throttled.
+  useEffect(() => {
+    if (!isBreakTime || restEndsAt == null) return
+
+    const tick = () => {
+      setTimeLeft(Math.max(0, Math.round((restEndsAt - Date.now()) / 1000)))
     }
-  }, [timeLeft, isBreakTime, sets, setsDone, handleFinishSet, playBeepSound])
+
+    tick()
+    const timer = setInterval(tick, 1000)
+    return () => clearInterval(timer)
+  }, [isBreakTime, restEndsAt])
+
+  useEffect(() => {
+    if (isBreakTime && restEndsAt != null && timeLeft <= 0) {
+      finishCurrentSet()
+    }
+  }, [timeLeft, isBreakTime, restEndsAt, finishCurrentSet])
+
+  // Resume progress/rest timer from what's persisted in Firestore on mount, so
+  // navigating away (or reloading) mid-exercise doesn't lose the rest countdown or set count.
+  const resumedRef = useRef(false)
+  useEffect(() => {
+    if (resumedRef.current || isFinished) return
+    resumedRef.current = true
+
+    if (persistedRestEndsAt) {
+      const remainingMs = persistedRestEndsAt - Date.now()
+      if (remainingMs > 0) {
+        setIsBreakTime(true)
+        setRestEndsAt(persistedRestEndsAt)
+        setTimeLeft(Math.ceil(remainingMs / 1000))
+      } else {
+        // Rest finished while we were away from the page; complete that set now.
+        const next = (persistedSetsDone ?? 0) + 1
+        setSetsDone(next)
+        persistProgress(next, null)
+        if (next === sets) {
+          handleFinishSet()
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleUndoSet = useCallback(() => {
     if (setsDone > 0) {
-      setSetsDone(prev => prev - 1)
+      const next = setsDone - 1
+      setSetsDone(next)
       setIsBreakTime(false)
       setTimeLeft(0)
+      setRestEndsAt(null)
+      persistProgress(next, null)
       if (isFeito || isSkipped) {
         const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
         updateDoc(exerciseRef, { isFeito: false, isSkipped: false }).catch(err => console.error('Erro ao desmarcar conclusão:', err))
         onEdit() // Trigger parent rebuild to drop finished status visually
       }
     }
-  }, [setsDone, isFeito, isSkipped, workoutId, id, onEdit])
+  }, [setsDone, isFeito, isSkipped, workoutId, id, onEdit, persistProgress])
 
   const handleResetExercise = useCallback(() => {
     setSetsDone(0)
     setIsBreakTime(false)
     setTimeLeft(0)
+    setRestEndsAt(null)
+    persistProgress(0, null)
     if (isFeito || isSkipped) {
       const exerciseRef = doc(db, 'treinos', workoutId, 'exercicios', id)
       updateDoc(exerciseRef, { isFeito: false, isSkipped: false }).catch(err => console.error('Erro ao resetar conclusão:', err))
       onEdit() // Trigger parent rebuild
     }
-  }, [isFeito, isSkipped, workoutId, id, onEdit])
+  }, [isFeito, isSkipped, workoutId, id, onEdit, persistProgress])
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -356,14 +419,7 @@ export function TrainingCard(props: TrainingCardProps) {
           </div>
           <Button
             className='w-full bg-red-400 hover:bg-red-500 py-4 text-lg md:text-2xl lg:text-xl rounded text-white font-bold mt-4'
-            onClick={() => {
-              setIsBreakTime(false)
-              setTimeLeft(0)
-              setSetsDone((prev) => prev + 1)
-              if (setsDone + 1 === sets) {
-                handleFinishSet()
-              }
-            }}
+            onClick={finishCurrentSet}
           >
             Pular Descanso
           </Button>
