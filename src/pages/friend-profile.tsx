@@ -619,12 +619,11 @@ export function FriendProfile() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {treinos.map(treino => (
                     <div key={treino.id} className="p-4 rounded-xl border border-gray-100 dark:border-[#333] bg-gray-50 dark:bg-[#252525] flex flex-col">
-                      <div className="mb-3 border-b border-gray-200 dark:border-[#404040] pb-3">
+                      <div className="mb-2 border-b border-gray-200 dark:border-[#404040]">
                         <div className="flex justify-between items-start mb-1">
                           <h4 className="font-bold text-gray-900 dark:text-white text-lg truncate pr-2">{treino.nome}</h4>
                           <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded whitespace-nowrap">{treino.dia}</span>
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{treino.musculo}</p>
                       </div>
                       
                       <div className="flex-1">
@@ -634,8 +633,7 @@ export function FriendProfile() {
                         ) : (
                           <ul className="space-y-1.5">
                             {treino.exercicios.map((ex, i) => (
-                              <li key={i} className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary/60"></div>
+                              <li key={i} className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2 pl-6">
                                 {ex.nome}
                               </li>
                             ))}
