@@ -2,7 +2,7 @@
 // Add new badges here; the UI will pick them up automatically.
 
 import type { LucideIcon } from 'lucide-react'
-import { Crown, Laptop, GraduationCap, Rocket, Flame } from 'lucide-react'
+import { Crown, Laptop, GraduationCap, Rocket, Flame, Trophy } from 'lucide-react'
 
 export interface BadgeDefinition {
   id: string
@@ -104,7 +104,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     id: 'streak-leader',
     title: 'Líder de Treinos',
     description: 'Este usuário tem o maior acumulado de streaks!',
-    Icon: Flame,
+    Icon: Trophy,
     order: 4,
     hasImageBorder: false,
     chipClass: 'bg-red-500/15 border-2 border-red-500 text-red-400 dark:text-red-300',
