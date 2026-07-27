@@ -221,11 +221,20 @@ export function BodyMetrics() {
 
   const currentWeight = measurements.length > 0 ? measurements[0].peso : 0
   const currentIMC = measurements.length > 0 ? measurements[0].imc : 0
-  const weightChange = measurements.length > 1 
+  const currentAltura = measurements.length > 0 ? measurements[0].altura : 0
+  const weightChange = measurements.length > 1
     ? (currentWeight - measurements[measurements.length - 1].peso).toFixed(1)
     : '0.0'
 
   const parsedWeightChange = parseFloat(weightChange)
+
+  const heightInMeters = currentAltura / 100
+  const minIdealWeight = 18.5 * heightInMeters * heightInMeters
+  const maxIdealWeight = 24.9 * heightInMeters * heightInMeters
+  const isBelowIdeal = currentIMC > 0 && currentIMC < 18.5
+  const isAboveIdeal = currentIMC >= 25
+  const weightToGain = minIdealWeight - currentWeight
+  const weightToLose = currentWeight - maxIdealWeight
 
   if (loading) {
     return (
@@ -291,6 +300,35 @@ export function BodyMetrics() {
                 <div className="w-1.5 h-1.5 rounded-full bg-current opacity-70"></div>
                 {getIMCStatus(currentIMC).label}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Ideal Weight Card */}
+        {measurements.length > 0 && (isBelowIdeal || isAboveIdeal) && (
+          <div className={`rounded-3xl p-5 md:p-6 border shadow-sm flex items-center gap-4 ${
+            isBelowIdeal
+              ? 'bg-blue-50/60 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/40'
+              : 'bg-orange-50/60 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800/40'
+          }`}>
+            <div className={`shrink-0 p-3 rounded-2xl ${
+              isBelowIdeal
+                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+            }`}>
+              {isBelowIdeal ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
+            </div>
+            <div>
+              <p className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                Peso ideal para normalizar o IMC
+              </p>
+              <p className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200">
+                {isBelowIdeal ? (
+                  <>Você precisa ganhar cerca de <span className="font-black">{weightToGain.toFixed(1)}kg</span> para atingir <span className="font-black">{minIdealWeight.toFixed(1)}kg</span>, dentro da faixa de IMC normal.</>
+                ) : (
+                  <>Você precisa perder cerca de <span className="font-black">{weightToLose.toFixed(1)}kg</span> para atingir <span className="font-black">{maxIdealWeight.toFixed(1)}kg</span>, dentro da faixa de IMC normal.</>
+                )}
+              </p>
             </div>
           </div>
         )}
