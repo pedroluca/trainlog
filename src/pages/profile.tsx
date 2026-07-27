@@ -524,7 +524,7 @@ export function Profile() {
                 </div>
               </>
             )}
-            <div className={`w-20 md:w-32 lg:w-40 h-20 md:h-32 lg:h-40 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white overflow-hidden shadow-inner relative z-0 ${avatarRing}`}>
+            <div className={`w-20 md:w-32 lg:w-40 h-20 md:h-32 lg:h-40 text-4xl font-bold bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white overflow-hidden shadow-inner relative z-0 ${avatarRing}`}>
               {photoURL ? (
                 <img 
                   src={photoURL} 
