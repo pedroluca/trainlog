@@ -443,6 +443,12 @@ export function FriendProfile() {
           </div>
 
           <div className="col-span-8 grid grid-cols-2 gap-3">
+            {profile.bio && (
+              <div className={`col-span-1 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333]`}>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{profile.bio}</p>
+              </div>
+            )}
+            
             {!(priv.ocultarEmail ?? true) && profile.email && (
               <div className="col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Email</p>
