@@ -266,8 +266,8 @@ export function BodyMetrics() {
       <div className="max-w-4xl mx-auto px-4 mt-8 space-y-6">
         {/* Current Stats Cards */}
         {measurements.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-[#1e1e1e] dark:to-[#1a1a1a] rounded-3xl p-6 border border-gray-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+          <div className="grid grid-cols-2 gap-4 lg:gap-6">
+            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-[#1e1e1e] dark:to-[#1a1a1a] rounded-3xl p-4 border border-gray-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
               <p className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Peso Atual</p>
               <div className="flex items-end gap-3">
                 <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">{currentWeight.toFixed(1)}<span className="text-xl text-gray-400 font-semibold ml-1">kg</span></p>
@@ -283,7 +283,7 @@ export function BodyMetrics() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-[#1e1e1e] dark:to-[#1a1a1a] rounded-3xl p-6 border border-gray-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-[#1e1e1e] dark:to-[#1a1a1a] rounded-3xl p-4 border border-gray-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
               <p className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">IMC Atual</p>
               <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">{currentIMC.toFixed(1)}</p>
               
@@ -292,21 +292,14 @@ export function BodyMetrics() {
                 {getIMCStatus(currentIMC).label}
               </div>
             </div>
-
-            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-[#1e1e1e] dark:to-[#1a1a1a] rounded-3xl p-6 border border-gray-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-              <p className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Total de Medições</p>
-              <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">{measurements.length}</p>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-4">
-                Última: <span className="text-gray-700 dark:text-gray-300">{new Date(measurements[0].data).toLocaleDateString('pt-BR')}</span>
-              </p>
-            </div>
           </div>
         )}
 
         {/* Charts */}
         {measurements.length > 0 && (
-          <div className="bg-white dark:bg-[#1e1e1e] rounded-3xl p-6 border border-gray-100 dark:border-[#2a2a2a] shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6 tracking-tight">Evolução do Peso</h2>
+          <div className="bg-white dark:bg-[#1e1e1e] rounded-3xl p-4 border border-gray-100 dark:border-[#2a2a2a] shadow-sm">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Evolução do Peso</h2>
+            <p className="text-xs mb-6 text-gray-900 dark:text-zinc-500">{measurements.length} medições registradas</p>
             <div className="h-[300px] w-full mt-2 -ml-2 select-none">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
