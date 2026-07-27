@@ -37,6 +37,7 @@ import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
 import { FreezeWarningModal } from './components/freeze-warning-modal'
 import { WhatsNewModal } from './components/whats-new-modal'
+import { OnboardingModal } from './components/onboarding-modal'
 import { Spinner } from './components/spinner'
 import { ThemeProvider } from './contexts/theme-context'
 import { getVersion } from './version'
@@ -130,8 +131,23 @@ async function salvarPlayerIdSeLogado() {
 
 export function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [onboardingUserIsPremium, setOnboardingUserIsPremium] = useState(false)
   const [forceUpdateVersion, setForceUpdateVersion] = useState<string | null>(null)
   const [freezeWarning, setFreezeWarning] = useState<FreezeWarning | null>(null)
+
+  const handleOnboardingComplete = async () => {
+    setShowOnboarding(false)
+
+    const usuarioID = localStorage.getItem('usuarioId')
+    if (!usuarioID) return
+
+    try {
+      await setDoc(doc(db, 'usuarios', usuarioID), { hasCompletedOnboarding: true }, { merge: true })
+    } catch (error) {
+      console.error('Error saving onboarding completion:', error)
+    }
+  }
 
   useEffect(() => {
     const isLocalEnv =
@@ -142,14 +158,24 @@ export function App() {
     const checkVersion = async () => {
       const usuarioID = localStorage.getItem('usuarioId')
       if (!usuarioID) return
-      
+
       try {
+        const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
+        const userData = userDoc.data()
+
+        // Every user (new or pre-existing) sees the onboarding walkthrough once,
+        // taking priority over the "what's new" release modal, until it's marked complete.
+        if (userData?.hasCompletedOnboarding !== true) {
+          setOnboardingUserIsPremium(!!userData?.isPremium)
+          setShowOnboarding(true)
+          return
+        }
+
         const sistemaDoc = await getDoc(doc(db, 'sistema', 'info'))
         const lastVersion = sistemaDoc.data()?.lastVersion
         if (!lastVersion) return
-        
-        const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
-        const firestoreVersion = userDoc.data()?.lastSeenVersion
+
+        const firestoreVersion = userData?.lastSeenVersion
 
         // Do not lock developers/QA in local environment when backend version is ahead.
         if (isLocalEnv) {
@@ -285,11 +311,16 @@ export function App() {
           warning={freezeWarning}
           onClose={() => setFreezeWarning(null)}
         />
-        <WhatsNewModal 
-          isOpen={showWhatsNew || !!forceUpdateVersion} 
-          onClose={() => setShowWhatsNew(false)} 
+        <WhatsNewModal
+          isOpen={showWhatsNew || !!forceUpdateVersion}
+          onClose={() => setShowWhatsNew(false)}
           forceUpdateVersion={forceUpdateVersion}
           systemVersion={forceUpdateVersion || getVersion()}
+        />
+        <OnboardingModal
+          isOpen={showOnboarding}
+          isPremium={onboardingUserIsPremium}
+          onComplete={handleOnboardingComplete}
         />
         <Suspense fallback={<PageLoadingFallback />}>
           <Routes>

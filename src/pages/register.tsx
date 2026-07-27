@@ -135,6 +135,7 @@ export function Cadastro() {
         longestStreak: 0,
         scheduledDays: [],
         badges: isTrainer ? ['trainer'] : [],
+        hasCompletedOnboarding: false,
       })
 
       // Register email in public lookup collection
