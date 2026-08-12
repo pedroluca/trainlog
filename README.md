@@ -2,7 +2,7 @@
 
 A modern workout tracking application built with React, TypeScript, Firebase, and Vite.
 
-![Tractus Version](https://img.shields.io/badge/version-2.0.3-green)
+![Tractus Version](https://img.shields.io/badge/version-2.0.4-green)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![Firebase](https://img.shields.io/badge/Firebase-10-orange)
