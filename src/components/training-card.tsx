@@ -41,6 +41,7 @@ export function TrainingCard(props: TrainingCardProps) {
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false)
   const [audioEnabled, setAudioEnabled] = useState(false)
   const setCardRefs = useRef<Array<HTMLDivElement | null>>([])
+  const progressiveScrollRef = useRef<HTMLDivElement>(null)
   const [toast, setToast] = useState<ToastState>({
     show: false,
     message: '',
@@ -101,11 +102,14 @@ export function TrainingCard(props: TrainingCardProps) {
   useEffect(() => {
     if (!usesProgressiveWeight || !progressiveSets) return
     const activeIndex = Math.min(setsDone, progressiveSets.length - 1)
-    setCardRefs.current[activeIndex]?.scrollIntoView({
-      behavior: 'smooth',
-      inline: 'center',
-      block: 'nearest'
-    })
+    const container = progressiveScrollRef.current
+    const target = setCardRefs.current[activeIndex]
+    if (!container || !target) return
+
+    // Scroll only this local carousel (not scrollIntoView, which climbs every
+    // scrollable ancestor and ends up dragging the outer exercise slider too)
+    const targetCenter = target.offsetLeft + target.clientWidth / 2
+    container.scrollTo({ left: targetCenter - container.clientWidth / 2, behavior: 'smooth' })
   }, [setsDone, usesProgressiveWeight, progressiveSets])
 
   const persistProgress = useCallback((newSetsDone: number, newRestEndsAt: number | null) => {
@@ -315,7 +319,7 @@ export function TrainingCard(props: TrainingCardProps) {
           <div className='mb-auto'>
             {usesProgressiveWeight && progressiveSets ? (
               <>
-                <div className="flex gap-3 overflow-x-auto pb-4 px-2 -mx-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div ref={progressiveScrollRef} className="flex gap-3 overflow-x-auto pb-4 px-2 -mx-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   {progressiveSets.map((set, index) => {
                     const isCurrentSet = index === setsDone
                     const isCompleted = index < setsDone
