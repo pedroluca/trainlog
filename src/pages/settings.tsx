@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { Palette, Shield, Lock, Headset, Volume2, VolumeX, Mail, ChevronRight, Crown, Box, ShieldUser, UserRound, ExternalLink } from 'lucide-react'
+import { Palette, Shield, Lock, Headset, Volume2, VolumeX, Mail, ChevronRight, Crown, Box, ShieldUser, UserRound, ExternalLink, Download } from 'lucide-react'
 import { Toast, ToastState } from '../components/toast'
 import { Footer } from '../components/footer'
 import { SettingsCard } from '../components/settings-card'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
+import { ExportWorkoutsModal } from '../components/export-workouts-modal'
 import { BackArrowButton } from '../components/back-arrow-button'
 import { getVersion } from '../version'
 
@@ -28,6 +29,7 @@ export function Settings() {
   const [telefone, setTelefone] = useState<string | null>(null)
   const [isPremium, setIsPremium] = useState(false)
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [loadingUser, setLoadingUser] = useState(true)
   
   const [toast, setToast] = useState<ToastState>({
@@ -213,6 +215,14 @@ export function Settings() {
         />
 
         <SettingsCard
+          title="Exportar Treinos"
+          description="Baixe seus treinos em JSON ou planilha (CSV) para backup ou compartilhar"
+          icon={Download}
+          action={<ChevronRight className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />}
+          onClick={() => setIsExportModalOpen(true)}
+        />
+
+        <SettingsCard
           title="Alterar Senha"
           description="Altere sua senha de acesso à conta"
           icon={Lock}
@@ -273,6 +283,17 @@ export function Settings() {
           userName={nome || ''}
           userEmail={email || ''}
           userPhone={telefone || ''}
+        />
+      )}
+
+      {isExportModalOpen && usuarioID && (
+        <ExportWorkoutsModal
+          usuarioID={usuarioID}
+          onClose={() => setIsExportModalOpen(false)}
+          onFinished={(feedback) => {
+            setIsExportModalOpen(false)
+            setToast({ show: true, ...feedback })
+          }}
         />
       )}
     </main>

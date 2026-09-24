@@ -5,8 +5,10 @@ import { doc, getDoc, collection, getDocs, deleteDoc, query, where, updateDoc, a
 import { Button } from '../components/button'
 import { EditWorkoutModal } from '../components/edit-workout-modal'
 import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, CalendarDays, Minus, UsersRound, Crown, Instagram, ChartPie, LogOut, Mail } from 'lucide-react'
+import { Pencil, Share2, Trash2, Camera, Settings, Activity, Plus, FileText, X, CalendarDays, Minus, UsersRound, Crown, Instagram, ChartPie, LogOut, Mail, Upload, Download } from 'lucide-react'
 import { ShareWorkoutModal } from '../components/share-workout-modal'
+import { ImportWorkoutsModal } from '../components/import-workouts-modal'
+import { ExportWorkoutsModal } from '../components/export-workouts-modal'
 import { getVersionWithPrefix } from '../version'
 import { updateScheduledDays } from '../data/streak-utils'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
@@ -68,6 +70,8 @@ export function Profile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [disabledDays, setDisabledDays] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [uploadingImage, setUploadingImage] = useState(false)
@@ -113,7 +117,19 @@ export function Profile() {
   useEffect(() => {
     fetchDisabledDays()
   }, [fetchDisabledDays])
-  
+
+  const reloadWorkouts = useCallback(async () => {
+    if (!usuarioID) return
+    try {
+      const userWorkouts = await getUserWorkouts(usuarioID)
+      setWorkouts(userWorkouts.sort((a, b) => daysOrder.indexOf(a.dia) - daysOrder.indexOf(b.dia))) // Ordena os treinos pelo dia
+      await updateScheduledDays(usuarioID)
+    } catch (err) {
+      console.error('Erro ao buscar treinos:', err)
+    }
+    fetchDisabledDays()
+  }, [usuarioID, daysOrder, fetchDisabledDays])
+
   useEffect(() => {
     if (!usuarioID) {
       navigate('/login')
@@ -388,22 +404,7 @@ export function Profile() {
       await deleteDoc(workoutRef)
       setIsDeleteModalOpen(false)
       setSelectedWorkout(null)
-      const fetchWorkouts = async () => {
-        try {
-          const workoutsRef = collection(db, 'treinos')
-          const querySnapshot = await getDocs(workoutsRef)
-          const userWorkouts: Treino[] = querySnapshot.docs
-            .map((doc) => ({ id: doc.id, ...doc.data() } as Treino))
-            .filter((workout) => workout.usuarioID === usuarioID)
-            .sort((a, b) => daysOrder.indexOf(a.dia) - daysOrder.indexOf(b.dia)) // Ordena os treinos pelo dia
-          setWorkouts(userWorkouts)
-          if (usuarioID) await updateScheduledDays(usuarioID)
-        } catch (err) {
-          console.error('Erro ao buscar treinos:', err)
-        }
-      }
-      fetchWorkouts()
-      fetchDisabledDays()
+      reloadWorkouts()
     } catch (err) {
       console.error('Erro ao excluir treino:', err)
       setToast({ show: true, message: 'Erro ao excluir treino.', type: 'error' })
@@ -825,7 +826,26 @@ export function Profile() {
             {workouts.length} {workouts.length === 1 ? 'treino' : 'treinos'}
           </span>
         </div>
-        
+
+        {!loading && workouts.length > 0 && (
+          <div className="flex gap-2 mb-3 md:mb-4">
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="cursor-pointer flex-1 md:flex-none bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-700 dark:text-gray-200 font-bold py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
+            >
+              <Upload size={16} className="text-gray-500" />
+              Importar
+            </button>
+            <button
+              onClick={() => setIsExportModalOpen(true)}
+              className="cursor-pointer flex-1 md:flex-none bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333] border border-gray-200 dark:border-[#333] text-gray-700 dark:text-gray-200 font-bold py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
+            >
+              <Download size={16} className="text-gray-500" />
+              Exportar
+            </button>
+          </div>
+        )}
+
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
             <WorkoutCardSkeleton />
@@ -835,12 +855,23 @@ export function Profile() {
         ) : workouts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">Você ainda não tem treinos cadastrados</p>
-            <Button
-              onClick={() => navigate('/train')}
-              className="bg-primary hover:bg-[#219150] text-white px-6 py-2"
-            >
-              Criar Primeiro Treino
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+              <Button
+                onClick={() => navigate('/train')}
+                className="bg-primary hover:bg-[#219150] text-white px-6 py-2"
+              >
+                Criar Primeiro Treino
+              </Button>
+              <Button
+                onClick={() => setIsImportModalOpen(true)}
+                className="border border-gray-200 dark:border-[#333] px-6 py-2"
+                bgColor="bg-white dark:bg-[#252525] hover:bg-gray-50 dark:hover:bg-[#333]"
+                buttonTextColor="text-gray-700 dark:text-gray-200"
+              >
+                <Upload size={18} />
+                Importar treinos
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
@@ -908,25 +939,7 @@ export function Profile() {
           onClose={() => setIsEditModalOpen(false)}
           onSave={() => {
             setIsEditModalOpen(false)
-            const fetchWorkouts = async () => {
-              try {
-                const workoutsRef = collection(db, 'treinos')
-                const querySnapshot = await getDocs(workoutsRef)
-                const userWorkouts: Treino[] = querySnapshot.docs
-                  .map((doc) => ({ id: doc.id, ...doc.data() } as Treino))
-                  .filter((workout) => workout.usuarioID === usuarioID)
-                  .sort((a, b) => daysOrder.indexOf(a.dia) - daysOrder.indexOf(b.dia)) // Ordena os treinos pelo dia
-                setWorkouts(userWorkouts)
-                
-                if (usuarioID) {
-                  await updateScheduledDays(usuarioID)
-                }
-              } catch (err) {
-                console.error('Erro ao buscar treinos:', err)
-              }
-            }
-            fetchWorkouts()
-            fetchDisabledDays()
+            reloadWorkouts()
           }}
           disabledDays={disabledDays} // Passa os dias desabilitados para o modal
         />
@@ -962,6 +975,30 @@ export function Profile() {
         <ShareWorkoutModal
           workoutId={selectedWorkout.id}
           onClose={() => setIsShareModalOpen(false)}
+        />
+      )}
+
+      {isImportModalOpen && usuarioID && (
+        <ImportWorkoutsModal
+          usuarioID={usuarioID}
+          existingWorkouts={workouts}
+          onClose={() => setIsImportModalOpen(false)}
+          onImported={(count) => {
+            setIsImportModalOpen(false)
+            setToast({ show: true, message: `${count} ${count === 1 ? 'treino importado' : 'treinos importados'}!`, type: 'success' })
+            reloadWorkouts()
+          }}
+        />
+      )}
+
+      {isExportModalOpen && usuarioID && (
+        <ExportWorkoutsModal
+          usuarioID={usuarioID}
+          onClose={() => setIsExportModalOpen(false)}
+          onFinished={(feedback) => {
+            setIsExportModalOpen(false)
+            setToast({ show: true, ...feedback })
+          }}
         />
       )}
 
