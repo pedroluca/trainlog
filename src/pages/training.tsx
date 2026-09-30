@@ -13,6 +13,7 @@ import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'fireb
 import { db } from '../firebaseConfig'
 import { updateStreak, updateScheduledDays } from '../data/streak-utils'
 import { trackPageView, trackWorkoutCompleted } from '../utils/analytics'
+import { useKeepScreenOn } from '../hooks/useKeepScreenOn'
 import {
   BirthdayCelebrationModal,
   getBirthdayCelebrationStorageKey,
@@ -49,6 +50,8 @@ export function Training() {
   const isManagingStudent = !!usuarioID && !!managedUserId && managedUserId !== usuarioID
   const canExecuteWorkout = !isManagingStudent
   const [managedUserName, setManagedUserName] = useState(managedUserNameFromParams)
+
+  useKeepScreenOn(canExecuteWorkout && !!selectedWorkout && exercises.length > 0)
 
   if (!usuarioID) {
     navigate('/login')
