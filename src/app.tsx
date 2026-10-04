@@ -27,6 +27,7 @@ const AdminNotifications = lazy(() => import('./pages/admin/notifications').then
 const TrainerConnections = lazy(() => import('./pages/trainer-connections').then(m => ({ default: m.TrainerConnections })))
 const PrivacyPolicy = lazy(() => import('./pages/privacy-policy').then(m => ({ default: m.PrivacyPolicy })))
 const DeleteAccount = lazy(() => import('./pages/delete-account').then(m => ({ default: m.DeleteAccount })))
+const DeleteData = lazy(() => import('./pages/delete-data').then(m => ({ default: m.DeleteData })))
 
 const SettingsPrivacy = lazy(() => import('./pages/settings-privacy').then(m => ({ default: m.SettingsPrivacy })))
 const SettingsPassword = lazy(() => import('./pages/settings-password').then(m => ({ default: m.SettingsPassword })))
@@ -333,6 +334,7 @@ export function App() {
             <Route path='/reset-password' element={<ResetPassword />} />
             <Route path='/privacy' element={<PrivacyPolicy />} />
             <Route path='/delete-account' element={<DeleteAccount />} />
+            <Route path='/delete-data' element={<DeleteData />} />
 
             <Route element={<LayoutWithBottomBar />}>
               {/* <Route path='/teste' element={<Teste />} /> */}

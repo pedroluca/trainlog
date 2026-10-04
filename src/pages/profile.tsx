@@ -77,6 +77,7 @@ export function Profile() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
+  const [totalWorkouts, setTotalWorkouts] = useState(0)
   const [freezeCount, setFreezeCount] = useState(0)
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
   const [friendsCount, setFriendsCount] = useState(0)
@@ -164,6 +165,7 @@ export function Profile() {
             setAvatarRing(resolveAvatarRing(badges))
             setCurrentStreak(userData.currentStreak || 0)
             setLongestStreak(userData.longestStreak || 0)
+            setTotalWorkouts(userData.totalWorkouts || 0)
             setFreezeCount(userData.freezeCount || 0)
 
             const birthDate = typeof userData.dataNascimento === 'string' ? userData.dataNascimento : ''
@@ -232,6 +234,9 @@ export function Profile() {
         setCurrentStreak(event.detail.newStreak)
         if (typeof event.detail.longestStreak === 'number') {
           setLongestStreak(event.detail.longestStreak)
+        }
+        if (typeof event.detail.totalWorkouts === 'number') {
+          setTotalWorkouts(event.detail.totalWorkouts)
         }
         if (typeof event.detail.freezeCount === 'number') {
           setFreezeCount(event.detail.freezeCount)
@@ -756,22 +761,28 @@ export function Profile() {
               {!isPremium && <Crown size={12} className="text-amber-500 absolute top-1.5 right-2 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" />}
             </button>
           </div>
-          <div className="grid grid-cols-4 gap-2 md:gap-3">
-            <div className="bg-orange-60 dark:bg-orange-500/10 rounded-xl p-2 md:px-2.5 border border-orange-500/20 dark:border-orange-500/30 backdrop-blur-sm">
+          <div className="grid grid-cols-6 md:grid-cols-5 gap-2 md:gap-3">
+            <div className="col-span-2 md:col-span-1 bg-orange-60 dark:bg-orange-500/10 rounded-xl p-2 md:px-2.5 border border-orange-500/20 dark:border-orange-500/30 backdrop-blur-sm">
               <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-orange-600 dark:text-orange-400 mb-1">
                 <span className="hidden md:inline">Sequência</span>
                 <span className="md:hidden">Seq.</span>
               </p>
-              <p className="text-xl md:text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400 truncate">{currentStreak}</p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-orange-600 dark:text-orange-400 truncate">{currentStreak}<span className="text-[10px] md:text-xs font-bold ml-1 opacity-70">sem</span></p>
             </div>
-            <div className="bg-yellow-50 dark:bg-yellow-500/10 rounded-xl p-2 md:px-2.5 border border-yellow-500/20 dark:border-yellow-500/30 backdrop-blur-sm">
+            <div className="col-span-2 md:col-span-1 bg-yellow-50 dark:bg-yellow-500/10 rounded-xl p-2 md:px-2.5 border border-yellow-500/20 dark:border-yellow-500/30 backdrop-blur-sm">
               <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-yellow-600 dark:text-yellow-400 mb-1">
                 <span className="hidden md:inline">Recorde Seq.</span>
                 <span className="md:hidden">RP Seq.</span>
               </p>
-              <p className="text-xl md:text-2xl lg:text-3xl font-black text-yellow-600 dark:text-yellow-400 truncate">{longestStreak}</p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-yellow-600 dark:text-yellow-400 truncate">{longestStreak}<span className="text-[10px] md:text-xs font-bold ml-1 opacity-70">sem</span></p>
             </div>
-            <div className="bg-cyan-50 dark:bg-cyan-500/10 rounded-xl p-2 md:px-2.5 border border-cyan-500/20 dark:border-cyan-500/30 backdrop-blur-sm">
+            <div className="col-span-2 md:col-span-1 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl p-2 md:px-2.5 border border-emerald-500/20 dark:border-emerald-500/30 backdrop-blur-sm">
+              <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
+                <span className="">Treinos</span>
+              </p>
+              <p className="text-xl md:text-2xl lg:text-3xl font-black text-emerald-600 dark:text-emerald-400 truncate">{totalWorkouts}</p>
+            </div>
+            <div className="col-span-3 md:col-span-1 bg-cyan-50 dark:bg-cyan-500/10 rounded-xl p-2 md:px-2.5 border border-cyan-500/20 dark:border-cyan-500/30 backdrop-blur-sm">
               <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-cyan-600 dark:text-cyan-400 mb-1 flex items-center gap-1">
                 <span className="">Freezes</span>
               </p>
@@ -781,7 +792,7 @@ export function Profile() {
             </div>
             <div 
               onClick={() => navigate('/friends')}
-              className="cursor-pointer bg-blue-50 dark:bg-blue-500/10 rounded-xl p-2 md:px-2.5 border border-blue-500/20 dark:border-blue-500/30 backdrop-blur-sm hover:bg-blue-500/30 dark:hover:bg-blue-500/30 transition-colors"
+              className="col-span-3 md:col-span-1 cursor-pointer bg-blue-50 dark:bg-blue-500/10 rounded-xl p-2 md:px-2.5 border border-blue-500/20 dark:border-blue-500/30 backdrop-blur-sm hover:bg-blue-500/30 dark:hover:bg-blue-500/30 transition-colors"
             >
               <p className="text-[10px] md:text-xs uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400 mb-1 flex items-center gap-1">
                 <span className="">Amigos</span>

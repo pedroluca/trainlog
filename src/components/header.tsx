@@ -4,10 +4,11 @@ import { db } from '../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
 import { BookUser, Dumbbell, TrendingUp, UsersRound, UserRound } from 'lucide-react'
 import logo from '../assets/nova-logo-white.svg'
+import { getWeekKey } from '../data/streak-utils'
 
 export function Header() {
   const [streak, setStreak] = useState(0)
-  const [treinouHoje, setTreinouHoje] = useState(false)
+  const [treinouNaSemana, setTreinouNaSemana] = useState(false)
   const [photoURL, setPhotoURL] = useState<string | null>(null)
   const [nome, setNome] = useState<string>('')
   const [isFounder, setIsFounder] = useState(false)
@@ -27,10 +28,7 @@ export function Header() {
           setNome(data.nome || '')
           setIsFounder(!!data.isFounder)
           setIsPremium(!!data.isPremium)
-          if (data.lastWorkoutDate) {
-            const todayStr = new Date().toLocaleDateString('en-CA')
-            setTreinouHoje(data.lastWorkoutDate === todayStr)
-          }
+          setTreinouNaSemana(data.lastStreakWeek === getWeekKey())
         }
       } catch (err) {
         console.error('Erro ao buscar dados do header:', err)
@@ -40,9 +38,8 @@ export function Header() {
 
     const handleStreakUpdate = (event: CustomEvent) => {
       setStreak(event.detail.newStreak)
-      if (event.detail.lastWorkoutDate) {
-        const todayStr = new Date().toLocaleDateString('en-CA')
-        setTreinouHoje(event.detail.lastWorkoutDate === todayStr)
+      if ('lastStreakWeek' in event.detail) {
+        setTreinouNaSemana(event.detail.lastStreakWeek === getWeekKey())
       }
     }
     window.addEventListener('streakUpdated', handleStreakUpdate as EventListener)
@@ -119,14 +116,14 @@ export function Header() {
         {usuarioID && (
           <Link
             to={`${isPremium ? '/profile/streak-calendar' : '/profile'}`}
-            className={`flex items-center gap-1.5 ${treinouHoje ? 'bg-amber-400 hover:bg-amber-500' : 'bg-white/20 hover:bg-white/30'} pr-4 pl-3 py-2 rounded-full transition-colors z-10`}
-            title='Seu streak de treinos'
+            className={`flex items-center gap-1.5 ${treinouNaSemana ? 'bg-amber-400 hover:bg-amber-500' : 'bg-white/20 hover:bg-white/30'} pr-4 pl-3 py-2 rounded-full transition-colors z-10`}
+            title='Semanas seguidas treinando'
           >
             <img
               src='https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@latest/assets/Fire/3D/fire_3d.png'
               alt='🔥'
               className='w-6 h-6 md:w-7 md:h-7'
-              style={{ filter: treinouHoje ? 'none' : 'grayscale(1)' }}
+              style={{ filter: treinouNaSemana ? 'none' : 'grayscale(1)' }}
               draggable={false}
             />
             <span className='text-xl md:text-2xl font-bold text-white'>

@@ -98,7 +98,7 @@ export function SettingsPrivacy() {
             { key: 'ocultarPeso', label: 'Peso Corporal', desc: 'Oculta sua medição de peso' },
             { key: 'ocultarAltura', label: 'Altura', desc: 'Oculta sua medição de altura' },
             { key: 'ocultarAmigos', label: 'Lista de Amigos', desc: 'Impede verem quem você adicionou' },
-            { key: 'ocultarStreak', label: 'Sequência (Streak)', desc: 'Oculta seus dias seguidos treinando' },
+            { key: 'ocultarStreak', label: 'Sequência (Streak)', desc: 'Oculta suas semanas seguidas treinando' },
             { key: 'ocultarAtividades', label: 'Atividades (Logs)', desc: 'Oculta o feed de atividades recentes' },
             { key: 'ocultarTreinos', label: 'Meus Treinos', desc: 'Oculta suas rotinas de exercícios' },
           ].map(item => (

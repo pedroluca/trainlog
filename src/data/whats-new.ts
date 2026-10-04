@@ -27,6 +27,16 @@ export const currentRelease: WhatsNewRelease = {
   title: 'Novidades da Versão 2.0.0',
   items: [
     {
+      id: 'weekly-streak',
+      icon: '🔥',
+      title: 'Streak semanal',
+      description: 'Sua sequência agora conta semanas: basta treinar pelo menos uma vez por semana (domingo a sábado) para mantê-la. Cada freeze cobre uma semana sem treino, e o total de treinos continua aparecendo no seu perfil.',
+      action: {
+        label: 'Ver meu perfil',
+        route: '/profile'
+      }
+    },
+    {
       id: 'rebrand-tractus',
       icon: '✨',
       title: 'Novo nome: Tractus',

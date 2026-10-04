@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
-import { Flame, Award, Lock, ChevronLeft, ChevronRight, CalendarDays, Snowflake } from 'lucide-react'
+import { Flame, Award, Lock, ChevronLeft, ChevronRight, CalendarDays, Snowflake, Dumbbell } from 'lucide-react'
 import { Spinner } from '../components/spinner'
+import { getWeekKey, parseLogDate } from '../data/streak-utils'
 
 type DayStatus = 'completed' | 'missed' | 'scheduled' | 'not-scheduled'
 
@@ -12,6 +13,7 @@ type CalendarDay = {
   status: DayStatus
   isToday: boolean
   dayOfMonth: number
+  isStreakWeek: boolean
 }
 
 export function StreakCalendar() {
@@ -20,6 +22,7 @@ export function StreakCalendar() {
   const [isPremium, setIsPremium] = useState(false)
   const [currentStreak, setCurrentStreak] = useState(0)
   const [longestStreak, setLongestStreak] = useState(0)
+  const [totalWorkouts, setTotalWorkouts] = useState(0)
   const [freezeCount, setFreezeCount] = useState(0)
   const [scheduledDays, setScheduledDays] = useState<number[]>([])
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -38,24 +41,8 @@ export function StreakCalendar() {
 
       const completed = new Set<string>()
       logsSnapshot.docs.forEach((docSnap) => {
-        const logData = docSnap.data()
-        if (logData.data) {
-          let date: Date
-          
-          // Handle both Firestore Timestamp and ISO string formats
-          if (typeof logData.data === 'string') {
-            // ISO string format (from training-card.tsx)
-            date = new Date(logData.data)
-          } else if (logData.data.seconds) {
-            // Firestore Timestamp format
-            date = new Date(logData.data.seconds * 1000)
-          } else {
-            return // Skip invalid data
-          }
-          
-          const dateStr = date.toDateString()
-          completed.add(dateStr)
-        }
+        const date = parseLogDate(docSnap.data().data)
+        if (date) completed.add(date.toDateString())
       })
 
       setCompletedDates(completed)
@@ -80,13 +67,17 @@ export function StreakCalendar() {
         date: new Date(0), // dummy date
         status: 'not-scheduled',
         isToday: false,
-        dayOfMonth: 0
+        dayOfMonth: 0,
+        isStreakWeek: false
       })
     }
     
     // Add all days of the month
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+
+    // Streak é semanal: um dia agendado só conta como falta se a semana inteira ficou sem treino
+    const weeksWithWorkout = new Set(Array.from(completed, (dateStr) => getWeekKey(new Date(dateStr))))
     
     // Streak counting starts October 8, 2025
     const streakStartDate = new Date(2025, 9, 8) // Month is 0-indexed
@@ -100,6 +91,7 @@ export function StreakCalendar() {
       const isScheduled = scheduled.includes(dayOfWeek)
       const isCompleted = completed.has(date.toDateString())
       const isToday = date.toDateString() === today.toDateString()
+      const isStreakWeek = weeksWithWorkout.has(getWeekKey(date))
       
       let status: DayStatus = 'not-scheduled'
       
@@ -111,8 +103,8 @@ export function StreakCalendar() {
           // Before streak counting started - don't mark as missed
           status = 'not-scheduled'
         } else if (date < today) {
-          // After streak start but before today - mark as missed
-          status = 'missed'
+          // After streak start but before today - missed only if the week had no workout
+          status = isStreakWeek ? 'not-scheduled' : 'missed'
         } else {
           // Today or future
           status = 'scheduled'
@@ -123,7 +115,8 @@ export function StreakCalendar() {
         date,
         status,
         isToday,
-        dayOfMonth: day
+        dayOfMonth: day,
+        isStreakWeek
       })
     }
     
@@ -151,6 +144,7 @@ export function StreakCalendar() {
       setIsPremium(premium)
       setCurrentStreak(userData.currentStreak || 0)
       setLongestStreak(userData.longestStreak || 0)
+      setTotalWorkouts(userData.totalWorkouts || 0)
       setFreezeCount(userData.freezeCount || 0)
       setScheduledDays(userData.scheduledDays || [])
 
@@ -180,6 +174,9 @@ export function StreakCalendar() {
       if (typeof event.detail.longestStreak === 'number') {
         setLongestStreak(event.detail.longestStreak)
       }
+      if (typeof event.detail.totalWorkouts === 'number') {
+        setTotalWorkouts(event.detail.totalWorkouts)
+      }
       if (typeof event.detail.freezeCount === 'number') {
         setFreezeCount(event.detail.freezeCount)
       }
@@ -190,10 +187,8 @@ export function StreakCalendar() {
   }, [])
 
   useEffect(() => {
-    if (scheduledDays.length > 0 && completedDates.size >= 0) {
-      const calendar = generateMonthCalendar(currentMonth, scheduledDays, completedDates)
-      setCalendarData(calendar)
-    }
+    const calendar = generateMonthCalendar(currentMonth, scheduledDays, completedDates)
+    setCalendarData(calendar)
   }, [currentMonth, scheduledDays, completedDates, generateMonthCalendar])
 
   const previousMonth = () => {
@@ -248,6 +243,11 @@ export function StreakCalendar() {
 
   const isCurrentMonth = currentMonth.getMonth() === new Date().getMonth() && 
                          currentMonth.getFullYear() === new Date().getFullYear()
+
+  const calendarWeeks: CalendarDay[][] = []
+  for (let i = 0; i < calendarData.length; i += 7) {
+    calendarWeeks.push(calendarData.slice(i, i + 7))
+  }
 
   if (loading) {
     return (
@@ -308,7 +308,7 @@ export function StreakCalendar() {
       </div>
 
       {/* Stats Cards */}
-      <div className="p-4 max-w-4xl mx-auto grid grid-cols-3 gap-2.5 lg:gap-4">
+      <div className="p-4 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-2.5 lg:gap-4">
         <div className="bg-gradient-to-br from-white to-gray-50 dark:from-[#1e1e1e] dark:to-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow rounded-xl p-2 md:p-4 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-28 h-28 bg-orange-500/10 dark:bg-orange-500/5 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all duration-500"></div>
           <div className="flex flex-col gap-3 relative z-10">
@@ -318,7 +318,7 @@ export function StreakCalendar() {
               </div>
               <span className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Atual</span>
             </div>
-            <p className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white text-center md:text-left tracking-tight">{currentStreak}</p>
+            <p className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white text-center md:text-left tracking-tight">{currentStreak}<span className="text-base md:text-lg font-bold text-gray-400 dark:text-gray-500 ml-1.5">sem</span></p>
           </div>
         </div>
 
@@ -331,7 +331,20 @@ export function StreakCalendar() {
               </div>
               <span className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Maior</span>
             </div>
-            <p className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white text-center md:text-left tracking-tight">{longestStreak}</p>
+            <p className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white text-center md:text-left tracking-tight">{longestStreak}<span className="text-base md:text-lg font-bold text-gray-400 dark:text-gray-500 ml-1.5">sem</span></p>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-white to-gray-50 dark:from-[#1e1e1e] dark:to-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-md transition-shadow rounded-xl p-2 md:p-4 relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-28 h-28 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all duration-500"></div>
+          <div className="flex flex-col gap-3 relative z-10">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 md:p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl">
+                <Dumbbell size={20} className="text-emerald-500 dark:text-emerald-400" />
+              </div>
+              <span className="text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Treinos</span>
+            </div>
+            <p className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white text-center md:text-left tracking-tight">{totalWorkouts}</p>
           </div>
         </div>
 
@@ -383,8 +396,8 @@ export function StreakCalendar() {
             </button>
           </div>
 
-          {/* Weekday Headers */}
-          <div className="grid grid-cols-7 gap-2 md:gap-3 mb-3">
+          {/* Weekday Headers (mesmo padding/borda das linhas pra manter as colunas alinhadas) */}
+          <div className="grid grid-cols-7 gap-2 md:gap-3 mb-3 px-1 md:px-1.5 border-x border-transparent">
             {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
               <div key={day} className="text-center text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest py-2">
                 {day}
@@ -392,26 +405,41 @@ export function StreakCalendar() {
             ))}
           </div>
 
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-2 md:gap-3">
-            {calendarData.map((day, index) => {
-              const colorClasses = day.dayOfMonth === 0 
-                ? 'bg-transparent' 
-                : getStatusColor(day.status, day.isToday, day.date);
-              
-              const baseClasses = "aspect-square flex items-center justify-center rounded-2xl text-sm md:text-base transition-all duration-300 transform"
-              const interactiveClasses = day.status !== 'not-scheduled' && day.dayOfMonth > 0 
-                ? 'cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10' 
-                : ''
+          {/* Calendar Grid — uma linha por semana, destacada quando a semana entrou na streak */}
+          <div className="flex flex-col gap-1 md:gap-1.5">
+            {calendarWeeks.map((week, weekIndex) => {
+              const isStreakWeek = week.some(day => day.isStreakWeek)
 
               return (
                 <div
-                  key={index}
-                  className={`${baseClasses} ${colorClasses} ${interactiveClasses}`}
+                  key={weekIndex}
+                  className={`grid grid-cols-7 gap-2 md:gap-3 p-1 md:p-1.5 rounded-[1.25rem] border transition-colors ${
+                    isStreakWeek
+                      ? 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/25'
+                      : 'border-transparent'
+                  }`}
                 >
-                  {day.dayOfMonth > 0 && (
-                    <span className="font-semibold">{day.dayOfMonth}</span>
-                  )}
+                  {week.map((day, index) => {
+                    const colorClasses = day.dayOfMonth === 0 
+                      ? 'bg-transparent' 
+                      : getStatusColor(day.status, day.isToday, day.date);
+                    
+                    const baseClasses = "aspect-square flex items-center justify-center rounded-2xl text-sm md:text-base transition-all duration-300 transform"
+                    const interactiveClasses = day.status !== 'not-scheduled' && day.dayOfMonth > 0 
+                      ? 'cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10' 
+                      : ''
+
+                    return (
+                      <div
+                        key={index}
+                        className={`${baseClasses} ${colorClasses} ${interactiveClasses}`}
+                      >
+                        {day.dayOfMonth > 0 && (
+                          <span className="font-semibold">{day.dayOfMonth}</span>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               )
             })}

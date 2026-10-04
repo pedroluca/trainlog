@@ -1,6 +1,6 @@
 import { db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, runTransaction } from 'firebase/firestore'
-import { getStreakMilestoneValue } from './badges'
+import { getStreakMilestoneValue, STREAK_MILESTONE_WEEKS } from './badges'
 import { sendOneSignalPushToTargets } from '../utils/push-notifications'
 
 const dayNameToNumber: Record<string, number> = {
@@ -13,17 +13,23 @@ const dayNameToNumber: Record<string, number> = {
   'Sábado': 6
 }
 
-const FREEZE_CAP_FREE = 2
-const FREEZE_CAP_PREMIUM = 4
+const FREEZE_CAP_FREE = 1
+const FREEZE_CAP_PREMIUM = 2
 const FREEZE_MONTHLY_FREE = 1
 const FREEZE_MONTHLY_PREMIUM = 2
+
+// Versão 2 = streak semanal (1 treino por semana, Dom–Sáb)
+const STREAK_VERSION = 2
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
 type StreakUserData = {
   currentStreak?: number
   longestStreak?: number
   scheduledDays?: number[]
-  lastCompletedDate?: string
+  lastStreakWeek?: string
   lastWorkoutDate?: string
+  totalWorkouts?: number
+  streakVersion?: number
   isPremium?: boolean
   freezeCount?: number
   freezeLastGrantedMonth?: string
@@ -38,23 +44,81 @@ export type FreezeWarning = {
   message: string
 }
 
+export type StreakUpdateResult = {
+  currentStreak: number
+  totalWorkouts: number
+  streakIncremented: boolean
+}
+
 type StreakSyncResult = {
   currentStreak: number
   longestStreak: number
+  totalWorkouts: number
   freezeCount: number
   freezeCap: number
   milestoneValue: number
   lastWorkoutDate: string | null
+  lastStreakWeek: string | null
+  streakIncremented: boolean
   freezeWarning: FreezeWarning | null
   pushTargets: string[]
 }
 
-function getLocalDateStamp(date = new Date()): string {
-  return date.toDateString()
-}
-
 function getMonthKey(date = new Date()): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+function getWeekStart(date = new Date()): Date {
+  const weekStart = new Date(date)
+  weekStart.setHours(0, 0, 0, 0)
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay())
+  return weekStart
+}
+
+/** Chave da semana (domingo que a inicia) no formato YYYY-MM-DD, horário local */
+export function getWeekKey(date = new Date()): string {
+  return getWeekStart(date).toLocaleDateString('en-CA')
+}
+
+// Interpreta YYYY-MM-DD como data local (new Date('YYYY-MM-DD') seria UTC)
+function parseDateKey(key: string): Date | null {
+  const [year, month, day] = key.split('-').map(Number)
+  if (!year || !month || !day) return null
+  return new Date(year, month - 1, day)
+}
+
+function weeksBetween(fromWeekKey: string, toWeekKey: string): number {
+  const from = parseDateKey(fromWeekKey)
+  const to = parseDateKey(toWeekKey)
+  if (!from || !to) return 0
+  // Math.round absorve a hora a mais/a menos do horário de verão
+  return Math.round((to.getTime() - from.getTime()) / WEEK_MS)
+}
+
+function getPreviousWeekKey(weekKey: string): string {
+  const weekStart = parseDateKey(weekKey) ?? getWeekStart()
+  weekStart.setDate(weekStart.getDate() - 7)
+  return weekStart.toLocaleDateString('en-CA')
+}
+
+// Semanas inteiras sem treino entre a última semana contabilizada e a atual (a atual nunca conta como falta)
+function countMissedWeeks(lastStreakWeek: string, currentWeekKey: string): number {
+  if (!lastStreakWeek) return 0
+  return Math.max(0, weeksBetween(lastStreakWeek, currentWeekKey) - 1)
+}
+
+/** Converte o campo `data` de um log (ISO string ou Firestore Timestamp) em Date */
+export function parseLogDate(raw: unknown): Date | null {
+  if (typeof raw === 'string') {
+    const date = new Date(raw)
+    return Number.isNaN(date.getTime()) ? null : date
+  }
+
+  if (raw && typeof raw === 'object' && 'seconds' in raw && typeof raw.seconds === 'number') {
+    return new Date(raw.seconds * 1000)
+  }
+
+  return null
 }
 
 function getFreezeCap(isPremium?: boolean): number {
@@ -65,31 +129,57 @@ function getMonthlyFreezeAmount(isPremium?: boolean): number {
   return isPremium ? FREEZE_MONTHLY_PREMIUM : FREEZE_MONTHLY_FREE
 }
 
-function countMissedScheduledDays(lastCompletedDate: string | undefined, today: Date, scheduledDays: number[]): number {
-  if (!lastCompletedDate || scheduledDays.length === 0) return 0
+function computeWeeklyHistory(workoutWeeks: Set<string>) {
+  let currentStreak = 0
+  let longestStreak = 0
+  let lastStreakWeek = ''
 
-  const lastCompleted = new Date(lastCompletedDate)
-  if (Number.isNaN(lastCompleted.getTime())) return 0
-
-  lastCompleted.setHours(0, 0, 0, 0)
-  const todayMidnight = new Date(today)
-  todayMidnight.setHours(0, 0, 0, 0)
-
-  if (lastCompleted >= todayMidnight) return 0
-
-  const checkDate = new Date(lastCompleted)
-  checkDate.setDate(checkDate.getDate() + 1)
-
-  let missedScheduledDays = 0
-
-  while (checkDate < todayMidnight) {
-    if (scheduledDays.includes(checkDate.getDay())) {
-      missedScheduledDays++
-    }
-    checkDate.setDate(checkDate.getDate() + 1)
+  for (const weekKey of Array.from(workoutWeeks).sort()) {
+    currentStreak = lastStreakWeek && weeksBetween(lastStreakWeek, weekKey) === 1 ? currentStreak + 1 : 1
+    longestStreak = Math.max(longestStreak, currentStreak)
+    lastStreakWeek = weekKey
   }
 
-  return missedScheduledDays
+  return { currentStreak, longestStreak, lastStreakWeek }
+}
+
+// Migra usuários do modelo diário para o semanal recalculando a partir dos logs
+async function ensureStreakMigrated(usuarioID: string): Promise<void> {
+  const userDocRef = doc(db, 'usuarios', usuarioID)
+  const userDoc = await getDoc(userDocRef)
+  if (!userDoc.exists() || (userDoc.data() as StreakUserData).streakVersion === STREAK_VERSION) return
+
+  const logsSnapshot = await getDocs(query(collection(db, 'logs'), where('usuarioID', '==', usuarioID)))
+
+  const workoutDays = new Set<string>()
+  const workoutWeeks = new Set<string>()
+
+  logsSnapshot.docs.forEach((logDoc) => {
+    const date = parseLogDate(logDoc.data().data)
+    if (!date) return
+    workoutDays.add(date.toDateString())
+    workoutWeeks.add(getWeekKey(date))
+  })
+
+  const history = computeWeeklyHistory(workoutWeeks)
+
+  await runTransaction(db, async (transaction) => {
+    const freshDoc = await transaction.get(userDocRef)
+    if (!freshDoc.exists()) return
+
+    const data = freshDoc.data() as StreakUserData
+    if (data.streakVersion === STREAK_VERSION) return
+
+    transaction.update(userDocRef, {
+      currentStreak: history.currentStreak,
+      longestStreak: history.longestStreak,
+      lastStreakWeek: history.lastStreakWeek,
+      totalWorkouts: workoutDays.size,
+      freezeCount: Math.min(data.freezeCount || 0, getFreezeCap(data.isPremium)),
+      streakMilestoneRewardedUpTo: getStreakMilestoneValue(history.longestStreak),
+      streakVersion: STREAK_VERSION
+    })
+  })
 }
 
 function normalizeStreakData(data: StreakUserData) {
@@ -98,9 +188,9 @@ function normalizeStreakData(data: StreakUserData) {
   return {
     currentStreak: data.currentStreak || 0,
     longestStreak,
-    scheduledDays: data.scheduledDays || [],
-    lastCompletedDate: data.lastCompletedDate || '',
+    lastStreakWeek: data.lastStreakWeek || '',
     lastWorkoutDate: data.lastWorkoutDate || '',
+    totalWorkouts: data.totalWorkouts || 0,
     isPremium: !!data.isPremium,
     freezeCount: data.freezeCount || 0,
     freezeLastGrantedMonth: data.freezeLastGrantedMonth || '',
@@ -113,22 +203,24 @@ function normalizeStreakData(data: StreakUserData) {
 
 function buildFreezeWarningMessage(remainingFreezes: number, streakBroken: boolean): string {
   if (streakBroken) {
-    return 'Sua streak foi zerada porque os freezes acabaram.'
+    return 'Sua streak foi zerada: você ficou uma semana sem treinar e não tinha freezes suficientes.'
   }
 
   if (remainingFreezes === 0) {
-    return 'Você usou o último freeze. A próxima falta vai zerar sua streak.'
+    return 'Você usou o último freeze. Se passar mais uma semana sem treinar, sua streak será zerada.'
   }
 
   return 'Freeze consumido com sucesso.'
 }
 
 async function syncStreakState(usuarioID: string, mode: 'maintenance' | 'workout'): Promise<StreakSyncResult | null> {
+  await ensureStreakMigrated(usuarioID)
+
   const userDocRef = doc(db, 'usuarios', usuarioID)
   const today = new Date()
-  const todayStamp = getLocalDateStamp(today)
   const todayMonth = getMonthKey(today)
   const todayIso = today.toLocaleDateString('en-CA')
+  const currentWeek = getWeekKey(today)
 
   return await runTransaction(db, async (transaction) => {
     const userDoc = await transaction.get(userDocRef)
@@ -143,13 +235,15 @@ async function syncStreakState(usuarioID: string, mode: 'maintenance' | 'workout
     let longestStreak = userData.longestStreak
     let freezeCount = userData.freezeCount
     let freezeLastGrantedMonth = userData.freezeLastGrantedMonth
-    let lastCompletedDate = userData.lastCompletedDate
+    let lastStreakWeek = userData.lastStreakWeek
     let lastWorkoutDate = userData.lastWorkoutDate
+    let totalWorkouts = userData.totalWorkouts
     let streakMilestoneRewardedUpTo = userData.streakMilestoneRewardedUpTo
     let changed = !hadRewardField
     let freezeWarning: FreezeWarning | null = null
     let usedFreezeThisRun = false
     let streakBrokenThisRun = false
+    let streakIncremented = false
 
     if (freezeLastGrantedMonth !== todayMonth) {
       freezeCount = Math.min(freezeCap, freezeCount + monthlyFreezeAmount)
@@ -157,52 +251,55 @@ async function syncStreakState(usuarioID: string, mode: 'maintenance' | 'workout
       changed = true
     }
 
-    const missedScheduledDays = countMissedScheduledDays(lastCompletedDate, today, userData.scheduledDays)
+    if (freezeCount > freezeCap) {
+      freezeCount = freezeCap
+      changed = true
+    }
 
-    if (currentStreak > 0 && missedScheduledDays > 0) {
-      if (freezeCount >= missedScheduledDays) {
-        freezeCount -= missedScheduledDays
-        lastCompletedDate = todayStamp
+    const missedWeeks = countMissedWeeks(lastStreakWeek, currentWeek)
+
+    if (currentStreak > 0 && missedWeeks > 0) {
+      if (freezeCount >= missedWeeks) {
+        freezeCount -= missedWeeks
+        lastStreakWeek = getPreviousWeekKey(currentWeek)
         usedFreezeThisRun = true
-        changed = true
       } else {
         freezeCount = 0
         currentStreak = 0
-        lastCompletedDate = todayStamp
         streakBrokenThisRun = true
-        changed = true
       }
+      changed = true
     }
 
     if (mode === 'workout' && lastWorkoutDate !== todayIso) {
-      const newStreak = currentStreak > 0 ? currentStreak + 1 : 1
-      currentStreak = newStreak
-      longestStreak = Math.max(longestStreak, newStreak)
+      totalWorkouts++
       lastWorkoutDate = todayIso
-      lastCompletedDate = todayStamp
       changed = true
 
-      const achievedMilestone = getStreakMilestoneValue(longestStreak)
-      if (achievedMilestone > streakMilestoneRewardedUpTo) {
-        const milestoneIndex = achievedMilestone / 30
-        let rewardAmount = 0
+      // Só o primeiro treino da semana avança a streak
+      if (lastStreakWeek !== currentWeek) {
+        currentStreak = currentStreak > 0 ? currentStreak + 1 : 1
+        longestStreak = Math.max(longestStreak, currentStreak)
+        lastStreakWeek = currentWeek
+        streakIncremented = true
 
-        if (milestoneIndex === 1) {
-          rewardAmount = 1
-        } else if (userData.isPremium) {
-          rewardAmount = 1
-        }
+        const achievedMilestone = getStreakMilestoneValue(longestStreak)
+        if (achievedMilestone > streakMilestoneRewardedUpTo) {
+          const milestoneIndex = achievedMilestone / STREAK_MILESTONE_WEEKS
+          let rewardAmount = 0
 
-        if (rewardAmount > 0) {
-          const nextFreezeCount = Math.min(freezeCap, freezeCount + rewardAmount)
-          if (nextFreezeCount !== freezeCount) {
-            freezeCount = nextFreezeCount
-            changed = true
+          if (milestoneIndex === 1) {
+            rewardAmount = 1
+          } else if (userData.isPremium) {
+            rewardAmount = 1
           }
-        }
 
-        streakMilestoneRewardedUpTo = achievedMilestone
-        changed = true
+          if (rewardAmount > 0) {
+            freezeCount = Math.min(freezeCap, freezeCount + rewardAmount)
+          }
+
+          streakMilestoneRewardedUpTo = achievedMilestone
+        }
       }
     }
 
@@ -224,8 +321,9 @@ async function syncStreakState(usuarioID: string, mode: 'maintenance' | 'workout
       transaction.update(userDocRef, {
         currentStreak,
         longestStreak,
-        lastCompletedDate,
+        lastStreakWeek,
         lastWorkoutDate,
+        totalWorkouts,
         freezeCount,
         freezeLastGrantedMonth,
         streakMilestoneRewardedUpTo
@@ -235,10 +333,13 @@ async function syncStreakState(usuarioID: string, mode: 'maintenance' | 'workout
     return {
       currentStreak,
       longestStreak,
+      totalWorkouts,
       freezeCount,
       freezeCap,
       milestoneValue: getStreakMilestoneValue(longestStreak),
       lastWorkoutDate: lastWorkoutDate || null,
+      lastStreakWeek: lastStreakWeek || null,
+      streakIncremented,
       freezeWarning,
       pushTargets: userData.pushTargets
     }
@@ -252,10 +353,13 @@ function emitStreakEvents(result: StreakSyncResult): void {
     detail: {
       newStreak: result.currentStreak,
       longestStreak: result.longestStreak,
+      totalWorkouts: result.totalWorkouts,
       freezeCount: result.freezeCount,
       freezeCap: result.freezeCap,
       milestoneValue: result.milestoneValue,
-      lastWorkoutDate: result.lastWorkoutDate
+      lastWorkoutDate: result.lastWorkoutDate,
+      lastStreakWeek: result.lastStreakWeek,
+      streakIncremented: result.streakIncremented
     }
   }))
 
@@ -391,38 +495,45 @@ export async function resetPreviousDaysExercises(usuarioID: string): Promise<voi
   }
 }
 
-export async function updateStreak(usuarioID: string): Promise<number> {
+export async function updateStreak(usuarioID: string): Promise<StreakUpdateResult | null> {
   try {
     const result = await syncStreakState(usuarioID, 'workout')
     if (!result) {
       console.error('❌ User not found')
-      return 0
+      return null
     }
 
     emitStreakEvents(result)
     await sendFreezeWarningPush(result)
 
-    return result.currentStreak
+    return {
+      currentStreak: result.currentStreak,
+      totalWorkouts: result.totalWorkouts,
+      streakIncremented: result.streakIncremented
+    }
   } catch (err) {
     console.error('❌ Error updating streak:', err)
-    return 0
+    return null
   }
 }
 
 export async function getStreakData(usuarioID: string): Promise<{
   currentStreak: number
   longestStreak: number
+  totalWorkouts: number
   scheduledDays: number[]
   freezeCount: number
   freezeCap: number
   milestoneValue: number
 }> {
+  const emptyData = { currentStreak: 0, longestStreak: 0, totalWorkouts: 0, scheduledDays: [], freezeCount: 0, freezeCap: FREEZE_CAP_FREE, milestoneValue: 0 }
+
   try {
     const userDocRef = doc(db, 'usuarios', usuarioID)
     const userDoc = await getDoc(userDocRef)
 
     if (!userDoc.exists()) {
-      return { currentStreak: 0, longestStreak: 0, scheduledDays: [], freezeCount: 0, freezeCap: FREEZE_CAP_FREE, milestoneValue: 0 }
+      return emptyData
     }
 
     const userData = userDoc.data()
@@ -431,6 +542,7 @@ export async function getStreakData(usuarioID: string): Promise<{
     return {
       currentStreak: userData.currentStreak || 0,
       longestStreak,
+      totalWorkouts: userData.totalWorkouts || 0,
       scheduledDays: userData.scheduledDays || [],
       freezeCount: userData.freezeCount || 0,
       freezeCap: getFreezeCap(isPremium),
@@ -438,6 +550,6 @@ export async function getStreakData(usuarioID: string): Promise<{
     }
   } catch (err) {
     console.error('❌ Error getting streak data:', err)
-    return { currentStreak: 0, longestStreak: 0, scheduledDays: [], freezeCount: 0, freezeCap: FREEZE_CAP_FREE, milestoneValue: 0 }
+    return emptyData
   }
 }

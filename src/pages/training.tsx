@@ -11,7 +11,7 @@ import { WorkoutCompleteModal } from '../components/workout-complete-modal'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { db } from '../firebaseConfig'
-import { updateStreak, updateScheduledDays } from '../data/streak-utils'
+import { updateStreak, updateScheduledDays, type StreakUpdateResult } from '../data/streak-utils'
 import { trackPageView, trackWorkoutCompleted } from '../utils/analytics'
 import { useKeepScreenOn } from '../hooks/useKeepScreenOn'
 import {
@@ -36,6 +36,7 @@ export function Training() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
+  const [streakResult, setStreakResult] = useState<StreakUpdateResult | null>(null)
   const [isBirthdayModalOpen, setIsBirthdayModalOpen] = useState(false)
   const [birthdayName, setBirthdayName] = useState('você')
   const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
@@ -317,21 +318,8 @@ export function Training() {
       
       if (allComplete && !isCompleteModalOpen && !hasCompletedToday && canExecuteWorkout) {
         if (usuarioID) {
-          updateStreak(usuarioID).then(async (newStreak) => {
-            try {
-              const userDocRef = doc(db, 'usuarios', usuarioID)
-              const todayStr = new Date().toLocaleDateString('en-CA')
-              updateDoc(userDocRef, { lastWorkoutDate: todayStr }).catch(console.error)
-              const event = new CustomEvent('streakUpdated', { 
-                detail: { newStreak, lastWorkoutDate: todayStr } 
-              })
-              window.dispatchEvent(event)
-            } catch (err) {
-              console.error('Erro ao atualizar lastWorkoutDate:', err)
-            }
-          }).catch(err => {
-            console.error('Error updating streak:', err)
-          })
+          setStreakResult(null)
+          updateStreak(usuarioID).then(setStreakResult)
         }
         setTimeout(() => {
           setIsCompleteModalOpen(true)
@@ -696,6 +684,7 @@ export function Training() {
             // Reset the flag when closed
           }}
           workoutName={selectedWorkout.musculo}
+          streakResult={streakResult}
         />
       )}
     </main>

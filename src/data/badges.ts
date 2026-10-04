@@ -23,16 +23,19 @@ export interface BadgeDefinition {
   upgradeLink?: boolean
 }
 
+/** Tamanho de cada bloco de marco da streak, em semanas */
+export const STREAK_MILESTONE_WEEKS = 4
+
 export function getStreakMilestoneValue(streak: number): number {
-  if (streak < 30) return 0
-  return Math.floor(streak / 30) * 30
+  if (streak < STREAK_MILESTONE_WEEKS) return 0
+  return Math.floor(streak / STREAK_MILESTONE_WEEKS) * STREAK_MILESTONE_WEEKS
 }
 
 function createStreakMilestoneBadge(milestoneValue: number): BadgeDefinition {
   return {
     id: 'streak-milestone',
-    title: `${milestoneValue} Dias de Streak`,
-    description: `Completou ${milestoneValue} dias de streak. Cada bloco de 30 dias fortalece sua consistência.`,
+    title: `${milestoneValue} Semanas de Streak`,
+    description: `Completou ${milestoneValue} semanas seguidas de treino. Cada bloco de ${STREAK_MILESTONE_WEEKS} semanas fortalece sua consistência.`,
     Icon: Flame,
     order: 4.5,
     hasImageBorder: false,
@@ -85,7 +88,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     id: 'streak-milestone',
     title: 'Streak Milestone',
-    description: 'Conquista dinâmica de marcos de consistência em blocos de 30 dias.',
+    description: 'Conquista dinâmica de marcos de consistência em blocos de 4 semanas.',
     Icon: Flame,
     order: 4.5,
     hasImageBorder: false,
@@ -130,6 +133,7 @@ export function resolveUserBadges(userData: {
   isPremium?: boolean
   isTrainer?: boolean
   longestStreak?: number
+  streakVersion?: number
 }): BadgeDefinition[] {
   let ids: string[]
 
@@ -147,7 +151,8 @@ export function resolveUserBadges(userData: {
     .map(id => getBadgeById(id))
     .filter(Boolean) as BadgeDefinition[]
 
-  const milestoneValue = getStreakMilestoneValue(userData.longestStreak || 0)
+  // Perfis ainda não migrados para a streak semanal guardam longestStreak em dias
+  const milestoneValue = userData.streakVersion === 2 ? getStreakMilestoneValue(userData.longestStreak || 0) : 0
   if (milestoneValue > 0) {
     resolved.push(createStreakMilestoneBadge(milestoneValue))
   }

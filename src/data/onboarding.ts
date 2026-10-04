@@ -30,7 +30,7 @@ export const onboardingSteps: OnboardingStep[] = [
     icon: '🔥',
     title: 'Mantenha sua sequência',
     description:
-      'Treine nos dias programados e acompanhe sua sequência (streak) de consistência. Perder um dia programado sem treinar quebra a sequência, então não vacile!',
+      'Treine pelo menos uma vez por semana para manter sua sequência (streak). Uma semana inteira sem treinar quebra a sequência, a menos que você tenha um freeze. Então não vacile!',
   },
   {
     id: 'progress',

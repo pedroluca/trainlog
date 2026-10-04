@@ -37,8 +37,8 @@ export function FreezeWarningModal({ isOpen, warning, onClose }: FreezeWarningMo
         <div className="mt-5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-700/30 px-4 py-3">
           <p className="text-sm text-amber-800 dark:text-amber-200 font-semibold">
             {warning.streakBroken
-              ? 'Próxima falta: sua streak já foi reiniciada.'
-              : 'Próxima falta: sua streak será zerada.'}
+              ? 'Treine esta semana para começar uma nova sequência.'
+              : 'Próxima semana sem treino: sua streak será zerada.'}
           </p>
         </div>
 
