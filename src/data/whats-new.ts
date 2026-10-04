@@ -22,50 +22,46 @@ export type WhatsNewRelease = {
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
-  version: '2.0.0',
-  date: '2026-06-06',
-  title: 'Novidades da Versão 2.0.0',
+  version: '2.2.0',
+  date: '2026-10-03',
+  title: 'Novidades da Versão 2.2.0',
   items: [
     {
       id: 'weekly-streak',
       icon: '🔥',
       title: 'Streak semanal',
-      description: 'Sua sequência agora conta semanas: basta treinar pelo menos uma vez por semana (domingo a sábado) para mantê-la. Cada freeze cobre uma semana sem treino, e o total de treinos continua aparecendo no seu perfil.',
+      description: 'Sua sequência agora conta semanas: basta treinar pelo menos uma vez por semana (domingo a sábado) para mantê-la. Seu histórico já foi convertido automaticamente.',
       action: {
         label: 'Ver meu perfil',
         route: '/profile'
       }
     },
     {
-      id: 'rebrand-tractus',
-      icon: '✨',
-      title: 'Novo nome: Tractus',
-      description: 'O app agora se chama Tractus. Atualizamos a identidade para refletir essa nova fase do projeto.',
+      id: 'weekly-freezes',
+      icon: '❄️',
+      title: 'Freezes por semana',
+      description: 'Cada freeze agora protege uma semana inteira sem treino. Usuários free têm até 1 freeze e premium até 2, recarregados todo mês. A cada 4 semanas seguidas você pode ganhar um freeze extra.'
+    },
+    {
+      id: 'total-workouts',
+      icon: '🏋️',
+      title: 'Contador de treinos',
+      description: 'O total de treinos concluídos agora aparece no seu perfil e na tela de conclusão de cada treino.',
       action: {
-        label: 'Ver novidades',
+        label: 'Ver meu perfil',
         route: '/profile'
       }
     },
     {
-      id: 'didnt-do-exercise',
-      icon: '❌',
-      title: 'Não fez um exercício?',
-      description: 'Quando não fizer um exercício do seu treino não precisa editar ou marcar algo que não fez, adicionamos a opção de não fazer um exercício.',
+      id: 'calendar-streak-weeks',
+      icon: '📅',
+      title: 'Semanas em destaque no calendário',
+      description: 'No calendário de streaks, as semanas que entraram na sua sequência ficam destacadas (exclusivo para usuários premium).',
       action: {
-        label: 'Ver meus exercícios',
-        route: '/training'
+        label: 'Ver calendário',
+        route: '/profile/streak-calendar'
       }
-    },
-    // {
-    //   id: 'badge-system',
-    //   icon: '🏅',
-    //   title: 'Sistema de Badges',
-    //   description: 'Seu perfil agora exibe conquistas como Fundador, Premium, Treinador e Alpha User. Toque em qualquer badge para ver o que ela significa!',
-    //   action: {
-    //     label: 'Ver meu Perfil',
-    //     route: '/profile'
-    //   }
-    // }
+    }
   ],
   previousItems: [
     // {
@@ -94,6 +90,43 @@ export const currentRelease: WhatsNewRelease = {
 // Historical releases (for reference)
 export const releaseHistory: WhatsNewRelease[] = [
   currentRelease,
+  {
+    version: '2.0.0',
+    date: '2026-06-06',
+    title: 'Novidades da Versão 2.0.0',
+    items: [
+      {
+        id: 'rebrand-tractus',
+        icon: '✨',
+        title: 'Novo nome: Tractus',
+        description: 'O app agora se chama Tractus. Atualizamos a identidade para refletir essa nova fase do projeto.',
+        action: {
+          label: 'Ver novidades',
+          route: '/profile'
+        }
+      },
+      {
+        id: 'didnt-do-exercise',
+        icon: '❌',
+        title: 'Não fez um exercício?',
+        description: 'Quando não fizer um exercício do seu treino não precisa editar ou marcar algo que não fez, adicionamos a opção de não fazer um exercício.',
+        action: {
+          label: 'Ver meus exercícios',
+          route: '/training'
+        }
+      },
+      // {
+      //   id: 'badge-system',
+      //   icon: '🏅',
+      //   title: 'Sistema de Badges',
+      //   description: 'Seu perfil agora exibe conquistas como Fundador, Premium, Treinador e Alpha User. Toque em qualquer badge para ver o que ela significa!',
+      //   action: {
+      //     label: 'Ver meu Perfil',
+      //     route: '/profile'
+      //   }
+      // }
+    ]
+  },
   {
     version: '1.16.0',
     date: '2026-03-22',
