@@ -7,6 +7,7 @@ import { BadgeList } from '../components/badge-chip'
 import { resolveUserBadges, resolveAvatarRing } from '../data/badges'
 import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
 import { Spinner } from '../components/spinner'
+import { AvatarImage } from '../components/avatar-image'
 
 // Types
 interface Privacidade {
@@ -328,11 +329,12 @@ export function FriendProfile() {
               <div className={`w-20 h-20 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl font-bold overflow-hidden shadow-inner relative z-0 ${
                 resolveAvatarRing(resolveUserBadges(profile))
               }`}>
-                {profile.photoURL ? (
-                  <img src={profile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  profile.nome.charAt(0).toUpperCase()
-                )}
+                <AvatarImage
+                  src={profile.photoURL}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                  fallback={profile.nome.charAt(0).toUpperCase()}
+                />
               </div>
             </div>
 
@@ -424,11 +426,12 @@ export function FriendProfile() {
               <div className={`w-28 h-28 lg:w-36 lg:h-36 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl lg:text-5xl font-bold overflow-hidden shadow-inner relative z-0 ${
                 resolveAvatarRing(resolveUserBadges(profile))
               }`}>
-                {profile.photoURL ? (
-                  <img src={profile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  profile.nome.charAt(0).toUpperCase()
-                )}
+                <AvatarImage
+                  src={profile.photoURL}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                  fallback={profile.nome.charAt(0).toUpperCase()}
+                />
               </div>
             </div>
 

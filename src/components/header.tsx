@@ -5,6 +5,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import { BookUser, Dumbbell, TrendingUp, UsersRound, UserRound } from 'lucide-react'
 import logo from '../assets/nova-logo-white.svg'
 import { getWeekKey } from '../data/streak-utils'
+import { AvatarImage } from './avatar-image'
 
 export function Header() {
   const [streak, setStreak] = useState(0)
@@ -68,17 +69,16 @@ export function Header() {
             title='Meu perfil'
           >
             {/* Avatar */}
-            {photoURL ? (
-              <img
-                src={photoURL}
-                alt={nome}
-                className={`w-11 h-11 rounded-full object-cover ${avatarRing} transition-all shadow-md`}
-              />
-            ) : (
-              <div className={`w-11 h-11 rounded-full bg-white/20 group-hover:bg-white/30 ${avatarRing} group-hover:ring-white/80 flex items-center justify-center transition-all shadow-md`}>
-                <UserRound size={20} className='text-white' />
-              </div>
-            )}
+            <AvatarImage
+              src={photoURL}
+              alt={nome}
+              className={`w-11 h-11 rounded-full object-cover ${avatarRing} transition-all shadow-md`}
+              fallback={
+                <div className={`w-11 h-11 rounded-full bg-white/20 group-hover:bg-white/30 ${avatarRing} group-hover:ring-white/80 flex items-center justify-center transition-all shadow-md`}>
+                  <UserRound size={20} className='text-white' />
+                </div>
+              }
+            />
 
             {/* Nome */}
             <span className='text-base font-semibold text-white/90 group-hover:text-white transition-colors max-w-[200px] truncate'>

@@ -33,7 +33,7 @@ export function AdminNotifications() {
   }, [adminId, users, emailTarget])
 
   const CRON_SECRET = import.meta.env.VITE_CRON_SECRET || 'tlg_2ab6ApP7sc1SE_BKyuem_zag7Z7'
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://trainlog.site/api'
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://apptractus.com.br/api'
 
   const handleSendPush = async (e: React.FormEvent) => {
     e.preventDefault()

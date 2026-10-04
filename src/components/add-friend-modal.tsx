@@ -109,7 +109,7 @@ export function AddFriendModal({ onClose, currentUserId }: AddFriendModalProps) 
       setAmizades(prev => [...prev, { id: docRef.id, ...novaAmizade } as Amizade])
 
       // Envia notificação ao receptor (fire-and-forget)
-      fetch('https://trainlog.site/api/send-friend-request-notification.php', {
+      fetch('https://apptractus.com.br/api/send-friend-request-notification.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

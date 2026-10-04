@@ -34,7 +34,7 @@ export async function notifyAdmins(title: string, body: string, targetPath: stri
 
     // 3. Envia para a API PHP rodar o push seguro agrupado
     const CRON_SECRET = import.meta.env.VITE_CRON_SECRET || 'tlg_2ab6ApP7sc1SE_BKyuem_zag7Z7'
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://trainlog.site/api'
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://apptractus.com.br/api'
     
     // Converte rota relativa (ex: '/admin/dashboard/users') em absoluta do App.
     const baseUrl = window.location.origin

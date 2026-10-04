@@ -18,6 +18,7 @@ import { BadgeList } from '../components/badge-chip'
 import { resolveUserBadges, resolveAvatarRing, type BadgeDefinition } from '../data/badges'
 import { addBadgesToUser, removeBadgesFromUser } from '../utils/badge-utils'
 import { Spinner } from '../components/spinner'
+import { AvatarImage } from '../components/avatar-image'
 
 type BirthdayBalloonMode = 'none' | 'compact' | 'burst'
 
@@ -531,15 +532,12 @@ export function Profile() {
               </>
             )}
             <div className={`w-20 md:w-32 lg:w-40 h-20 md:h-32 lg:h-40 text-4xl font-bold bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white overflow-hidden shadow-inner relative z-0 ${avatarRing}`}>
-              {photoURL ? (
-                <img 
-                  src={photoURL} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                nome ? nome.charAt(0).toUpperCase() : '?'
-              )}
+              <AvatarImage
+                src={photoURL}
+                alt="Profile"
+                className="w-full h-full object-cover"
+                fallback={nome ? nome.charAt(0).toUpperCase() : '?'}
+              />
             </div>
             
             {/* Edit Icon Button */}
@@ -1044,11 +1042,12 @@ export function Profile() {
               {/* Photo */}
               <div className="flex items-center gap-4">
                 <div className={`w-16 h-16 shrink-0 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-2xl font-bold overflow-hidden ${avatarRing}`}>
-                  {photoURL ? (
-                    <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    nome ? nome.charAt(0).toUpperCase() : '?'
-                  )}
+                  <AvatarImage
+                    src={photoURL}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    fallback={nome ? nome.charAt(0).toUpperCase() : '?'}
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <button

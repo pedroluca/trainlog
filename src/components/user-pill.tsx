@@ -1,4 +1,5 @@
 import React from 'react'
+import { AvatarImage } from './avatar-image'
 
 interface UserPillProps {
   nome: string
@@ -26,15 +27,12 @@ export function UserPill({ nome, photoURL, username, isTrainer, children, onClic
           isPremium ? 'ring-2 ring-amber-400 dark:ring-amber-500 shadow-md shadow-amber-400/40 z-0 relative' : 
           'ring-2 ring-white dark:ring-[#1e1e1e]'
         }`}>
-          {photoURL ? (
-            <img 
-              src={photoURL} 
-              alt={nome} 
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            nome.charAt(0).toUpperCase()
-          )}
+          <AvatarImage
+            src={photoURL}
+            alt={nome}
+            className="w-full h-full object-cover"
+            fallback={nome.charAt(0).toUpperCase()}
+          />
         </div>
         
         {/* Info */}
