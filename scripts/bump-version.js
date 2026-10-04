@@ -12,6 +12,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -85,13 +86,20 @@ try {
   console.log('   ✓ package.json');
   console.log('   ✓ src/version.ts');
   console.log('   ✓ README.md (version badge)');
-  console.log('\n📝 Next steps:');
-  console.log('   1. Update VERSION_HISTORY in src/version.ts with your changes');
-  console.log('   2. Commit your changes: git commit -am "chore: bump version to ' + newVersion + '"');
-  console.log('   3. (Optional) Create a git tag: git tag v' + newVersion);
-  console.log('   4. (Optional) Push with tags: git push && git push --tags');
-  console.log('\n💡 Tip: Git tags are optional but recommended for tracking releases!');
-  
+  // Commit only the bumped files (other staged/unstaged changes are left untouched) and tag
+  const rootDir = path.join(__dirname, '..');
+  const git = (gitArgs) => execFileSync('git', gitArgs, { cwd: rootDir, stdio: 'inherit' });
+  const bumpedFiles = ['package.json', 'src/version.ts', 'README.md'];
+  const tagName = `v${newVersion}`;
+
+  git(['add', ...bumpedFiles]);
+  git(['commit', '-m', `chore: bump version to ${newVersion}`, '--', ...bumpedFiles]);
+  git(['tag', tagName]);
+
+  console.log(`\n✅ Committed and tagged ${tagName}`);
+  console.log('\n📝 Next step:');
+  console.log('   git push --follow-tags');
+
 } catch (error) {
   console.error('❌ Error bumping version:', error.message);
   process.exit(1);
