@@ -22,6 +22,62 @@ export type WhatsNewRelease = {
 
 // Current release notes (shown to users)
 export const currentRelease: WhatsNewRelease = {
+  version: '2.3.0',
+  date: '2026-10-06',
+  title: 'Novidades da Versão 2.3.0',
+  items: [
+    {
+      id: 'new-look',
+      icon: '✨',
+      title: 'Visual novo',
+      description: 'O Tractus foi redesenhado do zero com um visual mais limpo e moderno, o mesmo do novo app para Android. Tema claro, escuro e a sua cor principal continuam funcionando em tudo.',
+      action: {
+        label: 'Ver meu treino',
+        route: '/train'
+      }
+    },
+    {
+      id: 'new-navigation',
+      icon: '🧭',
+      title: 'Navegação nova',
+      description: 'No celular, as abas ficam numa barra flutuante na parte de baixo. No computador, numa barra lateral. O Progresso agora fica dentro do seu Perfil.',
+      action: {
+        label: 'Ver meu progresso',
+        route: '/progress'
+      }
+    },
+    {
+      id: 'training-screen',
+      icon: '🏋️',
+      title: 'Tela de treino repaginada',
+      description: 'A semana inteira fica à vista, cada exercício mostra séries, carga e descanso de um jeito mais claro, e no computador você vê o treino completo de uma vez.',
+      action: {
+        label: 'Começar a treinar',
+        route: '/train'
+      }
+    },
+    {
+      id: 'desktop-ready',
+      icon: '💻',
+      title: 'Feito para qualquer tela',
+      description: 'Perfil, amigos, progresso e configurações aproveitam melhor o espaço do computador, e os formulários abrem como janelas no desktop e de baixo para cima no celular.'
+    }
+  ],
+  previousItems: [
+    {
+      id: 'weekly-streak',
+      icon: '🔥',
+      title: 'Streak semanal',
+      description: 'Desde a versão 2.2.0 sua sequência conta semanas: basta treinar pelo menos uma vez por semana (domingo a sábado) para mantê-la.',
+      action: {
+        label: 'Ver meu perfil',
+        route: '/profile'
+      }
+    }
+  ]
+}
+
+const release220: WhatsNewRelease = {
   version: '2.2.0',
   date: '2026-10-03',
   title: 'Novidades da Versão 2.2.0',
@@ -90,6 +146,7 @@ export const currentRelease: WhatsNewRelease = {
 // Historical releases (for reference)
 export const releaseHistory: WhatsNewRelease[] = [
   currentRelease,
+  release220,
   {
     version: '2.0.0',
     date: '2026-06-06',
