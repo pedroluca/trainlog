@@ -1,136 +1,92 @@
-import { useState } from 'react'
-import { auth, db } from '../firebaseConfig'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { Link, useNavigate } from 'react-router-dom'
-import { getVersionWithPrefix } from '../version'
+import { ArrowLeft, Check } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Button, buttonClasses } from '../components/ui/button'
+import { IconButton } from '../components/ui/icon-button'
+import { ListSection, SwitchRow } from '../components/ui/list'
+import { Callout } from '../components/ui/misc'
+import { TextField } from '../components/ui/text-field'
+import { auth, db } from '../firebaseConfig'
 import { notifyAdmins } from '../utils/admin-notifications'
-import { Eye, EyeOff } from 'lucide-react'
-import { Toast, ToastState } from '../components/toast'
-import { Spinner } from '../components/spinner'
-import logo from '../assets/nova-logo-clear.png'
+import { trackSignUp } from '../utils/analytics'
+import { cn } from '../utils/cn'
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** Máscara de telefone brasileiro: (99) 99999-9999 */
+function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 2) return digits.length ? `(${digits}` : ''
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+}
 
 export function Cadastro() {
+  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [emailInUse, setEmailInUse] = useState(false)
   const [phone, setPhone] = useState('')
-  const [isTrainer, setIsTrainer] = useState(false)
-  const [cref, setCref] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' })
+  const [isTrainer, setIsTrainer] = useState(false)
+  const [cref, setCref] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
-  const [emailChecking, setEmailChecking] = useState(false)
-  const [emailError, setEmailError] = useState<string | null>(null)
-  const navigate = useNavigate()
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const checkEmailExists = async () => {
+  if (localStorage.getItem('usuarioId') && !loading) return <Navigate to="/train" replace />
+
+  const checkEmail = async () => {
     const trimmed = email.trim().toLowerCase()
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!trimmed || !emailRegex.test(trimmed)) return
-
-    setEmailChecking(true)
+    if (!EMAIL_REGEX.test(trimmed)) return
     try {
-      const snap = await getDoc(doc(db, 'emailsRegistrados', trimmed))
-      setEmailError(snap.exists() ? 'in-use' : null)
+      const snapshot = await getDoc(doc(db, 'emailsRegistrados', trimmed))
+      setEmailInUse(snapshot.exists())
     } catch {
-      // silently ignore network errors on blur
-    } finally {
-      setEmailChecking(false)
+      // Falha de rede na checagem: o próprio cadastro avisa se o email já existir
     }
   }
 
-  // Phone mask for Brazilian format: (99) 99999-9999
-  const handlePhoneChange = (value: string) => {
-    // Remove non-digits
-    const digits = value.replace(/\D/g, '')
-    
-    // Apply mask
-    let formatted = digits
-    if (digits.length > 0) {
-      formatted = `(${digits.substring(0, 2)}`
-    }
-    if (digits.length >= 3) {
-      formatted += `) ${digits.substring(2, 7)}`
-    }
-    if (digits.length >= 8) {
-      formatted += `-${digits.substring(7, 11)}`
-    }
-    
-    setPhone(formatted)
+  const validate = (): string | null => {
+    if (!name.trim()) return 'Digite seu nome.'
+    if (!EMAIL_REGEX.test(email.trim())) return 'Digite um email válido.'
+    if (emailInUse) return 'Este email já está cadastrado. Faça login ou use outro email.'
+    if (phone.replace(/\D/g, '').length !== 11) return 'Digite um telefone válido com DDD.'
+    if (password.length < 6) return 'A senha precisa ter pelo menos 6 caracteres.'
+    if (password !== confirmPassword) return 'As senhas não coincidem.'
+    if (!acceptedTerms) return 'Você precisa aceitar a Política de Privacidade para continuar.'
+    return null
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+    const validationError = validate()
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
     setLoading(true)
-
+    setError(null)
+    const normalizedEmail = email.trim().toLowerCase()
     try {
-      // Validate all fields
-      if (!name.trim()) {
-        setToast({ show: true, message: 'Por favor, digite seu nome.', type: 'error' })
-        setLoading(false)
-        return
-      }
+      const credential = await createUserWithEmailAndPassword(auth, normalizedEmail, password)
+      const uid = credential.user.uid
+      const now = new Date().toISOString()
 
-      if (!email.trim()) {
-        setToast({ show: true, message: 'Por favor, digite seu email.', type: 'error' })
-        setLoading(false)
-        return
-      }
-
-      // Basic email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(email)) {
-        setToast({ show: true, message: 'Por favor, digite um email válido.', type: 'error' })
-        setLoading(false)
-        return
-      }
-
-      // Validate phone (must have 11 digits)
-      const phoneDigits = phone.replace(/\D/g, '')
-      if (phoneDigits.length !== 11) {
-        setToast({ show: true, message: 'Por favor, insira um telefone válido com DDD.', type: 'error' })
-        setLoading(false)
-        return
-      }
-
-      if (password !== confirmPassword) {
-        setToast({ show: true, message: 'As senhas não coincidem!', type: 'error' })
-        setLoading(false)
-        return
-      }
-
-      if (password.length < 6) {
-        setToast({ show: true, message: 'A senha deve ter pelo menos 6 caracteres.', type: 'error' })
-        setLoading(false)
-        return
-      }
-
-      if (!acceptedTerms) {
-        setToast({ show: true, message: 'Você precisa aceitar os termos de uso para continuar.', type: 'error' })
-        setLoading(false)
-        return
-      }
-
-      // Create user with Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password)
-      const user = userCredential.user
-
-      // Create user document in Firestore with the same UID
-      await setDoc(doc(db, 'usuarios', user.uid), {
+      await setDoc(doc(db, 'usuarios', uid), {
         nome: name.trim(),
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         telefone: phone,
         isTrainer,
         cref: isTrainer ? cref.trim().toUpperCase() : '',
         isPremium: false,
         isAdmin: false,
         isActive: true,
-        criadoEm: new Date().toISOString(),
+        criadoEm: now,
         currentStreak: 0,
         longestStreak: 0,
         lastStreakWeek: '',
@@ -140,295 +96,90 @@ export function Cadastro() {
         badges: isTrainer ? ['trainer'] : [],
         hasCompletedOnboarding: false,
       })
+      // Consulta pública para avisar no cadastro quando o email já existe
+      await setDoc(doc(db, 'emailsRegistrados', normalizedEmail), { uid, criadoEm: now })
 
-      // Register email in public lookup collection
-      await setDoc(doc(db, 'emailsRegistrados', email.trim().toLowerCase()), {
-        uid: user.uid,
-        criadoEm: new Date().toISOString(),
-      })
+      notifyAdmins('Novo usuário registrado!', `Nome: ${name.trim()} | Email: ${normalizedEmail}`, '/admin/dashboard/users')
+        .catch(notifyError => console.error('Erro ao avisar os admins:', notifyError))
+      trackSignUp('email')
 
-      // Notifica Administradores em Background
-      notifyAdmins(
-        'Novo Usuário Registrado! 🎉',
-        `Nome: ${name.trim()} | Email: ${email.trim().toLowerCase()}`,
-        '/admin/dashboard/users'
-      ).catch(e => console.error('Silent error on push:', e))
-
-      setSuccess(true)
-      
-      // Redirect to login after 3 seconds
-      setTimeout(() => {
-        navigate('/login')
-      }, 3000)
+      // A conta criada já fica logada: segue direto para o app (o onboarding abre na primeira vez)
+      localStorage.setItem('usuarioId', uid)
+      navigate('/train', { replace: true })
     } catch (err) {
-      console.error('Erro ao criar conta:', err)
-      
-      // Handle Firebase Authentication errors
-      const error = err as { code?: string; message?: string }
-      let errorMessage = 'Erro ao criar conta. Tente novamente.'
-      
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Este email já está cadastrado. Faça login ou use outro email.'
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Email inválido.'
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'Senha muito fraca. Use pelo menos 6 caracteres.'
-      }
-      
-      setToast({ show: true, message: errorMessage, type: 'error' })
+      const code = (err as { code?: string }).code
+      setError(
+        code === 'auth/email-already-in-use' ? 'Este email já está cadastrado. Faça login ou use outro email.'
+          : code === 'auth/invalid-email' ? 'Email inválido.'
+            : code === 'auth/weak-password' ? 'Senha muito fraca. Use pelo menos 6 caracteres.'
+              : 'Não foi possível criar a conta. Tente novamente.',
+      )
       setLoading(false)
     }
   }
 
-  if (success) {
-    return (
-      <main className="flex flex-col items-center py-2 justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#121212]">
-        <div className="bg-white dark:bg-[#2d2d2d] shadow-md rounded-lg p-8 w-[90%] max-w-md mx-4 text-center border border-gray-200 dark:border-[#404040]">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Conta Criada!</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Sua conta foi criada com sucesso! 🎉
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500">
-            Redirecionando para a página de login...
-          </p>
-        </div>
-        
-        <div className="mt-4">
-          <p className="text-xs text-gray-500 dark:text-gray-500">{getVersionWithPrefix()}</p>
-        </div>
-      </main>
-    )
-  }
-
   return (
-    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gray-100 dark:bg-[#1a1a1a] py-8 pt-20 px-4">
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-xl rounded-2xl p-6 sm:p-8 w-full max-w-md sm:max-w-2xl border border-gray-100 dark:border-[#404040]">
-        <div className="flex justify-center mb-6">
-          <img src={logo} alt="Tractus Logo" className="h-16 w-auto drop-shadow-sm" />
+    <div className="flex flex-col gap-6">
+      <IconButton icon={ArrowLeft} label="Voltar" className="-ml-2" onClick={() => navigate('/')} />
+
+      <div className="flex flex-col gap-1.5">
+        <h1 className="type-display">Criar conta</h1>
+        <p className="text-muted">Leva menos de um minuto e é grátis.</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
+          <TextField label="Nome completo" value={name} onChange={event => setName(event.target.value)} placeholder="Como você quer ser chamado" autoComplete="name" />
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={event => {
+              setEmail(event.target.value)
+              setEmailInUse(false)
+            }}
+            onBlur={checkEmail}
+            placeholder="voce@email.com"
+            autoComplete="email"
+            error={emailInUse ? 'Este email já está cadastrado.' : null}
+          />
+          <TextField label="Telefone (WhatsApp)" type="tel" value={phone} onChange={event => setPhone(formatPhone(event.target.value))} placeholder="(11) 91234-5678" autoComplete="tel" />
+          <TextField label="Senha" value={password} onChange={event => setPassword(event.target.value)} placeholder="Mínimo de 6 caracteres" secureToggle autoComplete="new-password" />
+          <TextField label="Confirmar senha" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="Repita a senha" secureToggle autoComplete="new-password" />
         </div>
-        <h1 className="text-3xl font-black text-center mb-2 text-gray-800 dark:text-gray-100">Junte-se a nós</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-8">
-          Acompanhe seus treinos e evolua mais rápido 💪
-        </p>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 w-full mt-2">
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Nome completo</label>
-            <input
-              type="text"
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
-              placeholder="Ex: Pedro Silva"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setEmailError(null) }}
-              required
-              className={`w-full border rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 font-medium transition-all ${
-                emailError === 'in-use'
-                  ? 'border-red-400 dark:border-red-500 focus:ring-red-400/50'
-                  : 'border-gray-300 dark:border-[#404040] focus:ring-[#27AE60]/50'
-              }`}
-              placeholder="seu@email.com"
-              onBlur={checkEmailExists}
-            />
-            {emailChecking && (
-              <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                <Spinner size={12} thickness={2} color="#9ca3af" />
-                Verificando email...
-              </p>
+        <ListSection footer="Treinadores podem montar e acompanhar os treinos dos alunos vinculados.">
+          <SwitchRow title="Sou personal trainer" checked={isTrainer} onCheckedChange={setIsTrainer} />
+        </ListSection>
+        {isTrainer && (
+          <TextField label="CREF (opcional)" value={cref} onChange={event => setCref(event.target.value.toUpperCase())} placeholder="Ex.: 123456-G/SP" maxLength={30} />
+        )}
+
+        <label className="flex cursor-pointer items-start gap-3">
+          <input type="checkbox" checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)} className="peer sr-only" />
+          <span
+            aria-hidden
+            className={cn(
+              'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border-2 transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary',
+              acceptedTerms ? 'border-primary bg-primary text-on-primary' : 'border-border',
             )}
-            {emailError === 'in-use' && !emailChecking && (
-              <p className="mt-1.5 text-xs text-red-500 dark:text-red-400">
-                Esse email já está em uso.{' '}
-                <Link
-                  to="/login"
-                  className="font-bold underline hover:text-red-600 dark:hover:text-red-300 transition-colors"
-                >
-                  Deseja fazer login?
-                </Link>
-              </p>
-            )}
-          </div>
-          
-          <div>
-            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Telefone com DDD</label>
-            <input
-              type="tel"
-              name="phone"
-              value={phone}
-              onChange={(e) => handlePhoneChange(e.target.value)}
-              required
-              maxLength={15}
-              className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
-              placeholder="(11) 99999-9999"
-            />
-          </div>
-
-          <div className="sm:col-span-2 rounded-xl border border-gray-200 dark:border-[#404040] bg-gray-50 dark:bg-[#1f1f1f] p-4 transition-all">
-            <label className="flex items-center justify-between cursor-pointer gap-3">
-              <div>
-                <p className="text-gray-800 dark:text-gray-100 font-bold text-sm">Sou treinador</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Ative para gerenciar alunos</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={isTrainer}
-                onChange={(e) => setIsTrainer(e.target.checked)}
-                className="w-5 h-5 accent-[#27AE60] rounded cursor-pointer"
-              />
-            </label>
-
-            {isTrainer && (
-              <div className="mt-4 pt-3 border-t border-gray-200 dark:border-[#404040]">
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">CREF (opcional)</label>
-                <input
-                  type="text"
-                  name="cref"
-                  value={cref}
-                  onChange={(e) => setCref(e.target.value.toUpperCase())}
-                  className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-white dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all text-sm"
-                  placeholder="Ex: CREF 123456-G/SP"
-                  maxLength={30}
-                />
-              </div>
-            )}
-          </div>
-          
-          <div>
-            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Senha</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 pr-12 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
-                placeholder="Mínimo 6 caracteres"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Confirme a senha</label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 pr-12 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
-                placeholder="Repita sua senha"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
-              >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Terms of Service */}
-          <div className="sm:col-span-2 mt-2">
-            <label
-              htmlFor="accept-terms"
-              className={`flex items-start gap-3 cursor-pointer rounded-xl border p-4 transition-all ${
-                acceptedTerms
-                  ? 'border-[#27AE60]/50 bg-[#27AE60]/5'
-                  : 'border-gray-200 dark:border-[#404040] bg-gray-50 dark:bg-[#1f1f1f]'
-              }`}
-            >
-              <div className="flex-shrink-0 mt-0.5">
-                <input
-                  id="accept-terms"
-                  type="checkbox"
-                  checked={acceptedTerms}
-                  onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="w-5 h-5 accent-[#27AE60] rounded cursor-pointer"
-                />
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                Eu li e concordo com a{' '}
-                <a
-                  href="/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#27AE60] font-semibold hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Política de Privacidade
-                </a>{' '}
-                e os Termos de Uso do Tractus.
-              </p>
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || !acceptedTerms}
-            className={`cursor-pointer w-full sm:col-span-2 mt-2 py-3.5 px-4 rounded-xl text-white font-bold text-lg shadow-md transition-all ${
-              loading || !acceptedTerms
-                ? 'bg-gray-400 cursor-not-allowed opacity-50'
-                : 'bg-[#27AE60] hover:bg-[#219150] hover:shadow-lg'
-            }`}
           >
-            {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <Spinner size={20} thickness={2} color="rgba(255,255,255,0.8)" />
-                <span>Criando conta...</span>
-              </div>
-            ) : (
-              'Criar Conta'
-            )}
-          </button>
-        </form>
-        
-        <p className="text-center mt-8 text-sm font-medium text-gray-600 dark:text-gray-400">
-          Já tem uma conta?{' '}
-          <Link to="/login" className="text-[#27AE60] hover:text-[#219150] hover:underline transition-colors font-bold">
-             Faça login
-          </Link>
-        </p>      
-      </div>
-      
-      {/* Version Display */}
-      <div className="mt-4">
-        <p className="text-xs text-gray-500 dark:text-gray-500">{getVersionWithPrefix()}</p>
-      </div>
+            {acceptedTerms && <Check size={16} strokeWidth={3} />}
+          </span>
+          <span className="flex-1 text-sm leading-5 text-muted">
+            Li e aceito a{' '}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">Política de Privacidade</a>
+            {' '}do Tractus.
+          </span>
+        </label>
 
-      {/* Toast Notification */}
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      )}
-    </main>
+        {error && <Callout tone="danger">{error}</Callout>}
+
+        <div className="flex flex-col gap-3">
+          <Button type="submit" label="Criar conta" size="lg" loading={loading} />
+          <Link to="/login" className={buttonClasses({ variant: 'outline', size: 'lg' })}>Já tenho conta</Link>
+        </div>
+      </form>
+    </div>
   )
 }

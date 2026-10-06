@@ -1,262 +1,184 @@
-import { useState, useEffect } from 'react'
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
+import { Check, CircleCheck, ImagePlus, X } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Upload, CheckCircle2, X } from 'lucide-react'
-import { Button } from '../components/button'
-import { addDoc, collection, serverTimestamp, doc, getDoc } from 'firebase/firestore'
+import { Button } from '../components/ui/button'
+import { ListRow, ListSection } from '../components/ui/list'
+import { Callout } from '../components/ui/misc'
+import { Page, StackHeader } from '../components/ui/page'
+import { TextArea, TextField } from '../components/ui/text-field'
+import { useCurrentUser } from '../contexts/current-user-context'
 import { db } from '../firebaseConfig'
 import { notifyAdmins } from '../utils/admin-notifications'
-import { BackArrowButton } from '../components/back-arrow-button'
+
+type ReportType = 'Bug' | 'Sugestão' | 'Erro' | 'Outro'
+
+const TYPES: { value: ReportType; label: string; description: string }[] = [
+  { value: 'Bug', label: 'Reportar um bug', description: 'Algo não funciona como deveria' },
+  { value: 'Sugestão', label: 'Dar uma sugestão', description: 'Uma ideia para melhorar o app' },
+  { value: 'Erro', label: 'Erro no aplicativo', description: 'Uma mensagem de erro ou travamento' },
+  { value: 'Outro', label: 'Outro assunto', description: 'Dúvidas e qualquer outra coisa' },
+]
+
+/** Mesmo servidor do upload de foto de perfil, em outro script */
+async function uploadReportImage(file: File, userId: string): Promise<string | null> {
+  const baseUrl = import.meta.env.VITE_API_UPLOAD_URL as string | undefined
+  if (!baseUrl) return null
+  const formData = new FormData()
+  formData.append('image', file)
+  formData.append('userId', userId)
+  const response = await fetch(baseUrl.replace('upload-profile-image.php', 'upload-bug-report-image.php'), { method: 'POST', body: formData })
+  if (!response.ok) throw new Error('Falha no upload da imagem')
+  const data = await response.json()
+  if (!data.success) throw new Error(data.message || 'Falha no upload da imagem')
+  return data.imageUrl as string
+}
 
 export function SettingsSupport() {
+  const profile = useCurrentUser()
   const navigate = useNavigate()
-  const usuarioID = localStorage.getItem('usuarioId')
+  const fileInput = useRef<HTMLInputElement>(null)
+  const [type, setType] = useState<ReportType>('Bug')
+  const [title, setTitle] = useState('')
+  const [message, setMessage] = useState('')
+  const [image, setImage] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
 
-  const [nome, setNome] = useState<string | null>(null)
-  const [email, setEmail] = useState<string | null>(null)
-  const [username, setUsername] = useState<string | null>(null)
+  // Libera a URL temporária da prévia quando a imagem muda ou a tela fecha
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview)
+  }, [preview])
 
-  const [tipo, setTipo] = useState('Bug')
-  const [titulo, setTitulo] = useState('')
-  const [mensagem, setMensagem] = useState('')
-  const [imagem, setImagem] = useState<File | null>(null)
-  const [imagemPreview, setImagemPreview] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-
-  useEffect(() => {
-    if (!usuarioID) {
-      navigate('/login')
+  const attach = (file: File | undefined) => {
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) {
+      setError('A imagem deve ter no máximo 5 MB.')
       return
     }
-
-    const fetchUserInfo = async () => {
-      try {
-        const userDocRef = doc(db, 'usuarios', usuarioID)
-        const userDoc = await getDoc(userDocRef)
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data()
-          setNome(userData.nome || null)
-          setEmail(userData.email || null)
-          setUsername(userData.username || null)
-        }
-      } catch (err) {
-        console.error('Erro ao buscar info:', err)
-      }
-    }
-
-    fetchUserInfo()
-  }, [usuarioID, navigate])
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      if (file.size > 5 * 1024 * 1024) {
-        setError('A imagem deve ter no máximo 5MB')
-        return
-      }
-      setImagem(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagemPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-      setError('')
-    }
+    setError(null)
+    setImage(file)
+    setPreview(URL.createObjectURL(file))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!titulo.trim() || !mensagem.trim()) {
-      setError('Por favor, preencha o título e a mensagem.')
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!profile) return
+    if (!title.trim() || !message.trim()) {
+      setError('Preencha o título e a mensagem.')
       return
     }
-
-    if (!usuarioID) return
-
-    setLoading(true)
-    setError('')
-
+    setSending(true)
+    setError(null)
     try {
-      let imageUrl = null
-
-      if (imagem) {
-        // Upload image
-        const formData = new FormData()
-        formData.append('image', imagem)
-        formData.append('userId', usuarioID)
-        
-        const baseUploadUrl = import.meta.env.VITE_API_UPLOAD_URL as string
-        const apiBugUrl = baseUploadUrl 
-          ? baseUploadUrl.replace('upload-profile-image.php', 'upload-bug-report-image.php')
-          : ''
-        
-        if (apiBugUrl) {
-          const response = await fetch(apiBugUrl, {
-            method: 'POST',
-            body: formData
-          })
-
-          if (!response.ok) {
-            throw new Error('Falha no upload da imagem')
-          }
-
-          const data = await response.json()
-          if (!data.success) {
-            throw new Error(data.message || 'Erro ao enviar a imagem')
-          }
-
-          imageUrl = data.imageUrl
-        } else {
-            console.warn("VITE_API_UPLOAD_URL não está definida nas variáveis de ambiente.")
-        }
-      }
-
+      const imagemUrl = image ? await uploadReportImage(image, profile.id) : null
       await addDoc(collection(db, 'bug_reports'), {
-        usuarioID,
-        nome: nome || 'Desconhecido',
-        email: email || 'Desconhecido',
-        username: username || 'Desconhecido',
-        tipo,
-        titulo: titulo.trim(),
-        mensagem: mensagem.trim(),
-        imagemUrl: imageUrl,
+        usuarioID: profile.id,
+        nome: profile.nome || 'Desconhecido',
+        email: profile.email || 'Desconhecido',
+        username: profile.username || 'Desconhecido',
+        tipo: type,
+        titulo: title.trim(),
+        mensagem: message.trim(),
+        imagemUrl,
         dataCriacao: serverTimestamp(),
-        status: 'pendente'
+        status: 'pendente',
       })
-
-      notifyAdmins(
-        `Novo(a) ${tipo} Reportado! 🐞`,
-        `${titulo.trim()} - Enviado por ${nome || 'Desconhecido'}`,
-        '/admin/dashboard/bugs'
-      ).catch(e => console.error('Silent error on push:', e))
-
-      setSuccess(true)
-      setTimeout(() => {
-        navigate(-1)
-      }, 2000)
-
+      notifyAdmins(`Novo(a) ${type} reportado!`, `${title.trim()} - Enviado por ${profile.nome || 'Desconhecido'}`, '/admin/dashboard/bugs')
+        .catch(notifyError => console.error('Erro ao avisar os admins:', notifyError))
+      setSent(true)
     } catch (err) {
-      console.error('Erro ao enviar reporte:', err)
-      setError('Ocorreu um erro ao enviar seu reporte. Tente novamente mais tarde.')
-    } finally {
-      setLoading(false)
+      console.error('Erro ao enviar relato:', err)
+      setError('Não foi possível enviar seu relato. Verifique a conexão e tente de novo.')
+      setSending(false)
     }
   }
 
-  if (success) {
+  if (sent) {
     return (
-      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center border border-gray-100 dark:border-[#333] animate-in fade-in duration-300">
-          <CheckCircle2 size={64} className="text-[#27AE60] mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Relato Enviado!</h2>
-          <p className="text-gray-600 dark:text-gray-400">Obrigado por nos ajudar a melhorar o Tractus. Analisaremos em breve.</p>
-        </div>
-      </main>
+      <>
+        <StackHeader title="Ajuda e suporte" backTo="/profile/settings" />
+        <Page className="items-center gap-4 pt-10 text-center">
+          <CircleCheck size={56} className="text-primary" aria-hidden />
+          <h2 className="type-title">Relato enviado</h2>
+          <p className="px-6 text-sm leading-5 text-muted">Obrigado por ajudar a melhorar o Tractus. Vamos analisar em breve.</p>
+          <Button label="Voltar" onClick={() => navigate(-1)} className="mt-4 w-full max-w-sm" />
+        </Page>
+      </>
     )
   }
 
   return (
-    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
-      <BackArrowButton title="Ajuda e Suporte" route="/profile/settings" />
+    <>
+      <StackHeader title="Ajuda e suporte" backTo="/profile/settings" />
+      <Page className="pt-4">
+        <form onSubmit={submit} className="flex flex-col gap-5">
+          {error && <Callout tone="danger">{error}</Callout>}
 
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-lg rounded-xl p-6 w-full max-w-2xl mb-4 border border-gray-200 dark:border-[#404040]">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm font-medium border border-red-100 dark:border-red-900/30">
-              {error}
-            </div>
-          )}
+          <ListSection title="Tipo">
+            {TYPES.map(option => (
+              <ListRow
+                key={option.value}
+                title={option.label}
+                description={option.description}
+                onClick={() => setType(option.value)}
+                accessory={type === option.value ? <Check size={20} className="text-primary" aria-label="Selecionado" /> : <span className="size-5" />}
+              />
+            ))}
+          </ListSection>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Tipo do Relato
-            </label>
-            <select
-              value={tipo}
-              onChange={(e) => setTipo(e.target.value)}
-              className="w-full border border-gray-300 dark:border-[#404040] dark:bg-[#2d2d2d] dark:text-gray-100 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white font-medium"
-            >
-              <option value="Bug">🐞 Reportar um Bug</option>
-              <option value="Sugestão">💡 Dar uma Sugestão</option>
-              <option value="Erro">⚠️ Erro no Aplicativo</option>
-              <option value="Outro">💬 Outro</option>
-            </select>
-          </div>
+          <TextField
+            label="Título"
+            value={title}
+            onChange={event => setTitle(event.target.value)}
+            placeholder={type === 'Sugestão' ? 'Ex.: Filtro por músculo no histórico' : 'Ex.: O timer não toca o som'}
+            maxLength={100}
+          />
+          <TextArea
+            label="Mensagem"
+            value={message}
+            onChange={event => setMessage(event.target.value)}
+            placeholder="Conte com detalhes o que aconteceu ou qual é a sua ideia"
+            maxLength={2000}
+            rows={5}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Título
-            </label>
-            <input
-              type="text"
-              value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
-              placeholder={`Ex: ${tipo === 'Bug' ? 'Botão não funciona' : tipo === 'Sugestão' ? 'Adicionar modo escuro' : 'Problema com...'}`}
-              className="w-full border border-gray-300 dark:border-[#404040] dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              maxLength={100}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Mensagem detalhada
-            </label>
-            <textarea
-              value={mensagem}
-              onChange={(e) => setMensagem(e.target.value)}
-              placeholder="Descreva o que aconteceu ou a sua ideia com detalhes..."
-              className="w-full border border-gray-300 dark:border-[#404040] dark:bg-[#1a1a1a] dark:text-gray-100 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] resize-y"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Anexar um Print (opcional)
-            </label>
-            {!imagemPreview ? (
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-[#404040] rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors bg-gray-50/50 dark:bg-[#252525]">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold text-blue-500 dark:text-blue-400">Clique para enviar</span></p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">PNG, JPG ou WEBP (Max. 5MB)</p>
-                </div>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </label>
-            ) : (
-              <div className="relative inline-block">
-                <img src={imagemPreview} alt="Preview" className="h-32 rounded-xl object-cover border border-gray-200 dark:border-[#404040]" />
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-muted">Print (opcional)</span>
+            <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={event => attach(event.target.files?.[0])} />
+            {preview ? (
+              <div className="relative self-start">
+                <img src={preview} alt="Print anexado" className="h-40 w-30 rounded-2xl object-cover" />
                 <button
                   type="button"
+                  aria-label="Remover print"
+                  title="Remover print"
                   onClick={() => {
-                    setImagem(null)
-                    setImagemPreview(null)
+                    setImage(null)
+                    setPreview(null)
                   }}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors cursor-pointer"
+                  className="absolute -right-2 -top-2 flex size-7 items-center justify-center rounded-full bg-foreground text-background"
                 >
-                  <X size={14} />
+                  <X size={14} aria-hidden />
                 </button>
               </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                className="flex h-24 flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border text-muted transition-colors hover:bg-surface-2 focus-ring"
+              >
+                <ImagePlus size={22} aria-hidden />
+                <span className="text-sm">Anexar uma imagem</span>
+              </button>
             )}
           </div>
-          
-          <div className="pt-4 mt-4 border-t border-gray-100 dark:border-[#333]">
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-              disabled={loading}
-            >
-              {loading ? 'Enviando...' : 'Enviar Relato'}
-            </Button>
-          </div>
+
+          <Button type="submit" label="Enviar relato" size="lg" loading={sending} />
         </form>
-      </div>
-    </main>
+      </Page>
+    </>
   )
 }

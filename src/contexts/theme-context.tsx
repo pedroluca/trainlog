@@ -44,10 +44,13 @@ function applyThemeToDom(resolved: 'light' | 'dark') {
   } else {
     document.documentElement.classList.remove('dark')
   }
+  // Barra do navegador/sistema na mesma cor do fundo (--color-background de cada tema)
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', resolved === 'dark' ? '#0b0c0e' : '#f4f5f7')
 }
 
 function applyColorToDom(hex: string, dark: string, light: string) {
   document.documentElement.style.setProperty('--color-primary', hex)
+  document.documentElement.style.setProperty('--color-primary-strong', dark)
   document.documentElement.style.setProperty('--color-primary-dark', dark)
   document.documentElement.style.setProperty('--color-primary-light', light)
 }

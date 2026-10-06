@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect, useState, lazy, Suspense } from 'react'
-import { LayoutWithBottomBar } from './layouts/layout-with-bottombar'
-import { LayoutWithoutBottomBar } from './layouts/layout-without-bottombar'
+import { AppLayout } from './layouts/app-layout'
+import { AuthLayout } from './layouts/auth-layout'
 import { Home } from './pages/home'
 import { Training } from './pages/training'
 import { Login } from './pages/login'
@@ -36,11 +36,13 @@ const SettingsAppearance = lazy(() => import('./pages/settings-appearance').then
 
 import { PWAInstallPrompt } from './components/pwa-install-prompt'
 import { PWAUpdateNotification } from './components/pwa-update-notification'
-import { FreezeWarningModal } from './components/freeze-warning-modal'
-import { WhatsNewModal } from './components/whats-new-modal'
-import { OnboardingModal } from './components/onboarding-modal'
-import { Spinner } from './components/spinner'
+import { FreezeWarningDialog } from './features/overlays/freeze-warning-dialog'
+import { ReleaseNotes } from './features/overlays/release-notes'
+import { OnboardingDialog } from './features/overlays/onboarding-dialog'
+import { LoadingState } from './components/ui/misc'
 import { ThemeProvider } from './contexts/theme-context'
+import { ToastProvider } from './contexts/toast-context'
+import { ConfirmProvider } from './contexts/confirm-context'
 import { getVersion } from './version'
 import { currentRelease } from './data/whats-new'
 import { checkAndResetStreakIfMissed, resetPreviousDaysExercises, type FreezeWarning } from './data/streak-utils'
@@ -54,11 +56,7 @@ import { FriendFriends } from './pages/friend-friends'
 import { NotFound } from './pages/not-found'
 import { ResetPassword } from './pages/reset-password'
 
-const PageLoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gray-900">
-    <Spinner size={48} color="var(--color-primary)" label="Carregando a aplicação" />
-  </div>
-)
+const PageLoadingFallback = () => <LoadingState className="min-h-dvh" />
 // import { Teste } from './pages/teste'
 
 type AndroidBridge = {
@@ -303,40 +301,34 @@ export function App() {
 
   return (
     <ThemeProvider>
+      <ToastProvider>
+      <ConfirmProvider>
       <BrowserRouter>
         <ScrollToTopOnRouteChange />
         <PWAUpdateNotification />
         <PWAInstallPrompt />
-        <FreezeWarningModal
-          isOpen={!!freezeWarning}
-          warning={freezeWarning}
-          onClose={() => setFreezeWarning(null)}
-        />
-        <WhatsNewModal
+        <FreezeWarningDialog warning={freezeWarning} onClose={() => setFreezeWarning(null)} />
+        <ReleaseNotes
           isOpen={showWhatsNew || !!forceUpdateVersion}
           onClose={() => setShowWhatsNew(false)}
           forceUpdateVersion={forceUpdateVersion}
           systemVersion={forceUpdateVersion || getVersion()}
         />
-        <OnboardingModal
-          isOpen={showOnboarding}
-          isPremium={onboardingUserIsPremium}
-          onComplete={handleOnboardingComplete}
-        />
+        <OnboardingDialog open={showOnboarding} isPremium={onboardingUserIsPremium} onComplete={handleOnboardingComplete} />
         <Suspense fallback={<PageLoadingFallback />}>
           <Routes>
-            <Route element={<LayoutWithoutBottomBar />}>
+            <Route element={<AuthLayout />}>
               <Route path='/' element={<Home />} />
               <Route path='/login' element={<Login />} />
               <Route path='/cadastro' element={<Cadastro />} />
+              <Route path='/reset-password' element={<ResetPassword />} />
             </Route>
 
-            <Route path='/reset-password' element={<ResetPassword />} />
             <Route path='/privacy' element={<PrivacyPolicy />} />
             <Route path='/delete-account' element={<DeleteAccount />} />
             <Route path='/delete-data' element={<DeleteData />} />
 
-            <Route element={<LayoutWithBottomBar />}>
+            <Route element={<AppLayout />}>
               {/* <Route path='/teste' element={<Teste />} /> */}
               <Route path='/train' element={<Training />} />
               {/* Rotas de Amigos */}
@@ -374,6 +366,8 @@ export function App() {
           </Routes>
         </Suspense>
       </BrowserRouter>
+      </ConfirmProvider>
+      </ToastProvider>
     </ThemeProvider>
   )
 }

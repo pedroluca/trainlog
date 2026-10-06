@@ -4,8 +4,12 @@
 import type { LucideIcon } from 'lucide-react'
 import { Crown, Laptop, GraduationCap, Rocket, Flame, Trophy } from 'lucide-react'
 
+/** Cor da conquista, ligada aos tokens do tema (--color-founder, --color-premium...) */
+export type BadgeTone = 'founder' | 'premium' | 'info' | 'success' | 'streak'
+
 export interface BadgeDefinition {
   id: string
+  tone: BadgeTone
   title: string
   description: string
   Icon: LucideIcon
@@ -34,6 +38,7 @@ export function getStreakMilestoneValue(streak: number): number {
 function createStreakMilestoneBadge(milestoneValue: number): BadgeDefinition {
   return {
     id: 'streak-milestone',
+    tone: 'streak',
     title: `${milestoneValue} Semanas de Streak`,
     description: `Completou ${milestoneValue} semanas seguidas de treino. Cada bloco de ${STREAK_MILESTONE_WEEKS} semanas fortalece sua consistência.`,
     Icon: Flame,
@@ -46,6 +51,7 @@ function createStreakMilestoneBadge(milestoneValue: number): BadgeDefinition {
 export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     id: 'founder',
+    tone: 'founder',
     title: 'Fundador',
     description: 'Desenvolvedor que fundou o Tractus. Obrigado por acreditar desde o início!',
     Icon: Laptop,
@@ -57,6 +63,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     id: 'premium',
+    tone: 'premium',
     title: 'Premium',
     description: 'Usuário com acesso premium ao Tractus. Desfruta de todos os recursos exclusivos da plataforma.',
     Icon: Crown,
@@ -69,6 +76,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     id: 'trainer',
+    tone: 'info',
     title: 'Treinador',
     description: 'Personal trainer verificado no Tractus. Profissional qualificado para orientar treinos.',
     Icon: GraduationCap,
@@ -78,6 +86,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     id: 'alpha',
+    tone: 'success',
     title: 'Alpha User',
     description: 'Fez parte da fase Alpha do Tractus, testando o app antes de ser lançado ao público.',
     Icon: Rocket,
@@ -87,6 +96,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     id: 'streak-milestone',
+    tone: 'streak',
     title: 'Streak Milestone',
     description: 'Conquista dinâmica de marcos de consistência em blocos de 4 semanas.',
     Icon: Flame,
@@ -96,6 +106,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     id: 'streak-100',
+    tone: 'streak',
     title: '100 Dias de Treino',
     description: 'Este usuário completou 100 dias de treino. Uau!',
     Icon: Flame,
@@ -105,6 +116,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     id: 'streak-leader',
+    tone: 'streak',
     title: 'Líder de Treinos',
     description: 'Este usuário tem o maior acumulado de streaks!',
     Icon: Trophy,
@@ -175,4 +187,10 @@ export function resolveAvatarRing(badges: BadgeDefinition[]): string {
   const borderBadge = badges.find(b => b.hasImageBorder)
   if (!borderBadge) return 'ring-4 ring-white dark:ring-[#1e1e1e]'
   return `${borderBadge.ringClass ?? ''} ${borderBadge.glowClass ?? ''}`.trim()
+}
+
+/** Anel do avatar: a conquista de maior prioridade que pinta a borda (fundador > premium) */
+export function resolveAvatarTone(badges: BadgeDefinition[]): 'founder' | 'premium' | null {
+  const borderBadge = badges.find(badge => badge.hasImageBorder)
+  return borderBadge?.tone === 'founder' || borderBadge?.tone === 'premium' ? borderBadge.tone : null
 }
