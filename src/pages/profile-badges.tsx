@@ -1,80 +1,42 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../firebaseConfig'
-import { BackArrowButton } from '../components/back-arrow-button'
-import { BadgeGallery } from '../components/badge-chip'
-import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
-import { Spinner } from '../components/spinner'
-import { resolveUserBadges, type BadgeDefinition } from '../data/badges'
+import { Award } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { BadgeList } from '../components/badges'
+import { PremiumUpgrade } from '../components/premium-upgrade'
+import { Card } from '../components/ui/card'
+import { EmptyState, LoadingState } from '../components/ui/misc'
+import { Page, StackHeader } from '../components/ui/page'
+import { useCurrentUser } from '../contexts/current-user-context'
+import { resolveUserBadges, STREAK_MILESTONE_WEEKS } from '../data/badges'
 
 export function ProfileBadges() {
-  const navigate = useNavigate()
-  const usuarioID = localStorage.getItem('usuarioId')
-
-  const [loading, setLoading] = useState(true)
-  const [badges, setBadges] = useState<BadgeDefinition[]>([])
-  const [isPremium, setIsPremium] = useState(false)
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
-  const [nome, setNome] = useState('')
-  const [email, setEmail] = useState('')
-  const [telefone, setTelefone] = useState('')
-
-  useEffect(() => {
-    if (!usuarioID) {
-      navigate('/login')
-      return
-    }
-
-    const fetchUserBadges = async () => {
-      try {
-        const userDoc = await getDoc(doc(db, 'usuarios', usuarioID))
-        if (userDoc.exists()) {
-          const userData = userDoc.data()
-          setIsPremium(!!userData.isPremium)
-          setBadges(resolveUserBadges(userData))
-          setNome(userData.nome || '')
-          setEmail(userData.email || '')
-          setTelefone(userData.telefone || '')
-        }
-      } catch (error) {
-        console.error('Erro ao buscar conquistas:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUserBadges()
-  }, [usuarioID, navigate])
+  const profile = useCurrentUser()
+  const badges = useMemo(() => (profile ? resolveUserBadges(profile) : []), [profile])
+  const [premiumOpen, setPremiumOpen] = useState(false)
 
   return (
-    <main className="flex flex-col items-center min-h-[calc(100vh-11rem)] bg-gray-100 dark:bg-[#121212] p-4 pb-24">
-      <BackArrowButton title="Conquistas" route="/profile" />
-
-      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl">
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Spinner size={32} color="var(--color-primary)" />
-          </div>
-        ) : (
-          <BadgeGallery
-            badges={badges}
-            userIsPremium={isPremium}
-            onUpgrade={() => setIsUpgradeModalOpen(true)}
-          />
-        )}
-      </div>
-
-      {isUpgradeModalOpen && (
-        <PremiumUpgradeModal
-          isOpen={isUpgradeModalOpen}
-          onClose={() => setIsUpgradeModalOpen(false)}
-          userEmail={email}
-          userName={nome}
-          userId={usuarioID || ''}
-          userPhone={telefone}
-        />
+    <>
+      <StackHeader title="Conquistas" backTo="/profile" />
+      {!profile ? (
+        <LoadingState />
+      ) : (
+        <Page className="pt-2">
+          {badges.length === 0 ? (
+            <Card>
+              <EmptyState
+                icon={Award}
+                title="Nenhuma conquista ainda"
+                description={`Treine ${STREAK_MILESTONE_WEEKS} semanas seguidas para ganhar sua primeira conquista de streak.`}
+              />
+            </Card>
+          ) : (
+            <BadgeList badges={badges} onUpgrade={profile.isPremium ? undefined : () => setPremiumOpen(true)} />
+          )}
+          <p className="px-4 text-center text-xs text-subtle">
+            Conquistas de streak são liberadas a cada {STREAK_MILESTONE_WEEKS} semanas seguidas de treino.
+          </p>
+        </Page>
       )}
-    </main>
+      <PremiumUpgrade open={premiumOpen} onClose={() => setPremiumOpen(false)} />
+    </>
   )
 }

@@ -1,230 +1,126 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { collection, query, where, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore'
-import { db } from '../firebaseConfig'
-import { UserPill } from '../components/user-pill'
-import { AddFriendModal } from '../components/add-friend-modal'
-import { PendingRequestsModal } from '../components/pending-requests-modal'
-import { Spinner } from '../components/spinner'
-import { UserPlus, Inbox, Search, Flame, UsersRound } from 'lucide-react'
-
-interface Usuario {
-  id: string
-  nome: string
-  username?: string
-  photoURL?: string
-  lastWorkoutDate?: string
-  currentStreak?: number
-  isTrainer?: boolean
-  isFounder?: boolean
-  isPremium?: boolean
-}
-
-interface Amigo {
-  amizadeId: string
-  usuario: Usuario
-}
+import { Flame, Inbox, Search, UserPlus, UsersRound } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Navigate } from 'react-router-dom'
+import { Card } from '../components/ui/card'
+import { IconButton } from '../components/ui/icon-button'
+import { EmptyState, LoadingState } from '../components/ui/misc'
+import { Page, PageHeader } from '../components/ui/page'
+import { UserRow } from '../components/user-row'
+import { useCurrentUser } from '../contexts/current-user-context'
+import { getFriends, type Friend } from '../data/friends'
+import { getWeekKey } from '../data/streak-utils'
+import { AddFriendSheet } from '../features/friends/add-friend-sheet'
+import { FriendRequestsSheet } from '../features/friends/friend-requests-sheet'
+import { usePendingFriendsCount } from '../hooks/usePendingFriendsCount'
+import { cn } from '../utils/cn'
 
 export function Friends() {
-  const navigate = useNavigate()
-  const currentUserId = localStorage.getItem('usuarioId') || ''
-  const [searchTerm, setSearchTerm] = useState('')
-  const [amigos, setAmigos] = useState<Amigo[]>([])
-  const [loading, setLoading] = useState(true)
-  
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isRequestsModalOpen, setIsRequestsModalOpen] = useState(false)
-  
-  const [pendingCount, setPendingCount] = useState(0)
+  const usuarioID = localStorage.getItem('usuarioId')
+  const profile = useCurrentUser()
+  const pending = usePendingFriendsCount()
+  const [friends, setFriends] = useState<Friend[] | null>(null)
+  const [search, setSearch] = useState('')
+  const [sheet, setSheet] = useState<'add' | 'requests' | null>(null)
 
-  useEffect(() => {
-    if (!currentUserId) return
-    
-    // Listen for pending requests count
-    const qPending = query(
-      collection(db, 'amizades'),
-      where('receptorID', '==', currentUserId),
-      where('status', '==', 'pendente')
-    )
-    
-    const unsubscribePending = onSnapshot(qPending, (snapshot) => {
-      setPendingCount(snapshot.size)
-    })
-    
-    return () => unsubscribePending()
-  }, [currentUserId])
-
-  const fetchFriends = async () => {
-    if (!currentUserId) return
-    
+  const load = useCallback(async () => {
+    if (!usuarioID) return
     try {
-      setLoading(true)
-      const qFriends = query(
-        collection(db, 'amizades'),
-        where('participantes', 'array-contains', currentUserId),
-        where('status', '==', 'aceito')
-      )
-      
-      const snap = await getDocs(qFriends)
-      const amigosList: Amigo[] = []
-      
-      for (const authDoc of snap.docs) {
-        const data = authDoc.data()
-        const friendId = data.participantes.find((id: string) => id !== currentUserId)
-        if (friendId) {
-          const userSnap = await getDoc(doc(db, 'usuarios', friendId))
-          if (userSnap.exists()) {
-            amigosList.push({
-              amizadeId: authDoc.id,
-              usuario: { id: userSnap.id, ...userSnap.data() } as Usuario
-            })
-          }
-        }
-      }
-      
-      setAmigos(amigosList)
-    } catch (error) {
-      console.error('Erro ao buscar amigos:', error)
-    } finally {
-      setLoading(false)
+      setFriends(await getFriends(usuarioID))
+    } catch {
+      setFriends(current => current ?? [])
     }
-  }
+  }, [usuarioID])
 
   useEffect(() => {
-    fetchFriends()
-  }, [currentUserId])
+    load()
+  }, [load])
 
-  const filteredAmigos = useMemo(() => {
-    if (!searchTerm.trim()) return amigos
-    const lowerSearch = searchTerm.toLowerCase()
-    return amigos.filter(a => 
-      a.usuario.nome.toLowerCase().includes(lowerSearch) || 
-      (a.usuario.username && a.usuario.username.toLowerCase().includes(lowerSearch))
-    )
-  }, [amigos, searchTerm])
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    if (!friends || !term) return friends ?? []
+    return friends.filter(({ user }) => user.nome.toLowerCase().includes(term) || user.username?.toLowerCase().includes(term))
+  }, [friends, search])
 
-  // const isAtivoRecentemente = (lastWorkoutDate?: string) => {
-  //   if (!lastWorkoutDate) return false
-  //   const lastDate = new Date(lastWorkoutDate)
-  //   const today = new Date()
-  //   const diffTime = Math.abs(today.getTime() - lastDate.getTime())
-  //   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  //   return diffDays <= 7
-  // }
+  if (!usuarioID) return <Navigate to="/login" replace />
+
+  const currentWeek = getWeekKey()
 
   return (
-    <main className="flex flex-col items-center justify-start min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-28 md:py-8 space-y-4">
-      {/* Container Principal */}
-      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a]">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-2 text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            <UsersRound className="text-primary" size={32} />
-            <h2>Meus Amigos</h2>
-          </div>
-          
-          <div className="flex gap-2 w-full md:w-auto">
-            <button
-              onClick={() => setIsRequestsModalOpen(true)}
-              className="cursor-pointer relative flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-semibold py-2.5 px-4 rounded-xl transition-colors border border-blue-100 dark:border-blue-900/30"
-            >
-              <Inbox size={20} />
-              <span className="md:hidden lg:inline">Solicitações</span>
-              {pendingCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-md animate-pulse">
-                  {pendingCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="cursor-pointer flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#27AE60] hover:bg-[#219150] text-white font-semibold py-2.5 px-4 rounded-xl transition-colors shadow-sm"
-            >
-              <UserPlus size={20} />
-              <span>Adicionar</span>
-            </button>
-          </div>
-        </div>
+    <Page>
+      <PageHeader
+        title="Amigos"
+        right={(
+          <>
+            <IconButton icon={Inbox} variant="surface" label="Solicitações de amizade" badge={pending} onClick={() => setSheet('requests')} />
+            <IconButton icon={UserPlus} variant="primary" label="Adicionar amigo" onClick={() => setSheet('add')} disabled={!profile} />
+          </>
+        )}
+      />
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search size={18} className="text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Buscar amigo por nome ou username..."
-            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-[#252525] border border-gray-200 dark:border-[#404040] rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary transition-all"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+      {friends === null ? (
+        <LoadingState />
+      ) : friends.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={UsersRound}
+            title="Você ainda não adicionou amigos"
+            description="Encontre pessoas pelo nome ou username e acompanhe a sequência de treinos delas."
+            actionLabel="Adicionar amigo"
+            onAction={() => setSheet('add')}
           />
-        </div>
+        </Card>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <label className="flex h-11 items-center gap-2 rounded-xl border border-transparent bg-surface-2 px-3.5 focus-within:border-primary">
+            <Search size={18} className="shrink-0 text-subtle" aria-hidden />
+            <input
+              value={search}
+              onChange={event => setSearch(event.target.value)}
+              placeholder="Buscar entre seus amigos"
+              aria-label="Buscar entre seus amigos"
+              type="search"
+              className="flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-subtle"
+            />
+          </label>
 
-        {/* List */}
-        <div className="min-h-[300px]">
-          {loading ? (
-            <div className="flex justify-center items-center h-[200px]">
-              <Spinner size={40} color="var(--color-primary)" label="Carregando amigos" />
-            </div>
-          ) : amigos.length === 0 ? (
-            <div className="text-center py-16 text-gray-500 dark:text-gray-400 flex flex-col items-center bg-gray-50/50 dark:bg-[#1a1a1a]/50 rounded-xl border border-dashed border-gray-200 dark:border-[#333]">
-              <UsersRound size={56} className="mb-4 text-gray-300 dark:text-gray-600 opacity-50" />
-              <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">Você ainda não tem amigos adicionados</p>
-              <p className="text-sm">Encontre pessoas e compartilhe sua jornada!</p>
-            </div>
-          ) : filteredAmigos.length === 0 ? (
-            <div className="text-center py-16 text-gray-500 dark:text-gray-400">
-              <p>Nenhum amigo encontrado na busca.</p>
-            </div>
+          {filtered.length === 0 ? (
+            <p className="py-10 text-center text-muted">Nenhum amigo encontrado com “{search}”.</p>
           ) : (
-            <div className="space-y-3">
-              {filteredAmigos.map(amigo => (
-                <UserPill
-                  key={amigo.amizadeId}
-                  nome={amigo.usuario.nome}
-                  username={amigo.usuario.username}
-                  photoURL={amigo.usuario.photoURL}
-                  isTrainer={amigo.usuario.isTrainer}
-                  isFounder={amigo.usuario.isFounder}
-                  isPremium={amigo.usuario.isPremium}
-                  onClick={() => navigate(`/friend/${amigo.usuario.username || amigo.usuario.id}`)}
-                >
-                  {(amigo.usuario.currentStreak ?? 0) > 0 ? (
-                    <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/10 text-orange-500 border border-orange-200 dark:border-orange-800/30 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider">
-                      <Flame size={14} className="animate-pulse" />
-                      <span>{amigo.usuario.currentStreak}</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-[#333] text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-[#404040] px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider">
-                      <Flame size={14} />
-                      <span>0</span>
-                    </div>
-                  )}
-                </UserPill>
-              ))}
-            </div>
+            <Card className="overflow-hidden">
+              {filtered.map((item, index) => {
+                const streak = item.user.currentStreak ?? 0
+                const active = item.user.lastStreakWeek === currentWeek
+                const hidesStreak = item.user.privacidade?.ocultarStreak
+                return (
+                  <div key={item.friendshipId}>
+                    {index > 0 && <div className="ml-[72px] h-px bg-border" />}
+                    <UserRow
+                      user={item.user}
+                      to={`/friend/${item.user.username || item.user.id}`}
+                      right={hidesStreak ? undefined : (
+                        <span
+                          title={active ? 'Treinou esta semana' : 'Ainda não treinou esta semana'}
+                          className={cn('inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-sm font-semibold', active ? 'bg-streak/15 text-streak' : 'bg-surface-2 text-muted')}
+                        >
+                          <Flame size={14} fill={active ? 'currentColor' : 'transparent'} aria-hidden />
+                          {streak}
+                        </span>
+                      )}
+                    />
+                  </div>
+                )
+              })}
+            </Card>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Modals */}
-      {isAddModalOpen && (
-        <AddFriendModal 
-          currentUserId={currentUserId}
-          onClose={() => setIsAddModalOpen(false)} 
-        />
+      {sheet === 'add' && profile && (
+        <AddFriendSheet me={profile} onClose={() => setSheet(null)} onOpenRequests={() => setSheet('requests')} />
       )}
-      
-      {isRequestsModalOpen && (
-        <PendingRequestsModal 
-          currentUserId={currentUserId}
-          onClose={() => {
-            setIsRequestsModalOpen(false)
-            fetchFriends() // Refresh friends list if they accepted any
-          }} 
-        />
+      {sheet === 'requests' && (
+        <FriendRequestsSheet userId={usuarioID} onClose={() => setSheet(null)} onChanged={load} />
       )}
-    </main>
+    </Page>
   )
 }

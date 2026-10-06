@@ -1,711 +1,137 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { TrainingCard, TrainingCardSkeleton } from '../components/training-card'
-import { ChevronLeft, ChevronRight, Settings2 } from 'lucide-react'
-import { getUserWorkouts, Treino } from '../data/get-user-workouts'
-import { getWorkoutExercises, Exercicio } from '../data/get-workout-exercises'
-import { Button } from '../components/button'
-import { AddWorkoutModal } from '../components/add-workout-modal'
-import { AddExerciseModal } from '../components/add-exercise-modal'
-import { WorkoutSettingsModal } from '../components/workout-settings-modal'
-import { WorkoutCompleteModal } from '../components/workout-complete-modal'
-import { useNavigate, useSearchParams } from 'react-router-dom'
 import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
-import { db } from '../firebaseConfig'
-import { updateStreak, updateScheduledDays, type StreakUpdateResult } from '../data/streak-utils'
-import { trackPageView, trackWorkoutCompleted } from '../utils/analytics'
-import { useKeepScreenOn } from '../hooks/useKeepScreenOn'
+import { useEffect, useState } from 'react'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   BirthdayCelebrationModal,
   getBirthdayCelebrationStorageKey,
-  getLocalDateKey,
   isBirthdayToday,
 } from '../components/birthday-celebration'
+import { StreakPill } from '../components/streak-pill'
+import { LoadingState } from '../components/ui/misc'
+import { PageHeader, StackHeader } from '../components/ui/page'
+import { useCurrentUser } from '../contexts/current-user-context'
+import { TrainingView } from '../features/training/training-view'
+import { db } from '../firebaseConfig'
+import { trackPageView } from '../utils/analytics'
+import { getLocalDateKey, greeting } from '../utils/format'
 
-const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
+// Altura útil no celular: a tela inteira menos as áreas seguras e o espaço da cápsula de navegação.
+// O carrossel de exercícios ocupa o que sobra, com as ações do card ao alcance do polegar.
+const MOBILE_HEIGHT = 'h-[calc(100dvh_-_env(safe-area-inset-top)_-_env(safe-area-inset-bottom)_-_104px)] lg:h-auto'
 
 export function Training() {
-  const todayIndex = new Date().getDay()
-  const [currentDayIndex, setCurrentDayIndex] = useState(todayIndex)
-  const [workouts, setWorkouts] = useState<Treino[]>([])
-  const [allManagedUserWorkouts, setAllManagedUserWorkouts] = useState<Treino[]>([])
-  const [exercises, setExercises] = useState<Exercicio[]>([])
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false)
-  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false)
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false)
-  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
-  const [streakResult, setStreakResult] = useState<StreakUpdateResult | null>(null)
-  const [isBirthdayModalOpen, setIsBirthdayModalOpen] = useState(false)
-  const [birthdayName, setBirthdayName] = useState('você')
-  const [selectedWorkout, setSelectedWorkout] = useState<Treino | null>(null)
-  const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null)
-  const [creatorNames, setCreatorNames] = useState<Record<string, string>>({})
   const usuarioID = localStorage.getItem('usuarioId')
+  const profile = useCurrentUser()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [reset, setReset] = useState(false)
-  const managedUserId = searchParams.get('studentId') || usuarioID
-  const managedUserNameFromParams = searchParams.get('studentName') || ''
-  const isManagingStudent = !!usuarioID && !!managedUserId && managedUserId !== usuarioID
-  const canExecuteWorkout = !isManagingStudent
-  const [managedUserName, setManagedUserName] = useState(managedUserNameFromParams)
 
-  useKeepScreenOn(canExecuteWorkout && !!selectedWorkout && exercises.length > 0)
-
-  if (!usuarioID) {
-    navigate('/login')
-  }
-
-  const fetchWorkouts = useCallback(async () => {
-    try {
-      if (!usuarioID || !managedUserId) {
-        console.error('Error: usuarioID is null')
-        setLoading(false)
-        return
-      }
-
-      if (isManagingStudent) {
-        const meDoc = await getDoc(doc(db, 'usuarios', usuarioID))
-        const meData = meDoc.data()
-        if (!meDoc.exists() || !meData?.isTrainer) {
-          navigate('/profile/connections')
-          return
-        }
-
-        const relationQuery = query(
-          collection(db, 'trainer_relations'),
-          where('participants', 'array-contains', usuarioID),
-          where('trainerId', '==', usuarioID),
-          where('studentId', '==', managedUserId),
-          where('status', '==', 'accepted')
-        )
-        const relationSnap = await getDocs(relationQuery)
-        if (relationSnap.empty) {
-          navigate('/profile/connections')
-          return
-        }
-
-        const studentDoc = await getDoc(doc(db, 'usuarios', managedUserId))
-        if (studentDoc.exists()) {
-          setManagedUserName(studentDoc.data().nome || '')
-        }
-      }
-
-      const data = await getUserWorkouts(
-        managedUserId,
-        isManagingStudent ? { createdByUserId: usuarioID } : undefined
-      )
-      setWorkouts(data)
-
-      if (isManagingStudent) {
-        const allStudentWorkouts = await getUserWorkouts(managedUserId)
-        setAllManagedUserWorkouts(allStudentWorkouts)
-
-        const creatorIds = Array.from(new Set(
-          allStudentWorkouts
-            .map((workout) => workout.createdByUserId || workout.usuarioID)
-            .filter((id) => !!id && id !== managedUserId)
-        ))
-
-        if (creatorIds.length > 0) {
-          const creatorDocs = await Promise.all(creatorIds.map((id) => getDoc(doc(db, 'usuarios', id))))
-          const namesMap: Record<string, string> = {}
-          creatorDocs.forEach((creatorDoc) => {
-            if (creatorDoc.exists()) {
-              namesMap[creatorDoc.id] = creatorDoc.data().nome || 'Treinador'
-            }
-          })
-          setCreatorNames(namesMap)
-        } else {
-          setCreatorNames({})
-        }
-      } else {
-        setAllManagedUserWorkouts(data)
-
-        const creatorIds = Array.from(new Set(
-          data
-            .map((workout) => workout.createdByUserId || workout.usuarioID)
-            .filter((id) => !!id && id !== managedUserId)
-        ))
-
-        if (creatorIds.length > 0) {
-          const creatorDocs = await Promise.all(creatorIds.map((id) => getDoc(doc(db, 'usuarios', id))))
-          const namesMap: Record<string, string> = {}
-          creatorDocs.forEach((creatorDoc) => {
-            if (creatorDoc.exists()) {
-              namesMap[creatorDoc.id] = creatorDoc.data().nome || 'Treinador'
-            }
-          })
-          setCreatorNames(namesMap)
-        } else {
-          setCreatorNames({})
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching workouts:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [usuarioID, managedUserId, isManagingStudent, navigate])
-
-  const fetchExercisesForDay = useCallback(async (preserveIndex = false) => {
-    const selectedDay = daysOfWeek[currentDayIndex]
-    const dayWorkouts = workouts.filter(
-      (workout) => workout.dia.toLowerCase() === selectedDay.toLowerCase()
-    )
-
-    const workoutForDay = dayWorkouts.find((workout) => workout.id === selectedWorkoutId) || dayWorkouts[0]
-
-    setSelectedWorkout(workoutForDay || null)
-    if (workoutForDay) {
-      if (selectedWorkoutId !== workoutForDay.id) {
-        setSelectedWorkoutId(workoutForDay.id)
-      }
-    } else if (selectedWorkoutId !== null) {
-      setSelectedWorkoutId(null)
-    }
-
-    if (workoutForDay) {
-      try {
-        const exercisesData = await getWorkoutExercises(workoutForDay.id, workoutForDay.exerciseOrder)
-        setExercises(exercisesData)
-        if (!preserveIndex) {
-          setCurrentExerciseIndex(0) // Reset to first exercise only when changing days
-        }
-      } catch (err) {
-        console.error('Erro ao buscar exercícios para o dia selecionado:', err)
-      }
-    } else {
-      setExercises([])
-      setCurrentExerciseIndex(0)
-    }
-
-    setReset(false)
-  }, [workouts, currentDayIndex, selectedWorkoutId])
+  const studentId = searchParams.get('studentId')
+  const managing = !!usuarioID && !!studentId && studentId !== usuarioID
+  const ownerId = managing ? studentId : usuarioID
+  const [studentName, setStudentName] = useState(searchParams.get('studentName') || '')
+  const [accessChecked, setAccessChecked] = useState(!managing)
 
   useEffect(() => {
     trackPageView('training')
-    fetchWorkouts()
-    setReset(false)
-  }, [fetchWorkouts])
+  }, [])
 
+  // Treinador gerenciando aluno: confirma o vínculo antes de mostrar os treinos
   useEffect(() => {
-    if (!usuarioID) return
-
-    const checkBirthdayCelebration = async () => {
+    if (!managing || !usuarioID || !studentId) return
+    let active = true
+    const verify = async () => {
       try {
-        const userDocRef = doc(db, 'usuarios', usuarioID)
-        const userDoc = await getDoc(userDocRef)
+        const relation = await getDocs(query(
+          collection(db, 'trainer_relations'),
+          where('participants', 'array-contains', usuarioID),
+          where('trainerId', '==', usuarioID),
+          where('studentId', '==', studentId),
+          where('status', '==', 'accepted'),
+        ))
+        if (!active) return
+        if (relation.empty) {
+          navigate('/profile/connections', { replace: true })
+          return
+        }
+        const student = await getDoc(doc(db, 'usuarios', studentId))
+        if (active && student.exists()) setStudentName(student.data().nome || '')
+        if (active) setAccessChecked(true)
+      } catch (error) {
+        console.error('Erro ao verificar o vínculo com o aluno:', error)
+        if (active) navigate('/profile/connections', { replace: true })
+      }
+    }
+    verify()
+    return () => {
+      active = false
+    }
+  }, [managing, usuarioID, studentId, navigate])
 
-        if (!userDoc.exists()) return
-
-        const userData = userDoc.data()
-        const birthDate = typeof userData.dataNascimento === 'string' ? userData.dataNascimento : ''
-
+  // Comemoração de aniversário (uma vez por dia)
+  const [birthdayName, setBirthdayName] = useState<string | null>(null)
+  useEffect(() => {
+    if (!usuarioID || managing) return
+    const check = async () => {
+      try {
+        const userRef = doc(db, 'usuarios', usuarioID)
+        const snapshot = await getDoc(userRef)
+        if (!snapshot.exists()) return
+        const data = snapshot.data()
+        const birthDate = typeof data.dataNascimento === 'string' ? data.dataNascimento : ''
         if (!birthDate || !isBirthdayToday(birthDate)) return
 
         const todayKey = getLocalDateKey()
-        const birthdayStorageKey = getBirthdayCelebrationStorageKey(usuarioID, todayKey)
-        const alreadyCelebrated =
-          localStorage.getItem(birthdayStorageKey) === 'seen' ||
-          userData.lastBirthdayCelebrationDate === todayKey
+        const storageKey = getBirthdayCelebrationStorageKey(usuarioID, todayKey)
+        if (localStorage.getItem(storageKey) === 'seen' || data.lastBirthdayCelebrationDate === todayKey) return
 
-        setBirthdayName(userData.nome || 'você')
-
-        if (!alreadyCelebrated) {
-          setIsBirthdayModalOpen(true)
-          localStorage.setItem(birthdayStorageKey, 'seen')
-          await updateDoc(userDocRef, { lastBirthdayCelebrationDate: todayKey })
-        }
-      } catch (err) {
-        console.error('Erro ao verificar aniversário:', err)
+        setBirthdayName(data.nome || 'você')
+        localStorage.setItem(storageKey, 'seen')
+        await updateDoc(userRef, { lastBirthdayCelebrationDate: todayKey })
+      } catch (error) {
+        console.error('Erro ao verificar aniversário:', error)
       }
     }
+    check()
+  }, [usuarioID, managing])
 
-    checkBirthdayCelebration()
-  }, [usuarioID])
+  if (!usuarioID || !ownerId) return <Navigate to="/login" replace />
 
-  useEffect(() => {
-    if (workouts.length > 0) {
-      fetchExercisesForDay()
-    }
-  }, [workouts, fetchExercisesForDay])
-
-  const handlePreviousDay = () => {
-    setCurrentDayIndex((prevIndex) => (prevIndex === 0 ? 6 : prevIndex - 1))
-    setIsCompleteModalOpen(false)
-  }
-
-  const handleNextDay = () => {
-    setCurrentDayIndex((prevIndex) => (prevIndex === 6 ? 0 : prevIndex + 1))
-    setIsCompleteModalOpen(false)
-  }
-
-  const handleResetExercises = async () => {
-    if (selectedWorkout) {
-      try {
-        const exercisesRef = collection(db, 'treinos', selectedWorkout.id, 'exercicios')
-        const querySnapshot = await getDocs(exercisesRef)
-        const resetPromises = querySnapshot.docs.map((doc) =>
-          updateDoc(doc.ref, { isFeito: false, isSkipped: false, setsDone: 0, restEndsAt: null })
-        )
-        await Promise.all(resetPromises)
-        setReset(true)
-        setIsCompleteModalOpen(false)
-        
-        const today = new Date().toISOString().split('T')[0]
-        const completionKey = `workout-completed-${selectedWorkout.id}-${today}`
-        localStorage.removeItem(completionKey)
-        
-        fetchExercisesForDay()
-      } catch (err) {
-        console.error('Erro ao resetar exercícios:', err)
-        alert('Erro ao resetar exercícios.')
-      }
-    }
-    setIsResetModalOpen(false)
-  }
-
-  const sliderRef = useRef<HTMLDivElement>(null)
-
-  const scrollToSlide = useCallback((index: number) => {
-    if (sliderRef.current) {
-      const width = sliderRef.current.clientWidth
-      sliderRef.current.scrollTo({ left: width * index, behavior: 'smooth' })
-    }
-  }, [])
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const container = e.currentTarget
-    const scrollLeft = container.scrollLeft
-    const width = container.clientWidth
-    if (width > 0) {
-      const newIndex = Math.round(scrollLeft / width)
-      setCurrentExerciseIndex((prev) => {
-        if (prev !== newIndex && newIndex >= 0 && newIndex < exercises.length) {
-          return newIndex
-        }
-        return prev
-      })
-    }
-  }
-
-  const handlePreviousExercise = () => {
-    scrollToSlide(Math.max(0, currentExerciseIndex - 1))
-  }
-
-  const handleNextExercise = () => {
-    scrollToSlide(Math.min(exercises.length - 1, currentExerciseIndex + 1))
-  }
-
-  const checkAllExercisesComplete = useCallback(() => {
-    if (exercises.length > 0 && selectedWorkout) {
-      const allComplete = exercises.every((ex) => {
-        if ((!ex.isFeito && !ex.isSkipped) || !ex.lastDoneDate) return false
-
-        const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD local
-        const done = new Date(ex.lastDoneDate).toLocaleDateString('en-CA')
-
-        const isToday = today === done
-        return isToday
-      })
-
-      const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
-      const completionKey = `workout-completed-${selectedWorkout.id}-${today}`
-      const hasCompletedToday = localStorage.getItem(completionKey) === 'true'
-      
-      if (allComplete && !isCompleteModalOpen && !hasCompletedToday && canExecuteWorkout) {
-        if (usuarioID) {
-          setStreakResult(null)
-          updateStreak(usuarioID).then(setStreakResult)
-        }
-        setTimeout(() => {
-          setIsCompleteModalOpen(true)
-          localStorage.setItem(completionKey, 'true')
-          trackWorkoutCompleted(selectedWorkout.dia, exercises.length)
-        }, 500)
-      }
-    }
-  }, [exercises, isCompleteModalOpen, selectedWorkout, usuarioID, canExecuteWorkout])
-
-  const handleExerciseComplete = useCallback((options?: { skipped?: boolean }) => {
-    // Optimistic update to immediately show completion state
-    setExercises(prev => {
-      const newExercises = [...prev]
-      if (newExercises[currentExerciseIndex]) {
-        newExercises[currentExerciseIndex] = {
-          ...newExercises[currentExerciseIndex],
-          isFeito: true,
-          isSkipped: options?.skipped ?? false,
-          lastDoneDate: new Date().toISOString()
-        }
-      }
-      return newExercises
-    })
-
-    if (currentExerciseIndex < exercises.length - 1) {
-      setTimeout(() => {
-        scrollToSlide(currentExerciseIndex + 1)
-      }, 50)
-    }
-    
-    // Defer the refetch so it doesn't interrupt the smooth scroll animation
-    setTimeout(() => {
-      fetchExercisesForDay(true).catch(console.error)
-    }, 600)
-  }, [currentExerciseIndex, exercises.length, fetchExercisesForDay, scrollToSlide])
-
-  useEffect(() => {
-    checkAllExercisesComplete()
-  }, [exercises, checkAllExercisesComplete])
-
-  const dayWorkouts = useMemo(() => {
-    const selectedDay = daysOfWeek[currentDayIndex]
-    return workouts.filter(
-      (workout) => workout.dia.toLowerCase() === selectedDay.toLowerCase()
-    )
-  }, [workouts, currentDayIndex])
-
-  const hasAnyWorkoutOnSelectedDay = useMemo(() => {
-    const selectedDay = daysOfWeek[currentDayIndex]
-    return allManagedUserWorkouts.some(
-      (workout) => workout.dia.toLowerCase() === selectedDay.toLowerCase()
-    )
-  }, [allManagedUserWorkouts, currentDayIndex])
-
-  const hasWorkoutFromOtherCreatorOnSelectedDay = useMemo(() => {
-    const selectedDay = daysOfWeek[currentDayIndex]
-    return isManagingStudent && !selectedWorkout && allManagedUserWorkouts.some(
-      (workout) =>
-        workout.dia.toLowerCase() === selectedDay.toLowerCase() &&
-        (workout.createdByUserId || workout.usuarioID) !== usuarioID
-    )
-  }, [allManagedUserWorkouts, currentDayIndex, isManagingStudent, selectedWorkout, usuarioID])
-
-  const handleSelectWorkout = (workoutId: string) => {
-    setSelectedWorkoutId(workoutId)
-    setCurrentExerciseIndex(0)
-    setIsCompleteModalOpen(false)
-  }
-
-  const getWorkoutCreatorLabel = useCallback((workout: Treino) => {
-    const creatorId = workout.createdByUserId || workout.usuarioID
-    if (!managedUserId || creatorId === managedUserId) return null
-    return creatorNames[creatorId] || 'Treinador'
-  }, [creatorNames, managedUserId])
+  const firstName = profile?.nome?.split(' ')[0]
+  const studentFirstName = studentName.split(' ')[0]
 
   return (
-    <main className="flex flex-col items-center h-[calc(100vh-4rem)] overflow-hidden bg-gray-50 dark:bg-[#121212] p-4 pt-2.5 lg:p-8 lg:pt-4">
-      <BirthdayCelebrationModal
-        isOpen={isBirthdayModalOpen}
-        onClose={() => setIsBirthdayModalOpen(false)}
-        name={birthdayName}
-      />
-
-      {isManagingStudent && (
-        <div className="w-full max-w-3xl mb-3 bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-900/30 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
-            Gerenciando treinos do aluno {managedUserName}
-          </p>
-          <button
-            onClick={() => navigate('/profile/connections')}
-            className="cursor-pointer text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 hover:underline"
-          >
-            Voltar
-          </button>
-        </div>
+    <div className={`flex flex-col ${MOBILE_HEIGHT}`}>
+      {managing && (
+        <StackHeader title={studentFirstName ? `Treinos de ${studentFirstName}` : 'Treinos do aluno'} backTo="/profile/connections" width="xl" />
       )}
 
-      <div className="flex items-center justify-center w-full max-w-4xl mb-1.5 flex-shrink-0">
-        <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handlePreviousDay}>
-          <ChevronLeft />
-        </button>
-        <h2 className="text-xl w-full max-w-[60%] text-center font-bold capitalize text-gray-800 dark:text-gray-100">{daysOfWeek[currentDayIndex]}</h2>
-        <button className="cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-1" onClick={handleNextDay}>
-          <ChevronRight />
-        </button>
+      <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-4 lg:px-8">
+        {!managing && (
+          <PageHeader
+            title="Treino"
+            subtitle={firstName ? `${greeting()}, ${firstName}` : undefined}
+            right={<StreakPill />}
+            className="px-4 lg:px-0"
+          />
+        )}
+
+        {accessChecked ? (
+          <TrainingView
+            viewerId={usuarioID}
+            ownerId={ownerId}
+            audioEnabled={profile?.audioEnabled === true}
+            fallbackStreak={{
+              currentStreak: profile?.currentStreak ?? 0,
+              totalWorkouts: profile?.totalWorkouts ?? 0,
+              streakIncremented: false,
+            }}
+          />
+        ) : (
+          <LoadingState />
+        )}
       </div>
 
-      {
-        loading ? (
-          <>
-            <WorkoutHeaderSkeleton />
-            <div className='w-full grid grid-cols-1'>
-              <TrainingCardSkeleton />
-            </div>
-          </>
-        ) : (
-          selectedWorkout ? (
-            <div className="w-full max-w-3xl flex flex-col flex-1 overflow-hidden">
-              {dayWorkouts.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2 mb-2 flex-shrink-0">
-                  {dayWorkouts.map((workout) => (
-                    <button
-                      key={workout.id}
-                      onClick={() => handleSelectWorkout(workout.id)}
-                      className={`cursor-pointer whitespace-nowrap text-sm font-bold px-3 py-2 rounded-lg border transition-colors ${
-                        selectedWorkout?.id === workout.id
-                          ? 'bg-primary text-white border-primary'
-                          : 'bg-white dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#252525]'
-                      }`}
-                    >
-                      <span className="block">{workout.musculo}</span>
-                      {!isManagingStudent && getWorkoutCreatorLabel(workout) && (
-                        <span className={`block text-[10px] font-semibold ${
-                          selectedWorkout?.id === workout.id ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'
-                        }`}>
-                          por {getWorkoutCreatorLabel(workout)}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex justify-between items-center w-full border-b border-gray-300 dark:border-gray-700 pb-3 mb-1 flex-shrink-0">
-                <div>
-                  <h3 className="flex flex-col text-2xl font-black text-primary">
-                    <span className="text-sm text-gray-900 dark:text-gray-100">Dia de:</span> 
-                    {selectedWorkout.musculo}
-                  </h3>
-                  {!isManagingStudent && getWorkoutCreatorLabel(selectedWorkout) && (
-                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">
-                      Criado por: {getWorkoutCreatorLabel(selectedWorkout)}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={() => setIsSettingsModalOpen(true)}
-                  className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-[#1e1e1e] text-gray-600 dark:text-gray-300 transition-colors shadow-sm border border-transparent hover:border-gray-200 dark:hover:border-[#333]"
-                  title="Ajustes do Treino"
-                >
-                  <Settings2 size={24} />
-                </button>
-              </div>
-              {exercises.length > 0 ? (
-                <div className='w-full pb-24 lg:pb-0 flex flex-col items-center flex-1 overflow-hidden'>
-                  {/* Navigation arrows & Progress */}
-                  <div className="flex items-center justify-between w-full mb-2 flex-shrink-0">
-                    <button
-                      className={`cursor-pointer p-2 rounded-full transition-colors ${
-                        currentExerciseIndex === 0
-                          ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                      onClick={handlePreviousExercise}
-                      disabled={currentExerciseIndex === 0}
-                    >
-                      <ChevronLeft size={32} />
-                    </button>
-                    
-                    <div className="flex flex-col items-center gap-1.5">
-                      <span className="text-gray-600 dark:text-gray-400 font-medium text-sm">
-                        {currentExerciseIndex + 1} de {exercises.length}
-                      </span>
-                      <div className="flex gap-1.5 justify-center">
-                        {exercises.map((_, index) => (
-                          <button
-                            key={index}
-                            className={`h-2 rounded-full transition-all ${
-                              index === currentExerciseIndex
-                                ? 'bg-primary w-6'
-                                : exercises[index].isFeito
-                                ? 'bg-primary-dark w-2'
-                                : 'bg-gray-300 dark:bg-gray-600 w-2'
-                            }`}
-                            onClick={() => scrollToSlide(index)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <button
-                      className={`cursor-pointer p-2 rounded-full transition-colors ${
-                        currentExerciseIndex === exercises.length - 1
-                          ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                      onClick={handleNextExercise}
-                      disabled={currentExerciseIndex === exercises.length - 1}
-                    >
-                      <ChevronRight size={32} />
-                    </button>
-                  </div>
-
-                  {/* Exercises Horizontal Slider */}
-                  <div 
-                    ref={sliderRef}
-                    onScroll={handleScroll}
-                    className="flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar pb-3 pt-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                  >
-                    {exercises.map((exercise, index) => (
-                      <div 
-                        key={exercise.id} 
-                        className="w-full h-full flex-shrink-0 snap-center px-1 md:px-0 md:flex md:justify-center transition-opacity duration-300"
-                        style={{ opacity: currentExerciseIndex === index ? 1 : 0.4 }}
-                      >
-                        <TrainingCard
-                          id={exercise.id}
-                          workoutId={selectedWorkout.id}
-                          title={exercise.titulo}
-                          sets={exercise.series}
-                          reps={exercise.repeticoes}
-                          weight={exercise.peso}
-                          breakTime={exercise.tempoIntervalo}
-                          isFeito={exercise.isFeito}
-                          isSkipped={exercise.isSkipped}
-                          persistedSetsDone={exercise.setsDone}
-                          persistedRestEndsAt={exercise.restEndsAt}
-                          reset={reset}
-                          onEdit={() => fetchExercisesForDay(true)}
-                          onComplete={handleExerciseComplete}
-                          nota={exercise.nota}
-                          usesProgressiveWeight={exercise.usesProgressiveWeight}
-                          progressiveSets={exercise.progressiveSets}
-                          disableExecution={!canExecuteWorkout}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center flex-1 w-full pb-10">
-                  <p className="text-gray-700 dark:text-gray-300 text-center text-lg">Desculpe, você ainda não tem exercícios registrados para este treino!</p>
-                  <Button
-                    className="bg-white dark:bg-[#1e1e1e] shadow-sm border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#252525] mt-6 px-8 py-3 rounded-xl transition-all"
-                    buttonTextColor="text-gray-800 dark:text-white font-bold"
-                    onClick={() => setIsExerciseModalOpen(true)}
-                  >
-                    Adicionar exercício
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="w-full max-w-3xl flex flex-col items-center justify-center flex-1">
-              {hasWorkoutFromOtherCreatorOnSelectedDay ? (
-                <>
-                  <p className="text-gray-700 dark:text-gray-300 text-lg text-center">
-                    Este aluno já possui treino neste dia, criado por outro responsável.
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
-                    Para evitar conflito de agenda, não é permitido criar outro treino para este dia.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-gray-700 dark:text-gray-300 text-lg">Desculpe, você não tem treinos registrados para este dia!</p>
-                  <Button
-                    className="bg-white dark:bg-[#1e1e1e] shadow-sm border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#252525] mt-6 px-8 py-3 rounded-xl transition-all"
-                    buttonTextColor="text-gray-800 dark:text-white font-bold"
-                    onClick={() => setIsWorkoutModalOpen(true)}
-                    disabled={isManagingStudent && hasAnyWorkoutOnSelectedDay}
-                  >
-                    Adicionar treino
-                  </Button>
-                </>
-              )}
-            </div>
-          )
-        )
-      }
-
-      {isWorkoutModalOpen && (
-        <AddWorkoutModal
-          onClose={() => {
-            setIsWorkoutModalOpen(false)
-            fetchWorkouts()
-            if (managedUserId) updateScheduledDays(managedUserId)
-          }}
-          currentDay={daysOfWeek[currentDayIndex]}
-          usuarioID={managedUserId}
-          createdByUserId={usuarioID || undefined}
-        />
-      )}
-
-      {isExerciseModalOpen && selectedWorkout && (
-        <AddExerciseModal
-          onClose={() => {
-            setIsExerciseModalOpen(false)
-            fetchExercisesForDay(true)
-          }}
-          workoutId={selectedWorkout.id}
-        />
-      )}
-
-      {isSettingsModalOpen && selectedWorkout && (
-        <WorkoutSettingsModal
-          workout={selectedWorkout}
-          exercises={exercises}
-          onClose={() => setIsSettingsModalOpen(false)}
-          onSave={() => {
-            setIsSettingsModalOpen(false)
-            fetchWorkouts()
-            if (managedUserId) updateScheduledDays(managedUserId)
-          }}
-          onResetExercises={() => setIsResetModalOpen(true)}
-          onAddExercise={() => setIsExerciseModalOpen(true)}
-        />
-      )}
-
-      {isResetModalOpen && (
-        <div className="fixed inset-0 z-20 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(0,0,0,0.7)] flex items-center justify-center px-4">
-          <div className="bg-white dark:bg-[#2d2d2d] rounded-lg p-6 w-80 border border-gray-200 dark:border-[#404040]">
-            <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Reiniciar Exercícios?</h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-6">Tem certeza de que deseja reiniciar todos os exercícios de hoje?</p>
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                buttonTextColor="text-gray-800 dark:text-gray-100"
-                className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 mr-2"
-                onClick={() => setIsResetModalOpen(false)} // Fecha o modal
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="button"
-                className="bg-red-500 hover:bg-red-600"
-                onClick={handleResetExercises} // Reseta os exercícios
-              >
-                Reiniciar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isCompleteModalOpen && selectedWorkout && (
-        <WorkoutCompleteModal
-          isOpen={isCompleteModalOpen}
-          onClose={() => {
-            setIsCompleteModalOpen(false)
-            // Reset the flag when closed
-          }}
-          workoutName={selectedWorkout.musculo}
-          streakResult={streakResult}
-        />
-      )}
-    </main>
-  )
-}
-
-export const WorkoutHeaderSkeleton = () => {
-  return (
-    <div className='animate-pulse w-full'>
-      <h3 className='text-2xl w-full self-start border-b border-gray-400 font-semibold pb-2'>
-        <div className='h-6 w-40 bg-gray-300 rounded'></div>
-      </h3>
-      <h3 className='text-xl mt-4 w-full font-semibold flex justify-between items-center'>
-        <span>
-          <div className='h-5 w-24 bg-gray-300 rounded'></div>
-        </span>
-        <section className='flex gap-2'>
-          <div className='h-10 w-10 bg-gray-300 rounded'></div>
-          <div className='h-10 w-10 bg-gray-300 rounded'></div>
-        </section>
-      </h3>
+      <BirthdayCelebrationModal isOpen={!!birthdayName} onClose={() => setBirthdayName(null)} name={birthdayName ?? 'você'} />
     </div>
   )
 }

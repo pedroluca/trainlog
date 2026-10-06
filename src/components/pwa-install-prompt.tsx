@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Download, X } from 'lucide-react'
-import { Button } from './button'
+import { Button } from './ui/button'
+import { IconButton } from './ui/icon-button'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -61,37 +62,21 @@ export function PWAInstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-65 animate-slide-up">
-      <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-10 h-10 bg-[#27AE60] rounded-lg flex items-center justify-center">
-            <Download size={20} className="text-white" />
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <h3 className="text-white font-semibold text-sm mb-1">
-              Instalar Tractus
-            </h3>
-            <p className="text-gray-400 text-xs mb-3">
-              Adicione o app à sua tela inicial para acesso rápido e experiência offline
-            </p>
-            
-            <div className="flex gap-2">
-              <Button
-                onClick={handleInstall}
-                className="flex-1 bg-[#27AE60] hover:bg-[#219150] text-white text-sm py-2"
-              >
-                Instalar
-              </Button>
-              <Button
-                onClick={handleDismiss}
-                className="px-3 bg-gray-700 hover:bg-gray-600 text-gray-300"
-              >
-                <X size={16} />
-              </Button>
-            </div>
-          </div>
+    <div
+      role="dialog"
+      aria-label="Instalar o Tractus"
+      className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)_+_96px)] z-40 animate-toast-in sm:left-auto sm:w-96 lg:bottom-6 lg:right-6"
+    >
+      <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-4 shadow-lg">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary">
+          <Download size={20} aria-hidden />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <h3 className="text-sm font-semibold">Instalar o Tractus</h3>
+          <p className="text-xs leading-4 text-muted">Adicione o app à tela inicial para abrir mais rápido e usar offline.</p>
+          <Button label="Instalar" size="sm" className="mt-2 self-start" onClick={handleInstall} />
         </div>
+        <IconButton icon={X} label="Agora não" size={32} iconSize={16} className="-mr-1 -mt-1" onClick={handleDismiss} />
       </div>
     </div>
   )

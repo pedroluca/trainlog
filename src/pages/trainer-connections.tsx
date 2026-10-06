@@ -1,480 +1,249 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore'
-import { db } from '../firebaseConfig'
-import { UserPill } from '../components/user-pill'
-import { Toast, ToastState } from '../components/toast'
-import { Button } from '../components/button'
-import { Check, Search, UserPlus, X, UserRound, ShieldCheck, Link2 } from 'lucide-react'
+import { Check, ChevronRight, ClipboardList, Search, Send, UserMinus, X } from 'lucide-react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { Navigate } from 'react-router-dom'
+import { Button } from '../components/ui/button'
+import { Card } from '../components/ui/card'
+import { IconButton } from '../components/ui/icon-button'
+import { Callout, EmptyState, LoadingState } from '../components/ui/misc'
+import { Page, PageHeader, SectionTitle } from '../components/ui/page'
+import { TextField } from '../components/ui/text-field'
+import { UserRow } from '../components/user-row'
+import { useConfirm } from '../contexts/confirm-context'
+import { useCurrentUser } from '../contexts/current-user-context'
+import { useToast } from '../contexts/toast-context'
+import {
+  acceptCoachingRequest,
+  CoachingRequestError,
+  findUserForCoaching,
+  getCoachingData,
+  removeCoachingRelation,
+  sendCoachingRequest,
+  type CoachingData,
+} from '../data/trainer'
+import type { UserProfile } from '../data/user-profile'
 
-type UserProfile = {
-  id: string
-  nome: string
-  username?: string
-  email?: string
-  photoURL?: string
-  isTrainer?: boolean
-  isPremium?: boolean
-  isFounder?: boolean
-}
-
-type TrainerRelation = {
-  id: string
-  trainerId: string
-  studentId: string
-  status: 'pending' | 'accepted'
-  requestedByRole: 'trainer' | 'student'
-  requesterId: string
-  targetId: string
-  participants: string[]
-  createdAt: string
-  updatedAt: string
-  respondedAt?: string
-}
-
-type PendingRequestView = {
-  relation: TrainerRelation
-  requester: UserProfile
-}
+const EMPTY: CoachingData = { relations: [], pendingReceived: [], outgoingPending: [], students: [], trainers: [] }
 
 export function TrainerConnections() {
-  const navigate = useNavigate()
-  const currentUserId = localStorage.getItem('usuarioId') || ''
+  const usuarioID = localStorage.getItem('usuarioId')
+  const profile = useCurrentUser()
+  const toast = useToast()
+  const confirm = useConfirm()
+  const isTrainer = !!profile?.isTrainer
 
-  const [loading, setLoading] = useState(true)
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null)
-  const [sentOrReceivedRelations, setSentOrReceivedRelations] = useState<TrainerRelation[]>([])
-  const [acceptedAsTrainer, setAcceptedAsTrainer] = useState<UserProfile[]>([])
-  const [acceptedAsStudent, setAcceptedAsStudent] = useState<UserProfile[]>([])
-  const [pendingReceived, setPendingReceived] = useState<PendingRequestView[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [searchResult, setSearchResult] = useState<UserProfile | null>(null)
-  const [searchLoading, setSearchLoading] = useState(false)
-  const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' })
+  const [data, setData] = useState<CoachingData | null>(null)
+  const [search, setSearch] = useState('')
+  const [searching, setSearching] = useState(false)
+  const [result, setResult] = useState<UserProfile | null>(null)
+  const [actionId, setActionId] = useState<string | null>(null)
 
-  const isTrainer = !!currentUser?.isTrainer
-
-  const loadData = useCallback(async () => {
-    if (!currentUserId) {
-      navigate('/login')
-      return
-    }
-
+  const load = useCallback(async () => {
+    if (!usuarioID) return
     try {
-      setLoading(true)
-
-      const meSnap = await getDoc(doc(db, 'usuarios', currentUserId))
-      if (!meSnap.exists()) {
-        navigate('/login')
-        return
-      }
-
-      const me = { id: meSnap.id, ...meSnap.data() } as UserProfile
-      setCurrentUser(me)
-
-      const relationSnap = await getDocs(
-        query(collection(db, 'trainer_relations'), where('participants', 'array-contains', currentUserId))
-      )
-
-      const relations = relationSnap.docs.map((d) => ({ id: d.id, ...d.data() } as TrainerRelation))
-      setSentOrReceivedRelations(relations)
-
-      const receivedPending = relations.filter((r) => r.status === 'pending' && r.targetId === currentUserId)
-      const requesterIds = Array.from(new Set(receivedPending.map((r) => r.requesterId)))
-      const requesters = await Promise.all(requesterIds.map((id) => getDoc(doc(db, 'usuarios', id))))
-
-      const requestersMap = new Map<string, UserProfile>()
-      requesters.forEach((snap) => {
-        if (snap.exists()) {
-          requestersMap.set(snap.id, { id: snap.id, ...snap.data() } as UserProfile)
-        }
-      })
-
-      setPendingReceived(
-        receivedPending
-          .map((relation) => ({ relation, requester: requestersMap.get(relation.requesterId) }))
-          .filter((item): item is PendingRequestView => !!item.requester)
-          .sort((a, b) => new Date(b.relation.createdAt).getTime() - new Date(a.relation.createdAt).getTime())
-      )
-
-      const acceptedForTrainer = relations.filter((r) => r.status === 'accepted' && r.trainerId === currentUserId)
-      const acceptedForStudent = relations.filter((r) => r.status === 'accepted' && r.studentId === currentUserId)
-
-      const studentIds = Array.from(new Set(acceptedForTrainer.map((r) => r.studentId)))
-      const trainerIds = Array.from(new Set(acceptedForStudent.map((r) => r.trainerId)))
-
-      const [studentSnaps, trainerSnaps] = await Promise.all([
-        Promise.all(studentIds.map((id) => getDoc(doc(db, 'usuarios', id)))),
-        Promise.all(trainerIds.map((id) => getDoc(doc(db, 'usuarios', id)))),
-      ])
-
-      setAcceptedAsTrainer(
-        studentSnaps
-          .filter((snap) => snap.exists())
-          .map((snap) => ({ id: snap.id, ...snap.data() } as UserProfile))
-      )
-
-      setAcceptedAsStudent(
-        trainerSnaps
-          .filter((snap) => snap.exists())
-          .map((snap) => ({ id: snap.id, ...snap.data() } as UserProfile))
-      )
-    } catch (error) {
-      console.error('Erro ao carregar conexoes treinador-aluno:', error)
-      setToast({ show: true, message: 'Erro ao carregar conexoes.', type: 'error' })
-    } finally {
-      setLoading(false)
+      setData(await getCoachingData(usuarioID))
+    } catch {
+      toast.error('Não foi possível carregar seus vínculos.')
+      setData(current => current ?? EMPTY)
     }
-  }, [currentUserId, navigate])
+  }, [usuarioID, toast])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
+    load()
+  }, [load])
 
-  const outgoingPending = useMemo(
-    () => sentOrReceivedRelations.filter((r) => r.status === 'pending' && r.requesterId === currentUserId),
-    [sentOrReceivedRelations, currentUserId]
-  )
+  if (!usuarioID) return <Navigate to="/login" replace />
 
-  const findExistingRelation = (otherUserId: string) => {
-    return sentOrReceivedRelations.find(
-      (relation) => relation.trainerId === otherUserId || relation.studentId === otherUserId
-    )
-  }
-
-  const normalizeSearch = (term: string) => term.trim().replace(/^@/, '')
-
-  const handleSearch = async () => {
-    const normalized = normalizeSearch(searchTerm)
-    if (!normalized) {
-      setToast({ show: true, message: 'Digite username ou email para buscar.', type: 'error' })
-      return
-    }
-
+  const handleSearch = async (event: FormEvent) => {
+    event.preventDefault()
+    const term = search.trim()
+    if (!term) return
+    setSearching(true)
+    setResult(null)
     try {
-      setSearchLoading(true)
-      setSearchResult(null)
-
-      const byUsername = await getDocs(query(collection(db, 'usuarios'), where('username', '==', normalized)))
-      let userDoc = byUsername.docs[0]
-
-      if (!userDoc) {
-        const byEmail = await getDocs(
-          query(collection(db, 'usuarios'), where('email', '==', normalized.toLowerCase()))
-        )
-        userDoc = byEmail.docs[0]
-      }
-
-      if (!userDoc) {
-        setToast({ show: true, message: 'Nenhum usuario encontrado com esse username/email exato.', type: 'info' })
-        return
-      }
-
-      if (userDoc.id === currentUserId) {
-        setToast({ show: true, message: 'Voce nao pode criar solicitacao para si mesmo.', type: 'error' })
-        return
-      }
-
-      const user = { id: userDoc.id, ...userDoc.data() } as UserProfile
-      setSearchResult(user)
-    } catch (error) {
-      console.error('Erro ao buscar usuario:', error)
-      setToast({ show: true, message: 'Erro ao realizar busca.', type: 'error' })
+      const found = await findUserForCoaching(term)
+      if (!found) toast.show('Nenhum usuário com esse username ou email exato.')
+      else if (found.id === usuarioID) toast.error('Você não pode criar um vínculo com você mesmo.')
+      else setResult(found)
+    } catch {
+      toast.error('Erro ao buscar usuário.')
     } finally {
-      setSearchLoading(false)
+      setSearching(false)
     }
   }
 
-  const resolveRequestRole = (targetUser: UserProfile): { trainerId: string; studentId: string; requestedByRole: 'trainer' | 'student' } | null => {
-    if (!currentUser) return null
-
-    if (isTrainer) {
-      return { trainerId: currentUser.id, studentId: targetUser.id, requestedByRole: 'trainer' }
-    }
-
-    if (targetUser.isTrainer) {
-      return { trainerId: targetUser.id, studentId: currentUser.id, requestedByRole: 'student' }
-    }
-
-    return null
-  }
-
-  const handleSendRequest = async () => {
-    if (!searchResult || !currentUser) return
-
-    const relationConfig = resolveRequestRole(searchResult)
-
-    if (!relationConfig) {
-      setToast({
-        show: true,
-        message: 'Para solicitar um treinador, busque um perfil marcado como treinador.',
-        type: 'error',
-      })
-      return
-    }
-
-    const alreadyExists = findExistingRelation(searchResult.id)
-    if (alreadyExists) {
-      const label = alreadyExists.status === 'accepted' ? 'vinculo ativo' : 'solicitacao pendente'
-      setToast({ show: true, message: `Ja existe ${label} com esse usuario.`, type: 'info' })
-      return
-    }
-
+  const handleSend = async () => {
+    if (!result || !data || !profile) return
+    setActionId('send')
     try {
-      setActionLoading('send')
-      const now = new Date().toISOString()
-        const relationId = `${relationConfig.trainerId}_${relationConfig.studentId}`
-        await setDoc(doc(db, 'trainer_relations', relationId), {
-        trainerId: relationConfig.trainerId,
-        studentId: relationConfig.studentId,
-        status: 'pending',
-        requestedByRole: relationConfig.requestedByRole,
-        requesterId: currentUser.id,
-        targetId: searchResult.id,
-        participants: [relationConfig.trainerId, relationConfig.studentId],
-        createdAt: now,
-        updatedAt: now,
-      })
-
-      setToast({ show: true, message: 'Solicitacao enviada com sucesso!', type: 'success' })
-      setSearchResult(null)
-      setSearchTerm('')
-      await loadData()
+      await sendCoachingRequest(profile, result, data.relations)
+      toast.success('Solicitação enviada!')
+      setResult(null)
+      setSearch('')
+      await load()
     } catch (error) {
-      console.error('Erro ao enviar solicitacao treinador-aluno:', error)
-      setToast({ show: true, message: 'Erro ao enviar solicitacao.', type: 'error' })
+      toast.error(error instanceof CoachingRequestError ? error.message : 'Erro ao enviar a solicitação.')
     } finally {
-      setActionLoading(null)
+      setActionId(null)
     }
   }
 
-  const handleAcceptRequest = async (relationId: string) => {
+  const respond = async (relationId: string, accept: boolean) => {
+    setActionId(relationId)
     try {
-      setActionLoading(relationId)
-      await updateDoc(doc(db, 'trainer_relations', relationId), {
-        status: 'accepted',
-        updatedAt: new Date().toISOString(),
-        respondedAt: new Date().toISOString(),
-      })
-      setToast({ show: true, message: 'Solicitacao aceita com sucesso.', type: 'success' })
-      await loadData()
-    } catch (error) {
-      console.error('Erro ao aceitar solicitacao:', error)
-      setToast({ show: true, message: 'Erro ao aceitar solicitacao.', type: 'error' })
+      if (accept) await acceptCoachingRequest(relationId)
+      else await removeCoachingRelation(relationId)
+      toast.success(accept ? 'Vínculo aceito!' : 'Solicitação recusada.')
+      await load()
+    } catch {
+      toast.error('Não foi possível responder a solicitação.')
     } finally {
-      setActionLoading(null)
+      setActionId(null)
     }
   }
 
-  const handleRejectRequest = async (relationId: string) => {
-    try {
-      setActionLoading(relationId)
-      await deleteDoc(doc(db, 'trainer_relations', relationId))
-      setToast({ show: true, message: 'Solicitacao recusada.', type: 'info' })
-      await loadData()
-    } catch (error) {
-      console.error('Erro ao recusar solicitacao:', error)
-      setToast({ show: true, message: 'Erro ao recusar solicitacao.', type: 'error' })
-    } finally {
-      setActionLoading(null)
-    }
+  const confirmUnlink = (user: UserProfile, relationId: string) => {
+    confirm({
+      title: 'Desfazer vínculo',
+      message: `Remover o vínculo com ${user.nome}? Os treinos já criados continuam com o aluno.`,
+      confirmLabel: 'Remover',
+      icon: UserMinus,
+      onConfirm: () => respond(relationId, false),
+    })
   }
 
-  const requestLabel = isTrainer ? 'Buscar aluno por username/email exato' : 'Buscar treinador por username/email exato'
+  const relationIdWith = (otherId: string) =>
+    data?.relations.find(relation => relation.status === 'accepted' && (relation.trainerId === otherId || relation.studentId === otherId))?.id
 
   return (
-    <main className="flex flex-col items-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-24 md:py-8 gap-4">
-      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a]">
-        <div className="flex items-center justify-between mb-5">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Treinadores e Alunos</h1>
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 px-3 py-1 rounded-full">
-            {isTrainer ? 'Treinador' : 'Aluno'}
-          </span>
-        </div>
+    <Page width="lg">
+      <PageHeader title={isTrainer ? 'Alunos' : 'Treinador'} subtitle={isTrainer ? 'Perfil de treinador' : 'Perfil de aluno'} />
 
-        <div className="bg-gray-50 dark:bg-[#252525] border border-gray-200 dark:border-[#333] rounded-xl p-4 mb-5">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide font-medium">Nova solicitacao</p>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{requestLabel}</label>
-          <div className="flex gap-2">
-            <input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Ex: joao.silva ou joao@email.com"
-              className="flex-1 border dark:border-[#404040] rounded-lg px-3 py-2 dark:bg-[#1a1a1a] dark:text-gray-100"
-            />
-            <Button
-              onClick={handleSearch}
-              disabled={searchLoading}
-              className="bg-[#27AE60] hover:bg-[#219150] text-white px-4"
-            >
-              <Search size={18} />
-            </Button>
-          </div>
-
-          {searchResult && (
-            <div className="mt-3 rounded-lg border border-gray-200 dark:border-[#404040] p-3 bg-white dark:bg-[#1a1a1a]">
-              <UserPill
-                nome={searchResult.nome}
-                username={searchResult.username}
-                photoURL={searchResult.photoURL}
-                isTrainer={searchResult.isTrainer}
-                isFounder={searchResult.isFounder}
-                isPremium={searchResult.isPremium}
-              >
-                <button
-                  onClick={handleSendRequest}
-                  disabled={actionLoading === 'send'}
-                  className="cursor-pointer flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg"
-                  title="Enviar solicitacao"
-                >
-                  <UserPlus size={14} /> Enviar
-                </button>
-              </UserPill>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
+        <div className="flex flex-col gap-5">
+          <Card className="flex flex-col gap-3 p-4">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-base font-semibold">{isTrainer ? 'Convidar aluno' : 'Encontrar treinador'}</h2>
+              <p className="text-sm leading-5 text-muted">
+                {isTrainer
+                  ? 'Busque pelo username ou email exato do aluno. Depois que ele aceitar, você poderá montar os treinos dele.'
+                  : 'Busque pelo username ou email exato do seu personal. Ele poderá montar treinos para você.'}
+              </p>
             </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <section className="bg-gray-50 dark:bg-[#252525] border border-gray-200 dark:border-[#333] rounded-xl p-4">
-            <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <ShieldCheck size={16} className="text-blue-500" /> Solicitações recebidas
-            </h2>
-            {loading ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Carregando...</p>
-            ) : pendingReceived.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Nenhuma solicitacao pendente.</p>
-            ) : (
-              <div className="space-y-3">
-                {pendingReceived.map(({ relation, requester }) => (
-                  <UserPill
-                    key={relation.id}
-                    nome={requester.nome}
-                    username={requester.username}
-                    photoURL={requester.photoURL}
-                    isTrainer={requester.isTrainer}
-                    isFounder={requester.isFounder}
-                    isPremium={requester.isPremium}
-                  >
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleAcceptRequest(relation.id)}
-                        disabled={actionLoading === relation.id}
-                        className="cursor-pointer p-2 rounded-full bg-[#27AE60]/10 hover:bg-[#27AE60]/20 text-[#27AE60]"
-                        title="Aceitar"
-                      >
-                        <Check size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleRejectRequest(relation.id)}
-                        disabled={actionLoading === relation.id}
-                        className="cursor-pointer p-2 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500"
-                        title="Recusar"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  </UserPill>
-                ))}
+            <form onSubmit={handleSearch} className="flex items-end gap-2">
+              <TextField
+                containerClassName="flex-1"
+                value={search}
+                onChange={event => setSearch(event.target.value)}
+                placeholder="@username ou email"
+                aria-label="Username ou email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+              <IconButton type="submit" icon={Search} variant="primary" size={48} label="Buscar" disabled={searching} />
+            </form>
+            {result && (
+              <div className="overflow-hidden rounded-2xl bg-surface-2">
+                <UserRow user={result} right={<Button label="Enviar" icon={Send} size="sm" loading={actionId === 'send'} onClick={handleSend} />} />
               </div>
             )}
-          </section>
+          </Card>
 
-          <section className="bg-gray-50 dark:bg-[#252525] border border-gray-200 dark:border-[#333] rounded-xl p-4">
-            <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Link2 size={16} className="text-[#27AE60]" /> Solicitações enviadas
-            </h2>
-            {loading ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Carregando...</p>
-            ) : outgoingPending.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Nenhuma solicitacao enviada pendente.</p>
-            ) : (
-              <div className="space-y-2">
-                {outgoingPending.map((relation) => (
-                  <p key={relation.id} className="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 border border-gray-200 dark:border-[#404040]">
-                    {relation.requestedByRole === 'trainer' ? 'Convite para aluno enviado.' : 'Solicitacao para treinador enviada.'}
-                  </p>
+          {data && data.pendingReceived.length > 0 && (
+            <section className="flex flex-col gap-2">
+              <SectionTitle title="Solicitações recebidas" />
+              <Card className="overflow-hidden">
+                {data.pendingReceived.map(({ relation, requester }, index) => (
+                  <div key={relation.id}>
+                    {index > 0 && <div className="ml-[72px] h-px bg-border" />}
+                    <UserRow
+                      user={requester}
+                      subtitle={relation.requestedByRole === 'trainer' ? 'Quer ser seu treinador' : 'Quer ser seu aluno'}
+                      right={(
+                        <>
+                          <IconButton icon={X} variant="surface" label="Recusar" disabled={actionId === relation.id} onClick={() => respond(relation.id, false)} />
+                          <IconButton icon={Check} variant="primary" label="Aceitar" disabled={actionId === relation.id} onClick={() => respond(relation.id, true)} />
+                        </>
+                      )}
+                    />
+                  </div>
                 ))}
-              </div>
-            )}
-          </section>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-5 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a]">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {isTrainer && (
-            <section>
-              <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <UserRound size={16} className="text-[#27AE60]" /> Meus alunos
-              </h2>
-              {loading ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Carregando...</p>
-              ) : acceptedAsTrainer.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum aluno vinculado ainda.</p>
-              ) : (
-                <div className="space-y-3">
-                  {acceptedAsTrainer.map((student) => (
-                    <UserPill
-                      key={student.id}
-                      nome={student.nome}
-                      username={student.username}
-                      photoURL={student.photoURL}
-                      isTrainer={student.isTrainer}
-                      isFounder={student.isFounder}
-                      isPremium={student.isPremium}
-                    >
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/train?studentId=${student.id}&studentName=${encodeURIComponent(student.nome)}`
-                          )
-                        }
-                        className="cursor-pointer text-xs font-bold uppercase tracking-wider bg-[#27AE60]/10 hover:bg-[#27AE60]/20 text-[#27AE60] px-3 py-2 rounded-lg"
-                      >
-                        Gerenciar treinos
-                      </button>
-                    </UserPill>
-                  ))}
-                </div>
-              )}
+              </Card>
             </section>
           )}
 
-          <section>
-            <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <ShieldCheck size={16} className="text-blue-500" /> Meus treinadores
-            </h2>
-            {loading ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Carregando...</p>
-            ) : acceptedAsStudent.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum treinador vinculado ainda.</p>
-            ) : (
-              <div className="space-y-3">
-                {acceptedAsStudent.map((trainer) => (
-                  <UserPill
-                    key={trainer.id}
-                    nome={trainer.nome}
-                    username={trainer.username}
-                    photoURL={trainer.photoURL}
-                    isTrainer={trainer.isTrainer}
-                    isFounder={trainer.isFounder}
-                    isPremium={trainer.isPremium}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
+          {data && data.outgoingPending.length > 0 && (
+            <Callout tone="info" title="Aguardando resposta">
+              {`${data.outgoingPending.length} ${data.outgoingPending.length === 1 ? 'solicitação enviada ainda não foi respondida' : 'solicitações enviadas ainda não foram respondidas'}.`}
+            </Callout>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-5">
+          {data === null ? (
+            <LoadingState />
+          ) : (
+            <>
+              {isTrainer && (
+                <section className="flex flex-col gap-2">
+                  <SectionTitle title="Meus alunos" />
+                  {data.students.length === 0 ? (
+                    <Card>
+                      <EmptyState icon={ClipboardList} title="Nenhum aluno vinculado" description="Convide seus alunos pela busca." />
+                    </Card>
+                  ) : (
+                    <Card className="overflow-hidden">
+                      {data.students.map((student, index) => (
+                        <div key={student.id}>
+                          {index > 0 && <div className="ml-[72px] h-px bg-border" />}
+                          <UserRow
+                            user={student}
+                            subtitle="Montar os treinos"
+                            to={`/train?studentId=${student.id}&studentName=${encodeURIComponent(student.nome)}`}
+                            right={<ChevronRight size={18} className="text-subtle" aria-hidden />}
+                          />
+                        </div>
+                      ))}
+                    </Card>
+                  )}
+                </section>
+              )}
+
+              <section className="flex flex-col gap-2">
+                <SectionTitle title="Meus treinadores" />
+                {data.trainers.length === 0 ? (
+                  <Card>
+                    <EmptyState
+                      icon={ClipboardList}
+                      title="Nenhum treinador vinculado"
+                      description="Quando um treinador montar um treino para você, ele aparece na aba Treino."
+                    />
+                  </Card>
+                ) : (
+                  <Card className="overflow-hidden">
+                    {data.trainers.map((trainer, index) => {
+                      const relationId = relationIdWith(trainer.id)
+                      return (
+                        <div key={trainer.id}>
+                          {index > 0 && <div className="ml-[72px] h-px bg-border" />}
+                          <UserRow
+                            user={trainer}
+                            subtitle={trainer.cref ? `CREF ${trainer.cref}` : undefined}
+                            to={`/friend/${trainer.username || trainer.id}`}
+                            right={relationId ? (
+                              <IconButton icon={UserMinus} label="Desfazer vínculo" onClick={() => confirmUnlink(trainer, relationId)} />
+                            ) : undefined}
+                          />
+                        </div>
+                      )
+                    })}
+                  </Card>
+                )}
+              </section>
+            </>
+          )}
         </div>
       </div>
-
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      )}
-    </main>
+    </Page>
   )
 }

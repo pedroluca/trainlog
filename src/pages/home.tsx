@@ -1,108 +1,36 @@
-import { useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { CheckCircle, Zap, Users, Shield } from "lucide-react"
-import { getVersionWithPrefix } from "../version"
-import logo from '../assets/LOGO COM FUNDO - VERDE.png'
+import { Link, Navigate } from 'react-router-dom'
+import { buttonClasses } from '../components/ui/button'
+import { BrandMark, FeatureList } from '../layouts/auth-layout'
+import { getVersionWithPrefix } from '../version'
 
+/** Boas-vindas (mesma tela do app). No desktop os recursos ficam no painel ao lado */
 export function Home() {
-  const usuarioID = localStorage.getItem('usuarioId')
-  const isLogged = usuarioID ? true : false
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (usuarioID) {
-      navigate('/train')
-    }
-  })
+  if (localStorage.getItem('usuarioId')) return <Navigate to="/train" replace />
 
   return (
-    <main className={`${isLogged ? 'pb-24' : ''} flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0d0d0d] dark:via-[#121212] dark:to-[#0d0d0d] p-4 md:p-8 pt-20 md:pt-20`}>
-
-      {/* ── Desktop: two-column layout ── */}
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-
-        {/* ── Left column: Hero + Features ── */}
-        <div className="lg:col-span-2 flex flex-col gap-8">
-          {/* Brand */}
-          <div className="flex flex-col items-center lg:items-start gap-1 md:gap-4">
-            <div className="text-center lg:text-left flex flex-col lg:flex-row items-center gap-3">
-              <img src={logo} alt="Logo do Tractus" className="w-18 h-18" />
-              <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-[#27AE60] to-[#1ecc6a] bg-clip-text text-transparent leading-tight">
-                Tractus
-              </h1>
-            </div>
-            <p className="text-gray-500 dark:text-gray-400 text-center md:text-left text-lg mt-3 max-w-md">
-              Seu companheiro inteligente para acompanhar treinos e alcançar seus objetivos fitness
-            </p>
+    <div className="flex flex-1 flex-col justify-between gap-10 pt-6 lg:justify-center lg:pt-0">
+      <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4 lg:hidden">
+          <BrandMark />
+          <div className="flex flex-col gap-2">
+            <h1 className="type-display">Tractus</h1>
+            <p className="text-base leading-6 text-muted">Organize seus treinos, registre cada série e acompanhe sua evolução.</p>
           </div>
         </div>
-
-        {/* ── Right column: CTA card ── */}
-        <div className="h-full bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-2xl shadow-black/10 dark:shadow-black/40 border border-gray-200 dark:border-[#2a2a2a] px-8 py-4 flex flex-col justify-center gap-6">
-
-          {/* Card header */}
-          <div className="text-center">
-            <h2 className="text-2xl font-medium text-gray-900 dark:text-white">Pronto para evoluir?</h2>
-          </div>
-
-          {/* Benefits */}
-          <div className="grid grid-cols-2 gap-3">
-            <BenefitItem icon={<Zap size={15} />} text="Interface intuitiva" />
-            <BenefitItem icon={<Shield size={15} />} text="Dados seguros" />
-            <BenefitItem icon={<CheckCircle size={15} />} text="Conta gratuita" />
-            <BenefitItem icon={<Users size={15} />} text="Qualquer dispositivo" />
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-gray-200 dark:bg-[#333]" />
-            <span className="text-xs text-gray-400 uppercase tracking-wider">Comece agora</span>
-            <div className="flex-1 h-px bg-gray-200 dark:bg-[#333]" />
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col gap-3">
-            <Link
-              to="/login"
-              className="block bg-gradient-to-r from-[#27AE60] to-[#219150] hover:from-[#219150] hover:to-[#1e8449] text-white font-bold py-3 rounded-xl text-center shadow-lg shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-200 hover:scale-[1.02] text-base"
-            >
-              Entrar na Conta
-            </Link>
-            <Link
-              to="/cadastro"
-              className="block bg-gray-100 dark:bg-[#252525] hover:bg-gray-200 dark:hover:bg-[#2e2e2e] text-gray-800 dark:text-white font-bold py-3 rounded-xl text-center border border-gray-200 dark:border-[#333] transition-all duration-200 hover:scale-[1.02] text-base"
-            >
-              Criar Nova Conta
-            </Link>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center pt-4 border-t border-gray-100 dark:border-[#2a2a2a]">
-            <p className="text-gray-400 text-xs">
-              Desenvolvido com 💪 por{' '}
-              <a
-                href="https://pedroluca.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#27AE60] hover:text-[#219150] font-medium transition-colors"
-              >
-                Pedro Luca Prates
-              </a>
-            </p>
-            <p className="text-gray-300 dark:text-gray-600 text-xs mt-1">{getVersionWithPrefix()}</p>
-          </div>
+        <div className="lg:hidden">
+          <FeatureList />
+        </div>
+        <div className="hidden flex-col gap-1.5 lg:flex">
+          <h2 className="type-display">Pronto para evoluir?</h2>
+          <p className="text-muted">Entre na sua conta ou crie uma grátis em menos de um minuto.</p>
         </div>
       </div>
-    </main>
-  )
-}
 
-// Benefit Item — compact grid cell
-function BenefitItem({ icon, text }: { icon: React.ReactNode, text: string }) {
-  return (
-    <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#252525] rounded-xl px-3 py-2.5">
-      <div className="text-[#27AE60]">{icon}</div>
-      <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">{text}</span>
+      <div className="flex flex-col gap-3">
+        <Link to="/login" className={buttonClasses({ size: 'lg' })}>Entrar</Link>
+        <Link to="/cadastro" className={buttonClasses({ size: 'lg', variant: 'secondary' })}>Criar conta grátis</Link>
+        <p className="mt-2 text-center text-xs text-subtle lg:hidden">{getVersionWithPrefix()}</p>
+      </div>
     </div>
   )
 }

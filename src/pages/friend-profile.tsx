@@ -1,673 +1,237 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { db } from '../firebaseConfig'
-import { doc, getDoc, collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore'
-import { ArrowLeft, Lock, UsersRound, Dumbbell, Activity, Instagram } from 'lucide-react'
-import { BadgeList } from '../components/badge-chip'
-import { resolveUserBadges, resolveAvatarRing } from '../data/badges'
-import { PremiumUpgradeModal } from '../components/premium-upgrade-modal'
-import { Spinner } from '../components/spinner'
-import { AvatarImage } from '../components/avatar-image'
+import { Activity, AtSign, Crown, Dumbbell, Lock, UserX } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { BadgeStrip } from '../components/badges'
+import { PremiumUpgrade } from '../components/premium-upgrade'
+import { Avatar } from '../components/ui/avatar'
+import { Button } from '../components/ui/button'
+import { Card } from '../components/ui/card'
+import { EmptyState, LoadingState, SegmentedControl, StatTile } from '../components/ui/misc'
+import { Page, StackHeader } from '../components/ui/page'
+import { useCurrentUser } from '../contexts/current-user-context'
+import { resolveAvatarTone, resolveUserBadges } from '../data/badges'
+import { getFriendsCount } from '../data/friends'
+import { getUserWorkouts } from '../data/get-user-workouts'
+import { getWorkoutExercises } from '../data/get-workout-exercises'
+import { describeLog, getRecentLogs, type LogEntry } from '../data/logs'
+import { findUserByIdOrUsername } from '../data/profile'
+import type { UserProfile } from '../data/user-profile'
+import { compareWeekDays } from '../data/week-days'
+import { formatDate, formatDecimal, formatTime, isWithinLastDays } from '../utils/format'
 
-// Types
-interface Privacidade {
-  ocultarEmail?: boolean
-  ocultarNascimento?: boolean
-  ocultarAtividades?: boolean
-  ocultarTreinos?: boolean
-  ocultarAmigos?: boolean
-  ocultarStreak?: boolean
-  ocultarPeso?: boolean
-  ocultarAltura?: boolean
-  ocultarInstagram?: boolean
-}
+type Tab = 'activity' | 'workouts'
+type WorkoutSummary = { id: string; dia: string; musculo: string; exercises: string[] }
 
-interface UsuarioProfile {
-  id: string
-  nome: string
-  bio?: string
-  username?: string
-  isTrainer?: boolean
-  cref?: string
-  photoURL?: string
-  email?: string
-  dataNascimento?: string
-  instagram?: string
-  altura?: number
-  peso?: number
-  currentStreak?: number
-  longestStreak?: number
-  privacidade?: Privacidade
-  isPremium?: boolean
-  isFounder?: boolean
-  badges?: string[]
-}
-
-interface LogEntry {
-  id: string
-  usuarioID: string
-  titulo: string
-  series: number
-  repeticoes: number
-  peso: number
-  usesProgressiveWeight?: boolean
-  progressiveSets?: { reps: number; weight: number }[]
-  data: string
-}
-
-interface ExercicioBasico {
-  nome: string
-}
-
-interface TreinoListItem {
-  id: string
-  dia: string
-  musculo: string
-  nome: string
-  exercicios: ExercicioBasico[]
-}
+const PAGE = 10
 
 export function FriendProfile() {
-  const { id } = useParams<{ id: string }>()
+  const { id = '' } = useParams<{ id: string }>()
+  const viewer = useCurrentUser()
   const navigate = useNavigate()
-  const currentUserId = localStorage.getItem('usuarioId')
-  const [isPremiumObserver, setIsPremiumObserver] = useState(false)
-  
-  const [profile, setProfile] = useState<UsuarioProfile | null>(null)
-  const [friendsCount, setFriendsCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-  
-  // Tabs: 'atividades' | 'treinos'
-  const [activeTab, setActiveTab] = useState<'atividades' | 'treinos'>('atividades')
-  
-  // Data for tabs
-  const [logs, setLogs] = useState<LogEntry[]>([])
-  const [loadingLogs, setLoadingLogs] = useState(false)
-  const [treinos, setTreinos] = useState<TreinoListItem[]>([])
-  const [loadingTreinos, setLoadingTreinos] = useState(false)
-  const [logsLimit, setLogsLimit] = useState(7) // Start with 7 days approx
+  const viewerId = localStorage.getItem('usuarioId')
+  const viewerIsPremium = !!viewer?.isPremium
 
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false)
-  const [isPremium, setIsPremium] = useState(false)
-  const [nome, setNome] = useState<string | null>(null)
-  const [email, setEmail] = useState<string | null>(null)
-  const [telefone, setTelefone] = useState<string | null>(null)
+  const [user, setUser] = useState<UserProfile | null | undefined>(undefined)
+  const [friendsCount, setFriendsCount] = useState<number | null>(null)
+  const [tab, setTab] = useState<Tab>('activity')
+  const [logs, setLogs] = useState<LogEntry[] | null>(null)
+  const [logsLimit, setLogsLimit] = useState(PAGE)
+  const [workouts, setWorkouts] = useState<WorkoutSummary[] | null>(null)
+  const [premiumOpen, setPremiumOpen] = useState(false)
 
   useEffect(() => {
-    if (!currentUserId) {
-      navigate('/login')
-    } else {
-      const fetchUserData = async () => {
-        try {
-          const userDocRef = doc(db, 'usuarios', currentUserId)
-          const userDoc = await getDoc(userDocRef)
-
-          if (userDoc.exists()) {
-            const userData = userDoc.data()
-            setNome(userData.nome || 'Não disponível')
-            setEmail(userData.email || 'Não disponível')
-            setTelefone(userData.telefone || null)
-            setIsPremium(userData.isPremium === true)
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error)
-        }
-      } 
-      fetchUserData()
+    let active = true
+    findUserByIdOrUsername(id)
+      .then(found => {
+        if (!active) return
+        setUser(found)
+        if (found) getFriendsCount(found.id).then(count => active && setFriendsCount(count)).catch(() => {})
+      })
+      .catch(() => active && setUser(null))
+    return () => {
+      active = false
     }
-  }, [currentUserId, navigate])
-
-  useEffect(() => {
-    // Determine if the *viewer* is premium
-    const checkPremium = async () => {
-      if (!currentUserId) return
-      const meRef = doc(db, 'usuarios', currentUserId)
-      const meSnap = await getDoc(meRef)
-      if (meSnap.exists()) {
-        setIsPremiumObserver(meSnap.data().isPremium === true)
-      }
-    }
-    checkPremium()
-  }, [currentUserId])
-
-  useEffect(() => {
-    if (!id) return
-    const fetchUserAndCount = async () => {
-      setLoading(true)
-      try {
-        let userSnap = await getDoc(doc(db, 'usuarios', id))
-        let realUserId = id
-        
-        if (!userSnap.exists()) {
-          const qUser = query(collection(db, 'usuarios'), where('username', '==', id), limit(1))
-          const qsUser = await getDocs(qUser)
-          if (!qsUser.empty) {
-            userSnap = qsUser.docs[0]
-            realUserId = userSnap.id
-          }
-        }
-
-        if (userSnap.exists()) {
-          setProfile({ id: realUserId, ...userSnap.data() } as UsuarioProfile)
-        }
-
-        const q = query(
-          collection(db, 'amizades'),
-          where('participantes', 'array-contains', realUserId),
-          where('status', '==', 'aceito')
-        )
-        const snapCount = await getDocs(q)
-        setFriendsCount(snapCount.size)
-      } catch (err) {
-        console.error('Erro ao buscar perfil do amigo:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchUserAndCount()
   }, [id])
 
-  const fetchLogsData = useCallback(async () => {
-    if (!profile?.id) return
-    setLoadingLogs(true)
-    try {
-      const logsRef = collection(db, 'logs')
-      const q = query(
-        logsRef,
-        where('usuarioID', '==', profile.id),
-        orderBy('data', 'desc'),
-        limit(logsLimit)
-      )
-      const snap = await getDocs(q)
-      const fetchedLogs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as LogEntry))
-      setLogs(fetchedLogs)
-    } catch (err) {
-      console.error('Erro ao buscar logs:', err)
-    } finally {
-      setLoadingLogs(false)
-    }
-  }, [profile?.id, logsLimit])
-
-  const fetchTreinosData = useCallback(async () => {
-    if (!profile?.id) return
-    setLoadingTreinos(true)
-    try {
-      const treinosRef = collection(db, 'treinos')
-      const q = query(treinosRef, where('usuarioID', '==', profile.id))
-      const snap = await getDocs(q)
-      
-      const list: TreinoListItem[] = []
-      for (const tDoc of snap.docs) {
-        const tData = tDoc.data()
-        
-        if (tData.isTemplate) continue
-        
-        // Fetch subcollection exercicios
-        const exRef = collection(tDoc.ref, 'exercicios')
-        const exSnap = await getDocs(exRef)
-        const exerciciosBasicos = exSnap.docs.map(e => ({ nome: e.data().titulo || 'Exercicio sem nome' }))
-
-        list.push({
-          id: tDoc.id,
-          dia: tData.dia,
-          musculo: tData.musculo,
-          nome: tData.nome || tData.musculo, // Fallback if no specific nome exists
-          exercicios: exerciciosBasicos
-        })
-      }
-      const diasMap: Record<string, number> = {
-        'domingo': 0, 'segunda': 1, 'segunda-feira': 1, 'terça': 2, 'terça-feira': 2,
-        'quarta': 3, 'quarta-feira': 3, 'quinta': 4, 'quinta-feira': 4, 'sexta': 5, 'sexta-feira': 5,
-        'sábado': 6, 'sabado': 6
-      }
-      
-      list.sort((a, b) => {
-        const diaA = (a.dia || '').toLowerCase()
-        const diaB = (b.dia || '').toLowerCase()
-        const valA = diasMap[diaA] ?? 99
-        const valB = diasMap[diaB] ?? 99
-        if (valA !== valB) return valA - valB
-        return a.nome.localeCompare(b.nome)
-      })
-
-      setTreinos(list)
-    } catch (err) {
-      console.error('Erro ao buscar treinos do amigo:', err)
-    } finally {
-      setLoadingTreinos(false)
-    }
-  }, [profile?.id])
+  const privacy = user?.privacidade ?? {}
+  const userId = user?.id
+  const activitiesHidden = !!privacy.ocultarAtividades
+  const workoutsHidden = !!privacy.ocultarTreinos
 
   useEffect(() => {
-    if (!profile) return
-    if (activeTab === 'atividades' && !profile.privacidade?.ocultarAtividades) {
-      fetchLogsData()
-    } else if (activeTab === 'treinos' && !profile.privacidade?.ocultarTreinos) {
-      if (treinos.length === 0) fetchTreinosData()
+    if (!userId || activitiesHidden) return
+    let active = true
+    getRecentLogs(userId, logsLimit)
+      .catch(() => [] as LogEntry[])
+      .then(list => active && setLogs(list))
+    return () => {
+      active = false
     }
-  }, [profile, activeTab, logsLimit, treinos.length, fetchLogsData, fetchTreinosData])
+  }, [userId, activitiesHidden, logsLimit])
 
-  const handleLoadMoreLogs = () => {
-    setLogsLimit(prev => prev + 10)
-  }
+  useEffect(() => {
+    if (!userId || tab !== 'workouts' || workouts || workoutsHidden) return
+    getUserWorkouts(userId)
+      .then(list => Promise.all([...list].sort((a, b) => compareWeekDays(a.dia, b.dia)).map(async workout => ({
+        id: workout.id,
+        dia: workout.dia,
+        musculo: workout.musculo,
+        exercises: (await getWorkoutExercises(workout.id, workout.exerciseOrder)).map(exercise => exercise.titulo),
+      }))))
+      .then(setWorkouts)
+      .catch(() => setWorkouts([]))
+  }, [userId, tab, workouts, workoutsHidden])
 
-  const handleOpenUpgradeModal = () => {
-    setIsUpgradeModalOpen(true)
-  }
+  const badges = useMemo(() => (user ? resolveUserBadges(user) : []), [user])
 
-  const handleCloseUpgradeModal = () => {
-    setIsUpgradeModalOpen(false)
-  }
+  if (!viewerId) return <Navigate to="/login" replace />
+  if (user && user.id === viewerId) return <Navigate to="/profile" replace />
 
-  if (loading) {
+  if (user === undefined) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212]">
-        <Spinner size={40} color="var(--color-primary)" label="Carregando perfil do amigo" />
-      </div>
+      <>
+        <StackHeader title="" backTo="/friends" width="lg" />
+        <LoadingState />
+      </>
     )
   }
 
-  if (!profile) {
+  if (user === null) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4">
-        <UsersRound size={64} className="text-gray-400 mb-4" />
-        <h2 className="text-xl font-bold dark:text-white">Usuário não encontrado</h2>
-        <button onClick={() => navigate('/friends')} className="mt-6 text-blue-500 hover:underline">
-          Voltar para amigos
-        </button>
-      </div>
+      <>
+        <StackHeader title="" backTo="/friends" width="lg" />
+        <EmptyState icon={UserX} title="Usuário não encontrado" actionLabel="Voltar para Amigos" onAction={() => navigate('/friends')} className="pt-16" />
+      </>
     )
   }
 
-  const isDentroDosSeteDias = (dataIso: string) => {
-    const data = new Date(dataIso)
-    const hj = new Date()
-    const diff = hj.getTime() - data.getTime()
-    return diff <= 7 * 24 * 60 * 60 * 1000
-  }
-
-  // const calculateIMC = (peso: number, altura: number) => {
-  //   if (!peso || !altura) return 0
-  //   const alturaMetros = altura / 100
-  //   return peso / (alturaMetros * alturaMetros)
-  // }
-
-  // const getIMCStatus = (imc: number) => {
-  //   if (imc === 0) return { label: 'N/A', color: 'text-gray-500' }
-  //   if (imc < 18.5) return { label: 'Abaixo do peso', color: 'text-blue-600' }
-  //   if (imc < 25) return { label: 'Normal', color: 'text-green-600' }
-  //   if (imc < 30) return { label: 'Sobrepeso', color: 'text-yellow-600' }
-  //   return { label: 'Obesidade', color: 'text-red-600' }
-  // }
-
-  const priv = profile.privacidade || {}
-  const visibleMetricCount = [
-    !priv.ocultarAltura && profile.altura && profile.altura > 0,
-    !priv.ocultarPeso && profile.peso && profile.peso > 0,
-    !priv.ocultarAmigos,
-    !priv.ocultarStreak,
-  ].filter(Boolean).length
-  // const imc = profile.altura && profile.peso ? calculateIMC(profile.peso, profile.altura) : 0
-  const birthDate = profile.dataNascimento ? new Date(profile.dataNascimento + 'T00:00:00').toLocaleDateString('pt-BR') : null
+  // Sem Premium, o histórico de amigos fica limitado aos últimos 7 dias
+  const visibleLogs = (logs ?? []).filter(log => viewerIsPremium || isWithinLastDays(log.data, 7))
+  const lastOldLog = !viewerIsPremium ? (logs ?? []).find(log => !isWithinLastDays(log.data, 7)) : undefined
+  const birthDate = !privacy.ocultarNascimento && user.dataNascimento
+    ? new Date(`${user.dataNascimento}T00:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
+    : null
+  const firstName = user.nome.split(' ')[0]
 
   return (
-    <main className="flex flex-col items-center justify-start min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-[#121212] p-4 pb-24 md:py-8">
-      {/* Container header and info */}
-      <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl p-4 md:p-6 w-full max-w-lg md:max-w-3xl lg:max-w-4xl border border-gray-100 dark:border-[#2a2a2a] mb-6 relative">
-        <button
-          onClick={() => navigate('/friends')}
-          className="cursor-pointer absolute top-1 left-1 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#333] text-gray-500 dark:text-gray-400 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        
-        <div className="md:hidden pt-8">
-          {/* Profile Head */}
-          <div className="flex md:flex-col md:items-center justify-start gap-4 mb-4">
-            {/* Avatar */}
-            <div className="relative mb-3 pl-1 pt-1">
-              <div className={`w-20 h-20 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl font-bold overflow-hidden shadow-inner relative z-0 ${
-                resolveAvatarRing(resolveUserBadges(profile))
-              }`}>
-                <AvatarImage
-                  src={profile.photoURL}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                  fallback={profile.nome.charAt(0).toUpperCase()}
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-0 min-w-0 flex-1">
-              <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white">{profile.nome}</h1>
-              {profile.username && (
-                <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base font-medium">@{profile.username}</p>
-              )}
-
-              {/* Badges */}
-              <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} viewAllHref={`/friend/${id}/badges`} />
-            </div>
-          </div>
-
-          {/* Info Grid */}
-          <div className="grid grid-cols-2 gap-2">
-            {profile.bio && (
-              <div className={`col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333]`}>
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{profile.bio}</p>
-              </div>
-            )}
-
-            {!(priv.ocultarEmail ?? true) && profile.email && (
-              <div className={`col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333]`}>
-                <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Email</p>
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{profile.email}</p>
-              </div>
-            )}
-
-            {!priv.ocultarInstagram && profile.instagram && (
-              <div className={`${!profile.isTrainer ? 'col-span-2' : ''} flex items-center gap-2 border border-gray-100 dark:border-[#333] bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5`}>
-                {/* <p className="text-xs uppercase font-medium text-gray-500 dark:text-gray-400">Instagram</p> */}
-                <Instagram size={16} className="text-pink-500" />
-                <Link to={`https://instagram.com/${profile.instagram}`} target="_blank" className="block text-sm font-semibold text-gray-800 dark:text-gray-100 hover:underline max-w-full truncate">{profile.instagram}</Link>
-              </div>
-            )}
-
-            {profile.isTrainer && (
-              <div className={`${!priv.ocultarInstagram ? '' : 'col-span-2'} border border-blue-100 dark:border-blue-900/30 bg-blue-50 dark:bg-blue-900/10 rounded-xl p-2 md:px-2.5`}>
-                <p className="text-sm font-bold text-blue-900 dark:text-blue-300 truncate">
-                  {profile.cref ? profile.cref : 'Nao informado'}
-                </p>
-              </div>
-            )}
-            <div
-              className="col-span-2 md:col-span-4 grid gap-2"
-              style={{ gridTemplateColumns: `repeat(${Math.max(visibleMetricCount, 1)}, minmax(0, 1fr))` }}
-            >
-              {!priv.ocultarAltura && profile.altura && profile.altura > 0 && (
-                <div className={`col-span-1 border border-gray-100 dark:border-[#333] bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2 md:px-2.5`}>
-                  <p className="text-xs uppercase font-medium text-emerald-600 dark:text-emerald-400">Altura</p>
-                  <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300">{(profile.altura / 100).toFixed(2)}m</p>
-                </div>
-              )}
-
-              {!priv.ocultarPeso && profile.peso && profile.peso > 0 && (
-                <div className={`col-span-1 border border-gray-100 dark:border-[#333] bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2 md:px-2.5`}>
-                  <p className="text-xs uppercase font-medium text-emerald-600 dark:text-emerald-400">Peso</p>
-                  <p className="text-sm font-bold text-emerald-900 dark:text-emerald-300">{profile.peso.toFixed(1)}kg</p>
-                </div>
-              )}
-
-              {!priv.ocultarAmigos && (
-                <div
-                  onClick={() => navigate(`/friend/${profile.username || profile.id}/friends`)}
-                  className={`col-span-1 border border-gray-100 dark:border-[#333] bg-blue-50 dark:bg-blue-900/10 rounded-xl p-2 md:px-2.5 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors`}
-                >
-                  <p className="text-xs uppercase font-medium text-blue-600 dark:text-blue-400">Amigos</p>
-                  <p className="text-sm font-bold text-blue-900 dark:text-blue-300">{friendsCount}</p>
-                </div>
-              )}
-
-              {!priv.ocultarStreak && (
-                <div className={`col-span-1 border border-orange-500/20 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 rounded-xl p-2 md:px-2.5`}>
-                  <p className="text-xs uppercase font-medium text-orange-600 dark:text-orange-400">
-                    <span className="hidden md:inline">Sequência</span>
-                    <span className="md:hidden">Seq.</span>
-                  </p>
-                  <p className="text-sm font-bold text-orange-600 dark:text-orange-400">{profile.currentStreak || 0}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden md:grid grid-cols-12 gap-4">
-          <div className="col-span-4 flex flex-col items-center justify-start pt-2">
-            <div className="relative mb-3 w-max mx-auto">
-              <div className={`w-28 h-28 lg:w-36 lg:h-36 bg-gradient-to-br from-[#27AE60] to-[#1E8449] rounded-full flex items-center justify-center text-white text-4xl lg:text-5xl font-bold overflow-hidden shadow-inner relative z-0 ${
-                resolveAvatarRing(resolveUserBadges(profile))
-              }`}>
-                <AvatarImage
-                  src={profile.photoURL}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                  fallback={profile.nome.charAt(0).toUpperCase()}
-                />
-              </div>
-            </div>
-
-            <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-900 dark:text-white text-center tracking-tight">{profile.nome}</h1>
-            {profile.username && (
-              <p className="text-gray-500 dark:text-gray-400 text-sm lg:text-base font-medium text-center">@{profile.username}</p>
-            )}
-
-            <div className="mt-2">
-              <BadgeList onUpgrade={handleOpenUpgradeModal} badges={resolveUserBadges(profile)} userIsPremium={isPremium} viewAllHref={`/friend/${id}/badges`} />
-            </div>
-          </div>
-
-          <div className="col-span-8 grid grid-cols-2 gap-3">
-            {profile.bio && (
-              <div className={`col-span-1 bg-gray-50 dark:bg-[#252525] rounded-xl p-2 md:px-2.5 border border-gray-100 dark:border-[#333]`}>
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{profile.bio}</p>
-              </div>
-            )}
-            
-            {!(priv.ocultarEmail ?? true) && profile.email && (
-              <div className="col-span-2 bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Email</p>
-                <p className="text-base font-semibold text-gray-800 dark:text-gray-100 truncate">{profile.email}</p>
-              </div>
-            )}
-
-            {!priv.ocultarInstagram && profile.instagram && (
-              <div className={`${!(priv.ocultarNascimento ?? true) && birthDate ? 'col-span-1' : 'col-span-2'} bg-gray-50 dark:bg-[#252525] rounded-xl px-4 py-3 border border-gray-100 dark:border-[#333] transition-colors`}>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide font-medium">Instagram</p>
-                <Link to={`https://instagram.com/${profile.instagram}`} target="_blank" className="block text-base font-semibold text-blue-500 hover:underline max-w-full truncate">@{profile.instagram}</Link>
-              </div>
-            )}
-
-            {profile.isTrainer && (
-              <div className="col-span-2 bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-900/30 transition-colors">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">Perfil</p>
-                    <p className="text-base font-semibold text-blue-900 dark:text-blue-200">Treinador</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">CREF</p>
-                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">
-                      {profile.cref ? profile.cref : <span className="text-blue-400/70 font-normal">Nao informado</span>}
-                    </p>
+    <>
+      <StackHeader title={user.username ? `@${user.username}` : firstName} backTo="/friends" width="lg" />
+      <Page width="lg" className="pt-2">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
+          <div className="flex flex-col gap-5">
+            <Card className="flex flex-col gap-4 p-4">
+              <div className="flex items-center gap-4">
+                <Avatar name={user.nome} src={user.photoURL} size={76} ring={resolveAvatarTone(badges)} />
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <h2 className="type-heading line-clamp-2">{user.nome}</h2>
+                  {user.isTrainer && <p className="text-sm text-muted">{user.cref ? `Treinador · CREF ${user.cref}` : 'Treinador'}</p>}
+                  <div className="mt-1">
+                    <BadgeStrip badges={badges} viewAllHref={`/friend/${user.username || user.id}/badges`} onUpgrade={viewerIsPremium ? undefined : () => setPremiumOpen(true)} />
                   </div>
                 </div>
               </div>
-            )}
-
-            <div className="col-span-2 grid grid-cols-4 gap-3 mt-1">
-              {!priv.ocultarAltura && profile.altura && profile.altura > 0 && (
-                <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wide font-bold">Altura</p>
-                  <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300">{(profile.altura / 100).toFixed(2)}m</p>
+              {!!user.bio && <p className="whitespace-pre-line text-sm leading-5">{user.bio}</p>}
+              {((!privacy.ocultarInstagram && user.instagram) || birthDate) && (
+                <div className="flex flex-col gap-2">
+                  {!privacy.ocultarInstagram && !!user.instagram && (
+                    <a href={`https://instagram.com/${user.instagram}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sm text-primary hover:underline">
+                      <AtSign size={16} className="text-muted" aria-hidden />
+                      @{user.instagram}
+                    </a>
+                  )}
+                  {birthDate && <p className="text-sm text-muted">Aniversário em {birthDate}</p>}
                 </div>
               )}
+            </Card>
 
-              {!priv.ocultarPeso && profile.peso && profile.peso > 0 && (
-                <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl px-3 md:px-4 py-3 border border-emerald-100 dark:border-emerald-800/30">
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 uppercase tracking-wide font-bold">Peso</p>
-                  <p className="text-base md:text-lg font-bold text-emerald-900 dark:text-emerald-300">{profile.peso.toFixed(1)}kg</p>
-                </div>
+            <div className="grid grid-cols-2 gap-2">
+              {!privacy.ocultarStreak && <StatTile label="Sequência" value={user.currentStreak ?? 0} suffix="sem" color="var(--color-streak)" />}
+              {!privacy.ocultarAmigos && (
+                <StatTile label="Amigos" value={friendsCount ?? '—'} onClick={() => navigate(`/friend/${user.username || user.id}/friends`)} />
               )}
-
-              {!priv.ocultarAmigos && (
-                <div
-                  onClick={() => navigate(`/friend/${profile.username || profile.id}/friends`)}
-                  className="cursor-pointer bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors"
-                >
-                  <p className="text-xs text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide font-bold">Amigos</p>
-                  <p className="text-base font-semibold text-blue-900 dark:text-blue-200">{friendsCount}</p>
-                </div>
-              )}
-
-              {!priv.ocultarStreak && (
-                <div className="w-full rounded-xl border border-orange-500/20 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 px-4 py-3">
-                  <p className="text-xs uppercase font-medium text-orange-600 dark:text-orange-400 mb-1">Sequência</p>
-                  <p className="text-2xl font-black text-orange-600 dark:text-orange-400">{profile.currentStreak || 0}</p>
-                </div>
-              )}
+              {!privacy.ocultarPeso && !!user.peso && <StatTile label="Peso" value={formatDecimal(user.peso)} suffix="kg" />}
+              {!privacy.ocultarAltura && !!user.altura && <StatTile label="Altura" value={formatDecimal(user.altura / 100, 2)} suffix="m" />}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Tabs Section */}
-      <div className="w-full max-w-lg md:max-w-3xl lg:max-w-4xl">
-        <div className="flex bg-gray-200 dark:bg-[#1e1e1e] p-1 rounded-xl mb-4 border border-gray-100 dark:border-[#2a2a2a]">
-          <button
-            onClick={() => setActiveTab('atividades')}
-            className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${
-              activeTab === 'atividades' 
-                ? 'bg-white dark:bg-[#333] text-gray-900 dark:text-white shadow-sm' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            <Activity size={18} /> Atividades
-          </button>
-          <button
-            onClick={() => setActiveTab('treinos')}
-            className={`cursor-pointer flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${
-              activeTab === 'treinos' 
-                ? 'bg-white dark:bg-[#333] text-gray-900 dark:text-white shadow-sm' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            <Dumbbell size={18} /> Treinos
-          </button>
-        </div>
-        
-        {/* Tab Content */}
-        <div className="bg-white dark:bg-[#1e1e1e] shadow-xl shadow-black/5 dark:shadow-black/20 md:p-6 mb-6 md:mb-32 lg:mb-0 w-full rounded-2xl border border-gray-100 dark:border-[#2a2a2a] min-h-[300px]">
-          {/* ATIVIDADES */}
-          {activeTab === 'atividades' && (
-            <div className="p-4 md:p-0">
-              {priv.ocultarAtividades ? (
-                <div className="flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400">
-                  <Lock size={48} className="mb-4 opacity-50" />
-                  <p className="text-lg font-medium text-center">Este usuário prefere manter suas atividades privadas.</p>
-                </div>
-              ) : loadingLogs ? (
-                <div className="flex justify-center p-8"><Spinner size={32} color="var(--color-primary)" label="Carregando atividades" /></div>
-              ) : logs.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">Nenhuma atividade recente encontrada.</div>
+          <div className="flex flex-col gap-5">
+            <SegmentedControl<Tab>
+              value={tab}
+              onChange={setTab}
+              options={[
+                { value: 'activity', label: 'Atividades', icon: Activity },
+                { value: 'workouts', label: 'Treinos', icon: Dumbbell },
+              ]}
+            />
+
+            {tab === 'activity' ? (
+              activitiesHidden ? (
+                <Card><EmptyState icon={Lock} title="Atividades privadas" description={`${firstName} prefere manter as atividades privadas.`} /></Card>
+              ) : logs === null ? (
+                <LoadingState />
+              ) : visibleLogs.length === 0 && !lastOldLog ? (
+                <Card><EmptyState icon={Activity} title="Nenhuma atividade recente" /></Card>
               ) : (
-                <div className="space-y-4">
-                  {(() => {
-                    const visibleLogs = isPremiumObserver ? logs : logs.filter(log => isDentroDosSeteDias(log.data))
-                    const firstOldLog = !isPremiumObserver ? logs.find(log => !isDentroDosSeteDias(log.data)) : null
-                    
-                    return (
-                      <>
-                        {visibleLogs.map(log => {
-                          const diaFim = new Date(log.data).toLocaleDateString('pt-BR')
-                          const horaFim = new Date(log.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                          return (
-                            <div key={log.id} className="bg-white dark:bg-[#2d2d2d] rounded-lg p-4 shadow-sm border border-gray-100 dark:border-[#404040]">
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <h4 className="font-bold text-gray-800 dark:text-gray-100">{log.titulo || 'Exercício Concluído'}</h4>
-                                  <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-                                    {log.usesProgressiveWeight && log.progressiveSets && log.progressiveSets.length > 0 ? (
-                                      <>{log.series} séries (Progressão: {log.progressiveSets.map(s => `${s.reps}x${s.weight}kg`).join(' - ')})</>
-                                    ) : (
-                                      <>{log.series} séries × {log.repeticoes} repetições</>
-                                    )}
-                                  </p>
-                                </div>
-                                <div className="flex flex-col items-end gap-1">
-                                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-[#333] px-2 py-1 rounded-md">{diaFim}</span>
-                                  <span className="text-xs text-gray-400 dark:text-gray-500">{horaFim}</span>
-                                </div>
-                              </div>
+                <div className="flex flex-col gap-3">
+                  {visibleLogs.length > 0 && (
+                    <Card className="overflow-hidden">
+                      {visibleLogs.map((log, index) => (
+                        <div key={log.id}>
+                          {index > 0 && <div className="mx-4 h-px bg-border" />}
+                          <div className="flex gap-3 px-4 py-3">
+                            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                              <span className="text-base font-medium">{log.titulo}</span>
+                              <span className="text-xs text-muted">{describeLog(log)}</span>
                             </div>
-                          )
-                        })}
-                        {firstOldLog && (
-                          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#252525] border border-gray-100 dark:border-[#333] text-center text-gray-500">
-                            <p>O usuário logou sua última atividade em {new Date(firstOldLog.data).toLocaleDateString('pt-BR')}</p>
+                            <div className="flex flex-col items-end gap-0.5 text-xs">
+                              <span className="text-muted">{formatDate(log.data, { day: '2-digit', month: 'short' })}</span>
+                              <span className="text-subtle">{formatTime(log.data)}</span>
+                            </div>
                           </div>
-                        )}
-                      </>
-                    )
-                  })()}
-                  
-                  {isPremiumObserver && logs.length >= logsLimit && (
-                    <button 
-                      onClick={handleLoadMoreLogs}
-                      className="cursor-pointer w-full mt-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl font-bold border border-blue-100 dark:border-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-                    >
-                      Veja mais atividades
-                    </button>
+                        </div>
+                      ))}
+                    </Card>
+                  )}
+                  {lastOldLog && (
+                    <Card className="flex flex-col items-center gap-3 p-4 text-center">
+                      <p className="text-sm text-muted">
+                        Última atividade antes desta semana em {formatDate(lastOldLog.data, { day: '2-digit', month: 'long' })}. O histórico completo dos amigos é Premium.
+                      </p>
+                      <Button label="Conhecer o Premium" icon={Crown} variant="secondary" size="sm" onClick={() => setPremiumOpen(true)} />
+                    </Card>
+                  )}
+                  {viewerIsPremium && logs.length >= logsLimit && (
+                    <Button label="Ver mais atividades" variant="secondary" onClick={() => setLogsLimit(value => value + PAGE)} />
                   )}
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* TREINOS */}
-          {activeTab === 'treinos' && (
-            <div className="p-4 md:p-0">
-              {priv.ocultarTreinos ? (
-                <div className="flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400">
-                  <Lock size={48} className="mb-4 opacity-50" />
-                  <p className="text-lg font-medium text-center">Os treinos deste usuário são privados.</p>
-                </div>
-              ) : loadingTreinos ? (
-                <div className="flex justify-center p-8"><Spinner size={32} color="var(--color-primary)" label="Carregando treinos" /></div>
-              ) : treinos.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">O usuário não possui treinos cadastrados.</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {treinos.map(treino => (
-                    <div key={treino.id} className="p-4 rounded-xl border border-gray-100 dark:border-[#333] bg-gray-50 dark:bg-[#252525] flex flex-col">
-                      <div className="mb-2 border-b border-gray-200 dark:border-[#404040]">
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className="font-bold text-gray-900 dark:text-white text-lg truncate pr-2">{treino.nome}</h4>
-                          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded whitespace-nowrap">{treino.dia}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1">
-                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Exercícios</p>
-                        {treino.exercicios.length === 0 ? (
-                          <p className="text-sm italic text-gray-400">Nenhum exercício...</p>
-                        ) : (
-                          <ul className="space-y-1.5">
-                            {treino.exercicios.map((ex, i) => (
-                              <li key={i} className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2 pl-6">
-                                {ex.nome}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
+              )
+            ) : workoutsHidden ? (
+              <Card><EmptyState icon={Lock} title="Treinos privados" description="Este usuário prefere manter os treinos privados." /></Card>
+            ) : workouts === null ? (
+              <LoadingState />
+            ) : workouts.length === 0 ? (
+              <Card><EmptyState icon={Dumbbell} title="Nenhum treino cadastrado" /></Card>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {workouts.map(workout => (
+                  <Card key={workout.id} className="flex flex-col gap-2 p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex-1 truncate text-base font-semibold">{workout.musculo}</span>
+                      <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs text-muted">{workout.dia}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    {workout.exercises.length === 0 ? (
+                      <span className="text-xs text-subtle">Nenhum exercício</span>
+                    ) : (
+                      <p className="text-sm leading-5 text-muted">{workout.exercises.join(' · ')}</p>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-
-      {isUpgradeModalOpen && (
-        <PremiumUpgradeModal  
-          isOpen={isUpgradeModalOpen}
-          onClose={handleCloseUpgradeModal}
-          userEmail={email || ''}
-          userName={nome || ''}
-          userId={currentUserId || ''}
-          userPhone={telefone || ''}
-        />
-      )}
-    </main>
+      </Page>
+      <PremiumUpgrade open={premiumOpen} onClose={() => setPremiumOpen(false)} />
+    </>
   )
 }

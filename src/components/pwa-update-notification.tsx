@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
-import { Button } from './button'
+import { Button } from './ui/button'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { APP_VERSION, getVersion } from '../version'
 
@@ -100,77 +100,29 @@ export function PWAUpdateNotification() {
     return null
   }
 
-  // Customize message based on update type
-  const getUpdateMessage = () => {
-    if (updateType === 'major') {
-      return {
-        title: 'Grande Atualização Disponível! 🚀',
-        description: 'Uma versão principal do Tractus está pronta com mudanças importantes. Clique em "Atualizar" para obter as novas funcionalidades.',
-        badge: 'MAJOR',
-        badgeColor: 'bg-red-500'
-      }
-    }
-    
-    if (updateType === 'minor') {
-      return {
-        title: 'Nova Versão Disponível! 🎉',
-        description: 'Novas funcionalidades foram adicionadas ao Tractus. Clique em "Atualizar" para acessá-las.',
-        badge: 'MINOR',
-        badgeColor: 'bg-blue-500'
-      }
-    }
-    
-    // Default message
-    return {
-      title: 'Atualização Disponível! ✨',
-      description: 'Uma atualização do Tractus está pronta. Clique em "Atualizar" para obter as últimas melhorias.',
-      badge: null,
-      badgeColor: ''
-    }
-  }
-
-  const message = getUpdateMessage()
+  const title = updateType === 'major' ? 'Grande atualização disponível' : updateType === 'minor' ? 'Nova versão disponível' : 'Atualização disponível'
+  const description = updateType === 'major'
+    ? 'Uma versão nova do Tractus está pronta, com mudanças importantes.'
+    : updateType === 'minor'
+      ? 'Novas funcionalidades foram adicionadas ao Tractus.'
+      : 'Uma atualização do Tractus está pronta com as últimas melhorias.'
 
   return (
-    <div className="fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-65 animate-slide-down">
-      <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-            <RefreshCw size={20} className="text-white" />
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-white font-semibold text-sm">
-                {message.title}
-              </h3>
-              {message.badge && (
-                <span className={`${message.badgeColor} text-white text-[9px] font-bold px-1.5 py-0.5 rounded`}>
-                  {message.badge}
-                </span>
-              )}
-            </div>
-            <p className="text-gray-400 text-xs mb-1">
-              {message.description}
-            </p>
-            <p className="text-gray-500 text-[10px] mb-3">
-              Versão atual: v{currentVersion}
-            </p>
-            
-            <div className="flex gap-2">
-              <Button
-                onClick={handleUpdate}
-                className={`flex-1 ${updateType === 'major' ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} text-white text-sm py-2 font-semibold`}
-              >
-                ✨ Atualizar Agora
-              </Button>
-              <Button
-                onClick={handleDismiss}
-                className="px-4 bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm"
-              >
-                Depois
-              </Button>
-            </div>
+    <div
+      role="status"
+      className="fixed inset-x-4 top-[calc(env(safe-area-inset-top)_+_12px)] z-[60] animate-toast-in sm:left-auto sm:w-96 lg:right-6"
+    >
+      <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-4 shadow-lg">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-info/12 text-info">
+          <RefreshCw size={20} aria-hidden />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <h3 className="text-sm font-semibold">{title}</h3>
+          <p className="text-xs leading-4 text-muted">{description}</p>
+          <p className="text-[11px] text-subtle">Versão atual: v{currentVersion}</p>
+          <div className="mt-2 flex gap-2">
+            <Button label="Atualizar agora" size="sm" onClick={handleUpdate} />
+            <Button label="Depois" size="sm" variant="secondary" onClick={handleDismiss} />
           </div>
         </div>
       </div>

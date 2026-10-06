@@ -1,249 +1,141 @@
-import { useEffect, useState } from 'react'
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
-import { auth, db } from '../firebaseConfig'
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
-import { Link, useNavigate } from 'react-router-dom'
-import { getVersionWithPrefix } from '../version'
-import { Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, MailCheck } from 'lucide-react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Button, buttonClasses } from '../components/ui/button'
+import { IconButton } from '../components/ui/icon-button'
+import { Callout } from '../components/ui/misc'
+import { TextField } from '../components/ui/text-field'
+import { auth, db } from '../firebaseConfig'
 import { trackLogin, trackPageView } from '../utils/analytics'
-import { Spinner } from '../components/spinner'
-import logo from '../assets/nova-logo-clear.png'
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export function Login() {
+  const navigate = useNavigate()
+  const [mode, setMode] = useState<'login' | 'forgot'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [resetEmailSent, setResetEmailSent] = useState(false)
-  const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const usuarioID = localStorage.getItem('usuarioId')
-  const navigate = useNavigate()
+  const [resetSent, setResetSent] = useState(false)
 
   useEffect(() => {
     trackPageView('login')
-    
-    if (usuarioID) {
-      navigate('/train')
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  if (localStorage.getItem('usuarioId')) return <Navigate to="/train" replace />
+
+  const handleLogin = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!email.trim() || !password) {
+      setError('Informe seu email e sua senha.')
+      return
+    }
     setLoading(true)
-    setError('')
-
+    setError(null)
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
-      const user = userCredential.user
-      const uid = user.uid
-
-      // Check if user is active in Firestore
-      const userDocRef = doc(db, 'usuarios', uid)
-      const userDoc = await getDoc(userDocRef)
+      const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
+      const userDoc = await getDoc(doc(db, 'usuarios', credential.user.uid))
 
       if (!userDoc.exists()) {
-        // User document doesn't exist, sign out and show error
         await auth.signOut()
-        setError('Conta não encontrada no sistema. Entre em contato com o administrador.')
+        setError('Conta não encontrada no sistema. Entre em contato com o suporte.')
+        return
+      }
+      // Sem o campo isActive a conta é considerada ativa (contas antigas)
+      if (userDoc.data().isActive === false) {
+        await auth.signOut()
+        setError('Sua conta está inativa. Entre em contato com o suporte para ativá-la.')
         return
       }
 
-      const userData = userDoc.data()
-      
-      // Check if user is active (default to true for users without isActive field for backward compatibility)
-      const isActive = userData.isActive !== undefined ? userData.isActive : true
-      
-      if (!isActive) {
-        // User is inactive, sign out and show error
-        await auth.signOut()
-        setError('Sua conta está inativa. Entre em contato com o administrador para ativá-la.')
-        return
-      }
-
-      // User is active, proceed with login
-      localStorage.setItem("usuarioId", uid)
+      localStorage.setItem('usuarioId', credential.user.uid)
       trackLogin('email')
       navigate('/train')
-    } catch (err) {
-      setError('Falha ao fazer login: Verifique suas credenciais!')
-      console.error('Erro ao fazer login:', err)
+    } catch {
+      setError('Email ou senha incorretos. Confira e tente de novo.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError('Por favor, digite seu email para recuperar a senha')
+  const handleForgot = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setError('Digite um email válido.')
       return
     }
-
     setLoading(true)
-    setError('')
-
+    setError(null)
     try {
-      await sendPasswordResetEmail(auth, email)
-      setResetEmailSent(true)
-      setError('')
-    } catch (err) {
-      setError('Erro ao enviar email de recuperação. Verifique se o email está correto.')
-      console.error('Erro ao enviar email:', err)
+      await sendPasswordResetEmail(auth, email.trim())
+      setResetSent(true)
+    } catch {
+      setError('Não foi possível enviar o email. Confira se o endereço está correto.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const switchMode = (next: 'login' | 'forgot') => {
+    setMode(next)
+    setError(null)
+    setResetSent(false)
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-[#121212] p-4 lg:pt-20">
-      <div className="bg-white dark:bg-[#2d2d2d] shadow-xl rounded-2xl p-6 sm:p-8 w-full max-w-md border border-gray-100 dark:border-[#404040]">
-        <div className="flex justify-center mb-6">
-          <img src={logo} alt="Tractus Logo" className="h-16 w-auto drop-shadow-sm" />
-        </div>
-        <h1 className="text-3xl font-black text-center mb-2 text-gray-800 dark:text-gray-100">
-          {showForgotPassword ? 'Recuperar Senha' : 'Bem-vindo!'}
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-8">
-          {showForgotPassword ? 'Para redefinir sua senha' : 'Faça login para continuar seus treinos'}
-        </p>
-        
-        {error && <p className="text-red-500 text-sm font-medium text-center mb-4 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">{error}</p>}
-        {resetEmailSent && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            <p className="text-sm">
-              ✓ Email de recuperação enviado! Verifique sua caixa de entrada.
-            </p>
+    <div className="flex flex-col gap-6">
+      <IconButton
+        icon={ArrowLeft}
+        label="Voltar"
+        className="-ml-2"
+        onClick={() => (mode === 'forgot' ? switchMode('login') : navigate('/'))}
+      />
+
+      {mode === 'forgot' ? (
+        <>
+          <div className="flex flex-col gap-1.5">
+            <h1 className="type-display">Recuperar senha</h1>
+            <p className="text-muted">Enviaremos um link para você criar uma nova senha.</p>
           </div>
-        )}
+          {resetSent ? (
+            <div className="flex flex-col gap-4">
+              <Callout tone="success" icon={MailCheck} title="Email enviado">
+                Confira sua caixa de entrada (e o spam) e siga o link para redefinir a senha.
+              </Callout>
+              <Button label="Voltar para o login" size="lg" onClick={() => switchMode('login')} />
+            </div>
+          ) : (
+            <form onSubmit={handleForgot} className="flex flex-col gap-4">
+              {error && <Callout tone="danger">{error}</Callout>}
+              <TextField label="Email" type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="voce@email.com" autoComplete="email" autoFocus />
+              <Button type="submit" label="Enviar link" size="lg" loading={loading} />
+            </form>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="flex flex-col gap-1.5">
+            <h1 className="type-display">Entrar</h1>
+            <p className="text-muted">Bom te ver de volta. Faça login para continuar seus treinos.</p>
+          </div>
 
-        {!showForgotPassword ? (
-          /* Login Form */
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
-                placeholder="seu@email.com"
-              />
+          <form onSubmit={handleLogin} className="flex flex-col gap-6">
+            {error && <Callout tone="danger">{error}</Callout>}
+            <div className="flex flex-col gap-4">
+              <TextField label="Email" type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="voce@email.com" autoComplete="email" />
+              <TextField label="Senha" value={password} onChange={event => setPassword(event.target.value)} placeholder="Sua senha" secureToggle autoComplete="current-password" />
+              <Button label="Esqueci minha senha" variant="ghost" size="sm" className="-mr-2 self-end" onClick={() => switchMode('forgot')} />
             </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Senha</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 pr-12 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
-                  placeholder="Sua senha"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
+            <div className="flex flex-col gap-3">
+              <Button type="submit" label="Entrar" size="lg" loading={loading} />
+              <Link to="/cadastro" className={buttonClasses({ variant: 'outline', size: 'lg' })}>Ainda não tenho conta</Link>
             </div>
-            
-            {/* Forgot Password Link */}
-            <div className="text-right pt-1">
-              <button
-                type="button"
-                onClick={() => setShowForgotPassword(true)}
-                className="cursor-pointer text-sm font-semibold text-[#27AE60] hover:text-[#219150] transition-colors"
-              >
-                Esqueceu a senha?
-              </button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className={`cursor-pointer w-full py-3.5 px-4 rounded-xl text-white font-bold text-lg shadow-md transition-all ${
-                loading ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-[#27AE60] hover:bg-[#219150] hover:shadow-lg'
-              }`}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <Spinner size={20} thickness={2} color="rgba(255,255,255,0.8)" />
-                  <span>Entrando...</span>
-                </div>
-              ) : (
-                'Entrar'
-              )}
-            </button>
           </form>
-        ) : (
-          /* Forgot Password Form */
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Email cadastrado</label>
-              <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full border border-gray-300 dark:border-[#404040] rounded-xl px-4 py-3 text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#27AE60]/50 font-medium transition-all"
-                placeholder="seu@email.com"
-              />
-            </div>
-            
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              disabled={loading}
-              className={`cursor-pointer w-full py-3.5 px-4 rounded-xl text-white font-bold text-lg shadow-md transition-all ${
-                loading ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-[#27AE60] hover:bg-[#219150] hover:shadow-lg'
-              }`}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                   <Spinner size={20} thickness={2} color="rgba(255,255,255,0.8)" />
-                   <span>Enviando...</span>
-                </div>
-              ) : (
-                'Enviar Recuperação'
-              )}
-            </button>
-            
-            <button
-              type="button"
-              onClick={() => {
-                setShowForgotPassword(false)
-                setResetEmailSent(false)
-                setError('')
-              }}
-              className="cursor-pointer w-full text-sm text-gray-600 dark:text-gray-400 hover:underline mt-2"
-            >
-              ← Voltar para login
-            </button>
-          </div>
-        )}
-        
-        {!showForgotPassword && (
-          <p className="text-center mt-8 text-sm font-medium text-gray-600 dark:text-gray-400">
-            Não tem uma conta?{' '}
-            <Link to="/cadastro" className="text-[#27AE60] hover:text-[#219150] hover:underline transition-colors font-bold">
-              Cadastre-se agora
-            </Link>
-          </p>
-        )}
-      </div>
-      
-      {/* Version Display */}
-      <div className="mt-4">
-        <p className="text-xs text-gray-500 dark:text-gray-500">{getVersionWithPrefix()}</p>
-      </div>
-    </main>
+        </>
+      )}
+    </div>
   )
 }

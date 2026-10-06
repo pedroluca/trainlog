@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Crown } from 'lucide-react'
+import { Cake } from 'lucide-react'
+import { Button } from './ui/button'
+import { Dialog } from './ui/dialog'
 
 export type BirthdayBalloonMode = 'none' | 'compact' | 'burst'
 
@@ -32,68 +33,19 @@ type BirthdayCelebrationModalProps = {
 }
 
 export function BirthdayCelebrationModal({ isOpen, onClose, name }: BirthdayCelebrationModalProps) {
-  const [show, setShow] = useState(false)
-
-  useEffect(() => {
-    if (isOpen) {
-      const timeout = setTimeout(() => setShow(true), 10)
-      return () => clearTimeout(timeout)
-    }
-
-    setShow(false)
-  }, [isOpen])
-
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm flex items-center justify-center px-4 animate-fade-in">
-      <div
-        className={`relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#1f2937] via-[#111827] to-[#0f172a] shadow-2xl transition-all duration-300 ${
-          show ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
-        }`}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.14),_transparent_40%),radial-gradient(circle_at_bottom_right,_rgba(39,174,96,0.18),_transparent_30%)]" />
-        <div className="absolute -left-8 top-10 h-24 w-24 rounded-full bg-rose-400/20 blur-2xl" />
-        <div className="absolute -right-8 bottom-8 h-28 w-28 rounded-full bg-amber-400/20 blur-2xl" />
-
-        <div className="relative p-6 md:p-8 text-center">
-          <div className="mb-5 flex items-center justify-center gap-3 text-5xl">
-            <span>🎉</span>
-            <Crown size={36} className="text-amber-300" />
-          </div>
-
-          <p className="text-xs font-bold uppercase tracking-[0.35em] text-amber-300/90 mb-2">Hoje é o seu dia</p>
-          <h2 className="text-3xl md:text-4xl font-black text-white leading-tight">
-            Feliz aniversário, {name}!
-          </h2>
-          <p className="mt-4 text-sm md:text-base text-white/80 leading-relaxed">
-            Que seu ano novo pessoal venha com mais saúde, evolução e boas conquistas dentro e fora do treino.
-          </p>
-
-          <div className="mt-6 grid grid-cols-3 gap-2 text-left">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-rose-200/80">Energia</p>
-              <p className="mt-1 text-sm font-semibold text-white">Lá no alto</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/80">Saúde</p>
-              <p className="mt-1 text-sm font-semibold text-white">Sempre em dia</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-200/80">Meta</p>
-              <p className="mt-1 text-sm font-semibold text-white">Bater recordes</p>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="mt-7 w-full rounded-2xl bg-[#27AE60] px-4 py-3.5 font-bold text-white shadow-lg shadow-[#27AE60]/30 transition-colors hover:bg-[#219150]"
-          >
-            Obrigado!
-          </button>
+    <Dialog open={isOpen} onClose={onClose} animation="pop" label="Feliz aniversário">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="flex size-16 items-center justify-center rounded-2xl bg-premium/12 text-premium">
+          <Cake size={30} aria-hidden />
         </div>
+        <h2 className="type-title">Feliz aniversário, {name.split(' ')[0]}!</h2>
+        <p className="text-sm leading-5 text-muted">
+          Que seu novo ano venha com mais saúde, evolução e boas conquistas dentro e fora do treino.
+        </p>
+        <Button label="Obrigado!" onClick={onClose} fullWidth className="mt-2" autoFocus />
       </div>
-    </div>
+    </Dialog>
   )
 }
 
