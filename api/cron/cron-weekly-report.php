@@ -22,7 +22,9 @@ require_once __DIR__ . '/config.php';
 
 define('LOG_FILE', __DIR__ . '/cron-weekly-report.log');
 
-assert_cron_secret();
+// O envio de teste para um único e-mail (painel admin do web) aceita o PUSH_SECRET;
+// o envio para todo mundo só com o CRON_SECRET.
+assert_cron_secret((bool) filter_input(INPUT_GET, 'test_email', FILTER_VALIDATE_EMAIL));
 
 // ================================================================
 // FUNÇÕES
@@ -364,7 +366,7 @@ try {
 } catch (Exception $e) {
     write_log("💥 ERRO CRÍTICO: " . $e->getMessage());
 
-    ping_healthcheck('cron-weekly-report', 'fail');
+    ping_healthcheck('cron-weekly-report', 'fail', $e->getMessage());
 
     http_response_code(500);
     echo json_encode([

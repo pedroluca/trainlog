@@ -1,4 +1,4 @@
-# TrainLog - Cron Jobs
+# Tractus - Cron Jobs
 
 Esta pasta agora contem apenas rotinas sem envio por FCM.
 
@@ -17,7 +17,32 @@ Esta pasta agora contem apenas rotinas sem envio por FCM.
 - `cron-streak-leader.php`: manutencao diaria de streak/freeze + elege quem tem a maior `currentStreak` do dia e ajusta a badge `streak-leader`.
 - `sync-users.php`: sincronizacao de usuarios para cache local.
 - `test-simple-send.php`: trigger manual para teste rapido de push via OneSignal.
-- `config.php`: segredo e configuracoes comuns.
+- `onesignal.php`: envio de push compartilhado (crons e endpoints da pasta `api/`).
+- `config.php`: segredos e configuracoes comuns (nao vai para o git).
+
+## Credenciais e segredos (config.php)
+
+- **Conta de servico do Firebase:** `domains/<dominio>/firebase/firebase-credentials.json`, ao lado (fora) do
+  `public_html`. O caminho sai da propria pasta do `config.php`, entao nao
+  depende do numero da conta nem do dominio. Em outubro/2026 os crons ficaram
+  semanas falhando porque o caminho estava fixo na conta antiga (`trainlog.site`).
+- **`CRON_SECRET`:** so os comandos do hPanel conhecem. Libera os crons.
+- **`PUSH_SECRET`:** o que o web e o app usam (`send-admin-push.php`,
+  `send-friend-request-notification.php`). Vai no bundle, entao e publico na
+  pratica e nao libera os crons. As unicas excecoes sao o que o painel admin
+  dispara: `test-simple-send.php` e o `cron-weekly-report.php?test_email=...`.
+
+## Como o push e enviado
+
+Tudo passa por `send_push_to_user()` em `onesignal.php`: o push vai pelo UID do
+Firebase (`external_id` no OneSignal), que o app nativo, o webview e o web
+registram no login, entao chega em todos os aparelhos do usuario. Os ids de
+aparelho salvos no Firestore (`oneSignalSubscriptionId`, `player_id`) so sao
+usados se ninguem recebeu pelo UID (aparelho antigo que nunca vinculou o UID).
+
+O OneSignal responde 200 mesmo quando nenhum aparelho recebe; nesse caso o `id`
+vem vazio. Os scripts tratam isso como "nao entregue" (com o motivo no log), e
+nao como enviado.
 
 ## cron-streak-leader
 
@@ -26,15 +51,17 @@ Deve rodar 1x por dia, perto da meia-noite (fim do dia).
 Faz duas coisas, nessa ordem:
 
 1. **Manutencao de streak (server-side).** Replica a regra do modo `maintenance`
-   de `syncStreakState` em `src/data/streak-utils.ts`: conta dias perdidos vs
-   `scheduledDays`, consome freeze se tiver saldo, ou zera `currentStreak` se
-   nao tiver. Antes disso so acontecia quando o usuario abria o app
-   (`checkAndResetStreakIfMissed` em `app.tsx`) — agora acontece todo dia,
-   direto no cron, entao um lider que faltou um dia perde a streak (e a badge)
-   mesmo sem abrir o app.
-   > Importante: essa e uma copia da logica de `streak-utils.ts`. Se a regra
-   > de freeze/streak mudar la, replique a mudanca em `cron-streak-leader.php`
-   > tambem.
+   de `syncStreakState` em `src/data/streak-utils.ts`. A streak e **semanal**
+   (1 treino por semana, Dom-Sab): conta as semanas inteiras sem treino desde
+   `lastStreakWeek`, consome um freeze por semana perdida se tiver saldo, ou
+   zera `currentStreak` se nao tiver. Quem ainda nao abriu o app desde a mudanca
+   para semanal (`streakVersion` diferente de 2) fica de fora: o app recalcula
+   pelos logs na proxima abertura.
+   > Importante: essa e uma copia da logica de `streak-utils.ts` (web) e de
+   > `src/data/streak.ts` (tractus-app). Se a regra de freeze/streak mudar la,
+   > replique a mudanca em `cron-streak-leader.php` tambem. Este arquivo nao
+   > esta no git (a pasta `api/` esta no `.gitignore`), entao a mudanca nao
+   > aparece no diff: foi assim que ele ficou na regra diaria por um tempo.
 2. **Badge `streak-leader`.** Com a `currentStreak` ja corrigida, descobre o
    maior valor do dia (empates: todos os empatados recebem a badge), concede
    a quem bateu a streak maxima e ainda nao tinha a badge, e remove de quem
@@ -57,13 +84,13 @@ Parametros de query:
 Exemplo (teste sem gravar):
 
 ```bash
-curl "https://app.trainlog.site/api/cron/cron-streak-leader.php?secret=SEU_CRON_SECRET&dry_run=1&debug=1"
+curl "https://apptractus.com.br/api/cron/cron-streak-leader.php?secret=SEU_CRON_SECRET&dry_run=1&debug=1"
 ```
 
 Exemplo (execucao real, para agendar no cron do servidor):
 
 ```bash
-wget -q -O- "https://app.trainlog.site/api/cron/cron-streak-leader.php?secret=SEU_CRON_SECRET"
+wget -q -O- "https://apptractus.com.br/api/cron/cron-streak-leader.php?secret=SEU_CRON_SECRET"
 ```
 
 ## Trigger manual - test-simple-send
@@ -78,13 +105,13 @@ Requisitos:
 Exemplo por `external_id`:
 
 ```bash
-curl "https://app.trainlog.site/api/cron/test-simple-send.php?secret=SEU_CRON_SECRET&external_id=UID_DO_USUARIO&title=Novo%20treino&body=Seu%20treino%20de%20hoje%20ja%20esta%20disponivel&url=https%3A%2F%2Fapp.trainlog.site%2Ftrain"
+curl "https://apptractus.com.br/api/cron/test-simple-send.php?secret=SEU_CRON_SECRET&external_id=UID_DO_USUARIO&title=Novo%20treino&body=Seu%20treino%20de%20hoje%20ja%20esta%20disponivel&url=https%3A%2F%2Fapptractus.com.br%2Ftrain"
 ```
 
 Exemplo por `subscription_id`:
 
 ```bash
-curl "https://app.trainlog.site/api/cron/test-simple-send.php?secret=SEU_CRON_SECRET&subscription_id=ONESIGNAL_SUBSCRIPTION_ID"
+curl "https://apptractus.com.br/api/cron/test-simple-send.php?secret=SEU_CRON_SECRET&subscription_id=ONESIGNAL_SUBSCRIPTION_ID"
 ```
 
 ## Regra de envio

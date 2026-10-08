@@ -71,7 +71,7 @@ try {
 
 } catch (Exception $e) {
     write_log('Erro na sincronizacao: ' . $e->getMessage());
-    ping_healthcheck('sync-users', 'fail');
+    ping_healthcheck('sync-users', 'fail', $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
 }

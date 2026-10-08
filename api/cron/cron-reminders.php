@@ -1,9 +1,10 @@
 <?php
 /**
- * TrainLog - Cron Job para lembretes via OneSignal
+ * Tractus - Cron Job para lembretes via OneSignal
  *
- * Envia push para usuários que não treinaram hoje.
- * Usa include_aliases.external_id = UID do Firebase.
+ * Envia push para usuários que têm treino agendado hoje e ainda não treinaram.
+ * O envio é pelo UID do Firebase (external_id), que alcança todos os aparelhos do usuário;
+ * os ids de aparelho salvos no Firestore só entram como plano B (ver onesignal.php).
  */
 
 header('Content-Type: application/json');
@@ -14,7 +15,6 @@ define('LOG_FILE', __DIR__ . '/cron-reminders.log');
 assert_cron_secret();
 $debug_mode = (($_GET['debug'] ?? '0') === '1');
 $target_user_id = trim((string) ($_GET['user_id'] ?? ''));
-$override_player_id = trim((string) ($_GET['player_id'] ?? ''));
 
 function write_log($message) {
     $timestamp = date('Y-m-d H:i:s');
@@ -70,51 +70,6 @@ function fetch_users_from_firestore($access_token) {
     return $users;
 }
 
-function send_onesignal_notification($user_id, $player_id, $title, $body, $url, $data = []) {
-    $payload = [
-        'app_id' => ONESIGNAL_APP_ID,
-        'target_channel' => 'push',
-        'headings' => ['en' => $title, 'pt' => $title],
-        'contents' => ['en' => $body, 'pt' => $body],
-        'web_url' => $url,
-        'data' => $data
-    ];
-
-    // Prefer direct device target when Android sends player_id.
-    if ($player_id) {
-        $payload['include_subscription_ids'] = [$player_id];
-    } else {
-        $payload['include_aliases'] = [
-            'external_id' => [$user_id]
-        ];
-    }
-
-    $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => 'https://api.onesignal.com/notifications',
-        CURLOPT_POST => true,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POSTFIELDS => json_encode($payload),
-        CURLOPT_HTTPHEADER => [
-            'Authorization: Key ' . ONESIGNAL_REST_API_KEY,
-            'Content-Type: application/json'
-        ],
-        CURLOPT_TIMEOUT => 30
-    ]);
-
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    $decoded = json_decode((string) $response, true) ?: [];
-
-    if ($http_code < 200 || $http_code >= 300) {
-        throw new Exception('OneSignal error (HTTP ' . $http_code . '): ' . $response);
-    }
-
-    return $decoded;
-}
-
 try {
     write_log('========== CRON: Lembretes via OneSignal ==========' );
 
@@ -132,6 +87,7 @@ try {
 
     $sent_count = 0;
     $error_count = 0;
+    $not_delivered_count = 0;
     $debug_entries = [];
 
     // Usa fuso horário do Brasil para que a comparação de datas
@@ -161,7 +117,7 @@ try {
         $user_name         = $user['nome'] ?? 'Usuário';
         $last_workout_date = $user['lastWorkoutDate'] ?? null;
         $scheduled_days    = $user['scheduledDays'] ?? [];
-        $player_id         = $override_player_id !== '' ? $override_player_id : ($user['player_id'] ?? null);
+        $player_id         = $user['player_id'] ?? null;
         $provider          = $user['pushProvider'] ?? null;
         $subscription_id   = $user['oneSignalSubscriptionId'] ?? null;
 
@@ -209,25 +165,31 @@ try {
         }
 
         try {
-            $result = send_onesignal_notification(
+            $result = send_push_to_user(
                 $user_id,
-                $player_id,
+                [$subscription_id, $player_id],
                 'Hora do Treino! 💪',
                 'Ei ' . $user_name . ', não registramos seu treino hoje. Vamos começar?',
                 $train_url,
-                ['action' => 'open_training']
+                ['data' => ['action' => 'open_training']]
             );
 
-            $sent_count++;
-            write_log('Push enviado para ' . $user_name . ' (' . $user_id . ')');
+            if ($result['delivered']) {
+                $sent_count++;
+                write_log('Push enviado para ' . $user_name . ' (' . $user_id . ')');
+            } else {
+                // Sem aparelho inscrito (desinstalou, negou a permissão...): não é erro do cron
+                $not_delivered_count++;
+                write_log('Nenhum aparelho recebeu para ' . $user_name . ' (' . $user_id . '): ' . $result['reason']);
+            }
 
             if ($debug_mode) {
                 $debug_entries[] = [
                     'user_id' => $user_id,
                     'user_name' => $user_name,
-                    'status' => 'sent',
-                    'reason' => 'eligible',
-                    'onesignal_notification_id' => $result['id'] ?? null
+                    'status' => $result['delivered'] ? 'sent' : 'not_delivered',
+                    'reason' => $result['delivered'] ? 'eligible' : $result['reason'],
+                    'onesignal_notification_id' => $result['id']
                 ];
             }
         } catch (Exception $error) {
@@ -247,6 +209,7 @@ try {
 
     write_log('========== RESUMO ==========' );
     write_log('Enviadas: ' . $sent_count);
+    write_log('Sem aparelho inscrito: ' . $not_delivered_count);
     write_log('Erros: ' . $error_count);
     write_log('=========== FIM ===========\n');
 
@@ -256,6 +219,7 @@ try {
         'status' => 'success',
         'provider' => 'onesignal',
         'sent' => $sent_count,
+        'not_delivered' => $not_delivered_count,
         'errors' => $error_count,
         'timestamp' => date('Y-m-d H:i:s')
     ];
@@ -270,7 +234,7 @@ try {
     echo json_encode($response);
 } catch (Exception $e) {
     write_log('ERRO CRÍTICO: ' . $e->getMessage());
-    ping_healthcheck('cron-reminders', 'fail');
+    ping_healthcheck('cron-reminders', 'fail', $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'status' => 'error',

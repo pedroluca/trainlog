@@ -16,19 +16,11 @@ export async function notifyAdmins(title: string, body: string, targetPath: stri
     
     const snapshot = await getDocs(q)
     
-    // 2. Extrai os IDs de assinatura válidos
-    const targetIds: string[] = []
-    snapshot.forEach((doc) => {
-      const data = doc.data()
-      // Priorizamos o campo oneSignalSubscriptionId ou player_id
-      const pushId = data.oneSignalSubscriptionId || data.player_id
-      if (pushId && typeof pushId === 'string' && pushId.length > 10) {
-        targetIds.push(pushId)
-      }
-    })
+    // 2. O push vai pelo UID (external_id no OneSignal), que alcança todos os aparelhos de cada admin
+    const adminIds = snapshot.docs.map((adminDoc) => adminDoc.id)
 
-    if (targetIds.length === 0) {
-      console.log('Nenhum admin com Push Notification ativa encontrado. Notificação ignorada.')
+    if (adminIds.length === 0) {
+      console.log('Nenhum admin encontrado. Notificação ignorada.')
       return false
     }
 
@@ -48,7 +40,7 @@ export async function notifyAdmins(title: string, body: string, targetPath: stri
       },
       body: JSON.stringify({
         secret: CRON_SECRET,
-        target_ids: targetIds,
+        external_ids: adminIds,
         title,
         body,
         url,

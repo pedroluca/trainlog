@@ -1,19 +1,20 @@
 type PushNotificationParams = {
-  targetIds: string[]
+  /** UIDs do Firebase: o push chega em todos os aparelhos de cada usuário (external_id no OneSignal) */
+  userIds: string[]
   title: string
   body: string
   url: string
   icon?: string
 }
 
-export async function sendOneSignalPushToTargets({
-  targetIds,
+export async function sendOneSignalPushToUsers({
+  userIds,
   title,
   body,
   url,
   icon
 }: PushNotificationParams): Promise<boolean> {
-  if (targetIds.length === 0) return false
+  if (userIds.length === 0) return false
 
   const CRON_SECRET = import.meta.env.VITE_CRON_SECRET || 'tlg_2ab6ApP7sc1SE_BKyuem_zag7Z7'
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://apptractus.com.br/api'
@@ -27,7 +28,7 @@ export async function sendOneSignalPushToTargets({
       },
       body: JSON.stringify({
         secret: CRON_SECRET,
-        target_ids: targetIds,
+        external_ids: userIds,
         title,
         body,
         url,
@@ -36,7 +37,7 @@ export async function sendOneSignalPushToTargets({
     })
 
     const data = await response.json().catch(() => null)
-    return response.ok && data?.status !== 'error'
+    return response.ok && data?.status === 'success'
   } catch (error) {
     console.error('Erro ao enviar push OneSignal:', error)
     return false

@@ -1,7 +1,7 @@
 import { db } from '../firebaseConfig'
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, runTransaction } from 'firebase/firestore'
 import { getStreakMilestoneValue, STREAK_MILESTONE_WEEKS } from './badges'
-import { sendOneSignalPushToTargets } from '../utils/push-notifications'
+import { sendOneSignalPushToUsers } from '../utils/push-notifications'
 
 const dayNameToNumber: Record<string, number> = {
   'Domingo': 0,
@@ -34,8 +34,6 @@ type StreakUserData = {
   freezeCount?: number
   freezeLastGrantedMonth?: string
   streakMilestoneRewardedUpTo?: number
-  oneSignalSubscriptionId?: string
-  player_id?: string
 }
 
 export type FreezeWarning = {
@@ -61,7 +59,6 @@ type StreakSyncResult = {
   lastStreakWeek: string | null
   streakIncremented: boolean
   freezeWarning: FreezeWarning | null
-  pushTargets: string[]
 }
 
 function getMonthKey(date = new Date()): string {
@@ -197,7 +194,6 @@ function normalizeStreakData(data: StreakUserData) {
     streakMilestoneRewardedUpTo: typeof data.streakMilestoneRewardedUpTo === 'number'
       ? data.streakMilestoneRewardedUpTo
       : getStreakMilestoneValue(longestStreak),
-    pushTargets: [data.oneSignalSubscriptionId, data.player_id].filter(Boolean) as string[]
   }
 }
 
@@ -341,7 +337,6 @@ async function syncStreakState(usuarioID: string, mode: 'maintenance' | 'workout
       lastStreakWeek: lastStreakWeek || null,
       streakIncremented,
       freezeWarning,
-      pushTargets: userData.pushTargets
     }
   })
 }
@@ -370,8 +365,8 @@ function emitStreakEvents(result: StreakSyncResult): void {
   }
 }
 
-async function sendFreezeWarningPush(result: StreakSyncResult): Promise<void> {
-  if (!result.freezeWarning || result.pushTargets.length === 0 || typeof window === 'undefined') return
+async function sendFreezeWarningPush(usuarioID: string, result: StreakSyncResult): Promise<void> {
+  if (!result.freezeWarning || typeof window === 'undefined') return
 
   const title = result.freezeWarning.streakBroken
     ? 'Sua streak foi zerada'
@@ -380,8 +375,8 @@ async function sendFreezeWarningPush(result: StreakSyncResult): Promise<void> {
   const body = result.freezeWarning.message
   const url = `${window.location.origin}/profile/streak-calendar`
 
-  await sendOneSignalPushToTargets({
-    targetIds: result.pushTargets,
+  await sendOneSignalPushToUsers({
+    userIds: [usuarioID],
     title,
     body,
     url
@@ -435,7 +430,7 @@ export async function checkAndResetStreakIfMissed(usuarioID: string): Promise<vo
     if (!result) return
 
     emitStreakEvents(result)
-    await sendFreezeWarningPush(result)
+    await sendFreezeWarningPush(usuarioID, result)
   } catch (err) {
     console.error('❌ Error checking missed streak:', err)
   }
@@ -504,7 +499,7 @@ export async function updateStreak(usuarioID: string): Promise<StreakUpdateResul
     }
 
     emitStreakEvents(result)
-    await sendFreezeWarningPush(result)
+    await sendFreezeWarningPush(usuarioID, result)
 
     return {
       currentStreak: result.currentStreak,

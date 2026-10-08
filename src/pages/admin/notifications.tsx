@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { Bell, Send, Mail, AlertCircle, CheckCircle, Smartphone } from 'lucide-react'
 import { AdminContextData } from '../../layouts/admin-layout'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../../firebaseConfig'
 import { Spinner } from '../../components/spinner'
 import adminLogo from '../../assets/admin-logo.png'
 
@@ -43,28 +41,12 @@ export function AdminNotifications() {
     setResponseLog(null)
     
     try {
-      // 1. Opcionalmente, buscar o Player ID do Firebase (igual à Cron) se usarmos um UID válido
-      let targetSubscriptionId = ''
-      try {
-        const userDoc = await getDoc(doc(db, 'usuarios', pushTargetId.trim()))
-        if (userDoc.exists()) {
-          const data = userDoc.data()
-          targetSubscriptionId = data.oneSignalSubscriptionId || data.player_id || ''
-        }
-      } catch (e) {
-        console.error(e)
-      }
-
       const url = new URL(`${API_BASE}/cron/test-simple-send.php`)
       url.searchParams.append('secret', CRON_SECRET)
-      
-      // Enviamos a Subscription ID (se encontrada no BD) ou recaímos direto no UID 
-      if (targetSubscriptionId) {
-         url.searchParams.append('subscription_id', targetSubscriptionId)
-      } else {
-         url.searchParams.append('external_id', pushTargetId.trim())
-      }
-      
+
+      // Pelo UID (external_id) o teste chega em todos os aparelhos do usuário, igual aos crons
+      url.searchParams.append('external_id', pushTargetId.trim())
+
       url.searchParams.append('title', pushTitle.trim())
       url.searchParams.append('body', pushBody.trim())
       url.searchParams.append('icon', `${window.location.origin}${adminLogo}`)
