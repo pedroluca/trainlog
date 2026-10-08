@@ -4,9 +4,9 @@
 // PATCH: Bug fixes, backwards compatible
 
 export const APP_VERSION = {
-  major: 2,
-  minor: 3,
-  patch: 0,
+  major: 3,
+  minor: 0,
+  patch: 1,
 }
 
 export const getVersion = (): string => {
